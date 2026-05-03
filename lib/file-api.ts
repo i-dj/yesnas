@@ -1,4 +1,4 @@
-const FILE_API_HOST = 'http://localhost:8080/api/v1'
+const FILE_API_HOST = 'http://yesnas:8080/api/v1'
 
 export const getFileApiHost = () => FILE_API_HOST
 

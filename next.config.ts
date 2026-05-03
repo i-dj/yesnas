@@ -1,8 +1,11 @@
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
+
 const nextConfig: NextConfig = {
-  /* config options here */
-  allowedDevOrigins: ['*'],
+  allowedDevOrigins: ['yesnas'],
+  turbopack: {
+    root: process.cwd(),
+  },
 }
 
 const withNextIntl = createNextIntlPlugin()
