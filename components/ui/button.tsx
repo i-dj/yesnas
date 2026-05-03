@@ -1,0 +1,141 @@
+'use client'
+
+import { cn } from '@/lib/utils'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Trash2, LucideIcon } from 'lucide-react'
+import { IconType } from 'react-icons'
+import * as Tooltip from '@radix-ui/react-tooltip'
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  icon?: IconType | LucideIcon
+  iconSize?: number
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
+  isDelete?: boolean
+  badge?: number
+  tip?: string
+  noHover?: boolean
+}
+
+// badge: numeric indicator shown in the top-right corner
+export const Button = ({
+  icon: Icon,
+  iconSize: providedIconSize,
+  variant = 'primary',
+  size = 'md',
+  isDelete = false,
+  children,
+  className,
+  badge,
+  tip,
+  noHover = false,
+  ...props
+}: ButtonProps) => {
+  const FinalIcon = isDelete ? Icon || Trash2 : Icon
+
+  const baseVariants = {
+    primary: 'bg-app-text text-app-bg border border-transparent',
+    secondary: 'bg-app-surface text-app-text-muted border border-app-border',
+    danger: 'bg-app-surface text-red-500 border border-red-500/60',
+    ghost: 'bg-transparent text-app-text-muted border-none',
+  }
+
+  const hoverVariants = {
+    primary:
+      'enabled:hover:opacity-85 enabled:hover:shadow-xs enabled:active:scale-[0.97]',
+    secondary:
+      'enabled:hover:border-app-border-strong enabled:hover:text-app-text enabled:hover:shadow-xs enabled:active:bg-app-active',
+    danger:
+      'enabled:hover:bg-red-500/8 enabled:hover:text-red-600 enabled:hover:shadow-xs enabled:active:bg-red-500/12',
+    ghost:
+      'enabled:hover:bg-app-hover enabled:hover:text-app-text enabled:active:bg-app-active',
+  }
+
+  const sizes = {
+    xs: 'h-6 px-1.5 text-sm gap-1.5 rounded',
+    sm: 'h-8 px-2 text-[12px]   gap-1.5 rounded-lg',
+    md: 'h-9 px-4 text-sm gap-2 rounded-lg',
+    lg: 'h-11 px-6 text-base gap-2.5 rounded-lg',
+  }
+
+  const autoIconSize = {
+    xs: 13,
+    sm: 14,
+    md: 18,
+    lg: 20,
+  }
+
+  const finalIconSize = providedIconSize || autoIconSize[size]
+  const finalVariant = isDelete && variant !== 'ghost' ? 'danger' : variant
+
+  const variantClass = cn(
+    baseVariants[finalVariant],
+    !noHover && hoverVariants[finalVariant],
+  )
+
+  const ButtonElement = (
+    <button
+      className={cn(
+        'relative inline-flex shrink-0 items-center justify-center',
+        'whitespace-nowrap transition-all outline-none select-none disabled:opacity-30',
+        sizes[size],
+        variantClass,
+        !children && [
+          'aspect-square px-0',
+          variant === 'ghost' ? 'rounded-full' : '',
+        ],
+        isDelete &&
+          variant === 'ghost' &&
+          'text-red-500 enabled:hover:bg-red-100',
+        className,
+      )}
+      {...props}
+    >
+      <AnimatePresence>
+        {badge !== undefined && badge > 0 && (
+          <motion.span
+            key="badge"
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.5, opacity: 0 }}
+            className={cn(
+              'pointer-events-none absolute flex items-center justify-center rounded-full font-bold text-white shadow-sm',
+              'border-2 border-white bg-red-500',
+              size === 'sm'
+                ? '-top-1 -right-1 h-4 min-w-4 text-[9px]'
+                : '-top-1.5 -right-1.5 h-5 min-w-5 text-[10px]',
+            )}
+          >
+            {badge > 99 ? '99+' : badge}
+          </motion.span>
+        )}
+      </AnimatePresence>
+
+      {FinalIcon && (
+        <FinalIcon size={finalIconSize} className={cn('shrink-0')} />
+      )}
+      {children && <span>{children}</span>}
+    </button>
+  )
+
+  if (!tip) return ButtonElement
+
+  return (
+    <Tooltip.Provider delayDuration={200}>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild>{ButtonElement}</Tooltip.Trigger>
+        <Tooltip.Portal>
+          <Tooltip.Content
+            side="bottom"
+            align="center"
+            sideOffset={5}
+            className="animate-in fade-in zoom-in z-100 rounded-md bg-gray-700 px-3 py-1.5 text-xs font-medium text-white duration-200"
+          >
+            {tip}
+            <Tooltip.Arrow className="fill-gray-700" />
+          </Tooltip.Content>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  )
+}

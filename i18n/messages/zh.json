@@ -1,0 +1,167 @@
+{
+  "Common": {
+    "brand": "YesNAS",
+    "searchPlaceholder": "搜索文件或文件夹",
+    "actions": {
+      "confirm": "确定",
+      "cancel": "取消",
+      "delete": "删除",
+      "open": "打开",
+      "copy": "复制",
+      "move": "移动",
+      "logout": "退出",
+      "feedback": "反馈",
+      "changeAvatar": "修改头像",
+      "changePassword": "修改密码",
+      "clearTrash": "清空回收站"
+    },
+    "theme": {
+      "label": "主题",
+      "system": "系统",
+      "light": "浅色",
+      "dark": "深色"
+    },
+    "profile": {
+      "name": "可爱的小王子"
+    }
+  },
+  "Layout": {
+    "nav": {
+      "dashboard": "控制台",
+      "file": "文件",
+      "task": "任务中心"
+    },
+    "aria": {
+      "expandSidebar": "展开侧边栏",
+      "collapseSidebar": "收起侧边栏"
+    }
+  },
+  "Dashboard": {
+    "title": "控制台",
+    "timeRanges": {
+      "oneHour": "1小时",
+      "twentyFourHours": "24小时",
+      "sevenDays": "7天"
+    },
+    "metrics": {
+      "used": "已使用",
+      "free": "空闲",
+      "total": "总共"
+    },
+    "systemInfo": {
+      "title": "系统版本",
+      "os": "操作系统",
+      "version": "YesNAS版本",
+      "uptime": "运行时间",
+      "lastBoot": "上次启动",
+      "ipAddress": "IP地址",
+      "uptimeValue": "12小时23分",
+      "lastBootValue": "2023年12月23日 11:22:23"
+    },
+    "hardwareInfo": {
+      "title": "硬件参数",
+      "cpu": "处理器",
+      "gpu": "显卡",
+      "motherboard": "主板",
+      "systemDisk": "系统盘",
+      "memory": "内存",
+      "motherboardValue": "技嘉5680EF",
+      "systemDiskValue": "希捷50GB",
+      "memoryValue": "海力士 256GB"
+    },
+    "processes": {
+      "title": "当前进程"
+    },
+    "chart": {
+      "uploadTraffic": "上行流量 (Mbps)",
+      "downloadTraffic": "下行流量 (Mbps)"
+    }
+  },
+  "Task": {
+    "statuses": {
+      "all": "全部",
+      "running": "运行中",
+      "success": "成功",
+      "failed": "已失败",
+      "canceled": "已取消"
+    },
+    "deleteTitle": "删除任务 ({count})",
+    "deleteDescription": "确定要删除选中的任务吗？删除后未完成的任务将取消运行。",
+    "deleteConfirm": "确认删除",
+    "deleteTip": "删除",
+    "columns": {
+      "name": "名称",
+      "progress": "进度",
+      "status": "状态",
+      "updatedAt": "最后更新",
+      "remaining": "剩余：{duration}",
+      "updatedAgo": "{value}前",
+      "updatedSample": "10分钟"
+    },
+    "mockTasks": {
+      "1": {
+        "name": "文件上传",
+        "size": "25分钟"
+      },
+      "2": {
+        "name": "文件上传",
+        "size": "1小时"
+      },
+      "3": {
+        "name": "数据同步",
+        "size": "2小时"
+      },
+      "4": {
+        "name": "碎片整理",
+        "size": "1小时23分钟"
+      },
+      "5": {
+        "name": "磁盘格式化",
+        "size": "23秒"
+      },
+      "6": {
+        "name": "上传文件",
+        "size": "13秒"
+      }
+    }
+  },
+  "File": {
+    "locations": {
+      "local": "本地",
+      "cloud": "云端",
+      "external": "外置"
+    },
+    "filters": {
+      "trash": "回收站",
+      "allTags": "全部标签",
+      "tagCount": "{count} 个标签",
+      "openTagFilter": "打开标签筛选",
+      "colors": {
+        "red": "红色",
+        "blue": "蓝色",
+        "green": "绿色",
+        "yellow": "黄色",
+        "gray": "灰色"
+      }
+    },
+    "emptyStorages": "当前分类下还没有存储设备",
+    "actions": {
+      "permanentDeleteFileTitle": "永久删除文件",
+      "permanentDeleteFileDescription": "确定要永久删除“{name}”吗？删除后将无法恢复。",
+      "permanentDelete": "永久删除",
+      "clearTrashTitle": "清空回收站",
+      "clearTrashDescription": "确定要清空回收站吗？清空后其中的文件将被永久删除。",
+      "clearTrash": "清空回收站"
+    },
+    "columns": {
+      "deletedAt": "删除时间"
+    },
+    "trashDetail": {
+      "name": "文件名",
+      "deletedAt": "删除时间",
+      "originalPath": "原始路径",
+      "recyclePath": "回收站路径",
+      "expiresAt": "过期时间"
+    }
+  }
+}

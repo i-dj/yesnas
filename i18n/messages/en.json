@@ -1,0 +1,167 @@
+{
+  "Common": {
+    "brand": "YesNAS",
+    "searchPlaceholder": "Search any file or folder",
+    "actions": {
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "open": "Open",
+      "copy": "Copy",
+      "move": "Move",
+      "logout": "Log out",
+      "feedback": "Feedback",
+      "changeAvatar": "Change avatar",
+      "changePassword": "Change password",
+      "clearTrash": "Empty trash"
+    },
+    "theme": {
+      "label": "Theme",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "profile": {
+      "name": "Cute Little Prince"
+    }
+  },
+  "Layout": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "file": "Files",
+      "task": "Tasks"
+    },
+    "aria": {
+      "expandSidebar": "Expand sidebar",
+      "collapseSidebar": "Collapse sidebar"
+    }
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "timeRanges": {
+      "oneHour": "1 hour",
+      "twentyFourHours": "24 hours",
+      "sevenDays": "7 days"
+    },
+    "metrics": {
+      "used": "Used",
+      "free": "Free",
+      "total": "Total"
+    },
+    "systemInfo": {
+      "title": "System Info",
+      "os": "Operating system",
+      "version": "YesNAS version",
+      "uptime": "Uptime",
+      "lastBoot": "Last boot",
+      "ipAddress": "IP address",
+      "uptimeValue": "12h 23m",
+      "lastBootValue": "December 23, 2023 11:22:23"
+    },
+    "hardwareInfo": {
+      "title": "Hardware",
+      "cpu": "Processor",
+      "gpu": "Graphics card",
+      "motherboard": "Motherboard",
+      "systemDisk": "System disk",
+      "memory": "Memory",
+      "motherboardValue": "Gigabyte 5680EF",
+      "systemDiskValue": "Seagate 50GB",
+      "memoryValue": "Hynix 256GB"
+    },
+    "processes": {
+      "title": "Current Processes"
+    },
+    "chart": {
+      "uploadTraffic": "Upload Traffic (Mbps)",
+      "downloadTraffic": "Download Traffic (Mbps)"
+    }
+  },
+  "Task": {
+    "statuses": {
+      "all": "All",
+      "running": "Running",
+      "success": "Success",
+      "failed": "Failed",
+      "canceled": "Canceled"
+    },
+    "deleteTitle": "Delete Tasks ({count})",
+    "deleteDescription": "Delete the selected tasks? Unfinished tasks will be canceled.",
+    "deleteConfirm": "Delete",
+    "deleteTip": "Delete",
+    "columns": {
+      "name": "Name",
+      "progress": "Progress",
+      "status": "Status",
+      "updatedAt": "Last Updated",
+      "remaining": "Remaining: {duration}",
+      "updatedAgo": "{value} ago",
+      "updatedSample": "10 minutes"
+    },
+    "mockTasks": {
+      "1": {
+        "name": "File Upload",
+        "size": "25 min"
+      },
+      "2": {
+        "name": "File Upload",
+        "size": "1 hour"
+      },
+      "3": {
+        "name": "Data Sync",
+        "size": "2 hours"
+      },
+      "4": {
+        "name": "Defragmentation",
+        "size": "1 hour 23 min"
+      },
+      "5": {
+        "name": "Disk Format",
+        "size": "23 sec"
+      },
+      "6": {
+        "name": "Upload File",
+        "size": "13 sec"
+      }
+    }
+  },
+  "File": {
+    "locations": {
+      "local": "Local",
+      "cloud": "Cloud",
+      "external": "External"
+    },
+    "filters": {
+      "trash": "Trash",
+      "allTags": "All Tags",
+      "tagCount": "{count} tags",
+      "openTagFilter": "Open tag filter",
+      "colors": {
+        "red": "Red",
+        "blue": "Blue",
+        "green": "Green",
+        "yellow": "Yellow",
+        "gray": "Gray"
+      }
+    },
+    "emptyStorages": "There are no storage devices in this category yet.",
+    "actions": {
+      "permanentDeleteFileTitle": "Permanently Delete File",
+      "permanentDeleteFileDescription": "Are you sure you want to permanently delete “{name}”? This action cannot be undone.",
+      "permanentDelete": "Permanently Delete",
+      "clearTrashTitle": "Empty Trash",
+      "clearTrashDescription": "Are you sure you want to empty the trash? Files inside will be permanently deleted.",
+      "clearTrash": "Empty Trash"
+    },
+    "columns": {
+      "deletedAt": "Deleted At"
+    },
+    "trashDetail": {
+      "name": "File Name",
+      "deletedAt": "Deleted At",
+      "originalPath": "Original Path",
+      "recyclePath": "Trash Path",
+      "expiresAt": "Expires At"
+    }
+  }
+}

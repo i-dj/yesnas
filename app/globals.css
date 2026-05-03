@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+@import '@nextdj/file-explorer/theme.css';
+@source '../node_modules/@nextdj/file-explorer/dist/**/*.js';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* Typography */
+  --font-sans:
+    'Inter', 'SF Pro Text', 'SF Pro SC', 'Helvetica Neue', 'PingFang SC',
+    'Microsoft YaHei UI', 'Noto Sans SC', sans-serif;
+
+  /* Semantic app tokens */
+  --color-app-bg: var(--app-bg);
+  --color-app-surface: var(--app-surface);
+
+  --color-app-text: var(--app-text);
+  --color-app-text-muted: var(--app-text-muted);
+  --color-app-text-sub: var(--app-text-sub);
+
+  --color-app-item-bg: var(--app-item-bg);
+  --color-app-border: var(--app-border);
+  --color-app-border-strong: var(--app-border-strong);
+
+  --color-app-hover: var(--app-hover);
+  --color-app-active: var(--app-active);
+}
+
+@layer base {
+  /* Light theme */
+  :root {
+    --app-bg: #ffffff;
+    --app-surface: rgb(243 244 246 / 0.4);
+    --app-item-bg: #f3f4f6;
+
+    --app-text: #000000;
+    --app-text-muted: #656565;
+    --app-text-sub: #525252;
+
+    --app-border: #e5e5e5;
+    --app-border-strong: rgb(101 101 101 / 0.5);
+
+    --app-hover: #f6f6f6;
+    --app-active: #f1f1f1;
+  }
+
+  /* Dark theme */
+  .dark {
+    --app-bg: #282c32;
+    --app-surface: rgb(48 52 61 / 0.45);
+    --app-item-bg: #30343d;
+
+    --app-text: #ffffff;
+    --app-text-muted: #a3a3a3;
+    --app-text-sub: #525252;
+
+    --app-border: #444549;
+    --app-border-strong: #a3a3a3;
+
+    --app-hover: #383c45;
+    --app-active: #454954;
+  }
+
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: var(--app-bg);
+    color: var(--app-text);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  body {
+    line-height: 1.6;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Shared interaction defaults */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer !important;
+  }
+
+  /* File Explorer host layout fixes */
+  .fe-theme {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex-direction: column;
+    flex: 1 1 auto;
+  }
+
+  .fe-theme > div {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100% !important;
+  }
+}
