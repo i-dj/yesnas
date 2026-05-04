@@ -19,7 +19,6 @@ import {
   type FileNode,
 } from '@nextdj/file-explorer'
 import { Copy, FolderInput, Eye, Trash2 } from 'lucide-react'
-import { useTheme } from 'next-themes'
 
 import type { QuickFilterType, StorageLocation } from './_types'
 import { QUICK_FILTERS, STORAGE_LOCATIONS } from './_constants'
@@ -52,7 +51,6 @@ export function FileClient({ files, storages }: FileClientProps) {
   const tFile = useTranslations('File')
   const tCommon = useTranslations('Common.actions')
   const locale = useLocale()
-  const { resolvedTheme } = useTheme()
   const [activeTab, setActiveTab] = useState<StorageLocation>('local')
   const [activeFilter, setActiveFilter] = useState<FileFilterMode>('tags')
   const [selectedColors, setSelectedColors] = useState<CategoryColor[]>([])
@@ -397,7 +395,7 @@ export function FileClient({ files, storages }: FileClientProps) {
           showBreadcrumbs={false}
           showToolbar={false}
           fontSize="sm"
-          theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+          theme="auto"
           viewControls={{
             showDisplayButton: false,
             showViewToggleButton: false,

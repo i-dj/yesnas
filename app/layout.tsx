@@ -6,7 +6,6 @@ import '@radix-ui/themes/styles.css'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 
-import { Theme } from '@radix-ui/themes'
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -34,9 +33,7 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Theme accentColor="blue" panelBackground="translucent">
-            <Providers>{children}</Providers>
-          </Theme>
+          <Providers>{children}</Providers>
         </NextIntlClientProvider>
       </body>
     </html>
