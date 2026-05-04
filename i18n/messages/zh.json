@@ -28,6 +28,7 @@
   "Layout": {
     "nav": {
       "dashboard": "控制台",
+      "storage": "存储",
       "file": "文件",
       "task": "任务中心"
     },

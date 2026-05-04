@@ -28,6 +28,7 @@
   "Layout": {
     "nav": {
       "dashboard": "Dashboard",
+      "storage": "Storage",
       "file": "Files",
       "task": "Tasks"
     },

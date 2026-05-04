@@ -1,12 +1,15 @@
-import { IconType } from 'react-icons'
-import { BsListTask } from 'react-icons/bs'
-import { LuDatabase } from 'react-icons/lu'
-import { TfiFiles } from 'react-icons/tfi'
+import {
+  Files,
+  HardDrive,
+  LayoutDashboard,
+  ListTodo,
+  type LucideIcon,
+} from 'lucide-react'
 
 export interface SubMenuItem {
-  nameKey: 'dashboard' | 'file' | 'task'
+  nameKey: string
   href: string
-  icon: IconType
+  icon: LucideIcon
 }
 
 export interface MenuGroup {
@@ -18,9 +21,10 @@ export const menuGroups: MenuGroup[] = [
   {
     nameKey: 'data',
     sub: [
-      { nameKey: 'dashboard', href: '/dashboard', icon: LuDatabase },
-      { nameKey: 'file', href: '/file', icon: TfiFiles },
-      { nameKey: 'task', href: '/task', icon: BsListTask },
+      { nameKey: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { nameKey: 'storage', href: '/storage', icon: HardDrive },
+      { nameKey: 'file', href: '/file', icon: Files },
+      { nameKey: 'task', href: '/task', icon: ListTodo },
     ],
   },
 ]

@@ -115,7 +115,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
               width={90}
               height={60}
               priority
-              className="max-w-none"
+              className="h-auto w-auto max-w-none"
             />
           </div>
           <button

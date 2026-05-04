@@ -114,8 +114,8 @@ export const ColorFilterSelect = ({
             className={cn(
               'flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs transition-colors',
               selectedColors.length === 0
-                ? 'text-black'
-                : 'text-black/60 hover:bg-black/5 hover:text-black',
+                ? 'text-app-text bg-app-hover/60'
+                : 'text-app-text-muted hover:bg-app-hover hover:text-app-text',
             )}
           >
             <span className="font-medium">{t('allTags')}</span>
@@ -133,8 +133,8 @@ export const ColorFilterSelect = ({
                 className={cn(
                   'flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs transition-colors',
                   checked
-                    ? 'text-black'
-                    : 'text-black/60 hover:bg-black/5 hover:text-black',
+                    ? 'text-app-text bg-app-hover/60'
+                    : 'text-app-text-muted hover:bg-app-hover hover:text-app-text',
                 )}
               >
                 <span className="flex items-center gap-2">

@@ -30,7 +30,7 @@ export const ColorTags = ({ colors, size = 10, className }: ColorTagsProps) => {
         <span
           key={`${color}-${index}`}
           className={cn(
-            'absolute block rounded-full ring-2 ring-white',
+            'absolute block rounded-full ring-1 ring-white',
             FILE_CATEGORY_COLORS[color].bgClass,
           )}
           style={{
