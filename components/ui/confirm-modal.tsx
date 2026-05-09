@@ -1,23 +1,28 @@
 'use client'
 
 import { AlertDialog, Button, Flex, Inset } from '@radix-ui/themes'
-import React from 'react'
+import React, { useRef } from 'react'
 import { useTranslations } from 'next-intl'
 
 interface ConfirmModalProps {
-  trigger: React.ReactNode
+  trigger?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
   title: string
-  description: string
+  description: React.ReactNode
   children?: React.ReactNode
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
   confirmText?: string
   cancelText?: string
   loading?: boolean
   isDestructive?: boolean
+  focusFirstInput?: boolean
 }
 
 export const ConfirmModal = ({
   trigger,
+  open,
+  onOpenChange,
   title,
   description,
   children,
@@ -26,14 +31,30 @@ export const ConfirmModal = ({
   cancelText,
   loading = false,
   isDestructive = true,
+  focusFirstInput = false,
 }: ConfirmModalProps) => {
   const t = useTranslations('Common.actions')
+  const contentRef = useRef<HTMLDivElement | null>(null)
 
   return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger>{trigger}</AlertDialog.Trigger>
+    <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
+      {trigger ? <AlertDialog.Trigger>{trigger}</AlertDialog.Trigger> : null}
 
-      <AlertDialog.Content maxWidth="450px">
+      <AlertDialog.Content
+        ref={contentRef}
+        maxWidth="450px"
+        onOpenAutoFocus={(event) => {
+          if (!focusFirstInput) return
+          event.preventDefault()
+          requestAnimationFrame(() => {
+            const firstInput =
+              contentRef.current?.querySelector<HTMLInputElement>(
+                'input, textarea',
+              )
+            firstInput?.focus()
+          })
+        }}
+      >
         <AlertDialog.Title>{title}</AlertDialog.Title>
         <AlertDialog.Description size="2">
           {description}
@@ -47,20 +68,27 @@ export const ConfirmModal = ({
 
         <Flex gap="3" mt="5" justify="end">
           <AlertDialog.Cancel>
-            <Button variant="soft" color="gray">
+            <Button
+              variant="soft"
+              color="gray"
+              type="button"
+              className="outline-none focus:ring-0 focus:outline-none focus-visible:ring-0"
+            >
               {cancelText ?? t('cancel')}
             </Button>
           </AlertDialog.Cancel>
-          <AlertDialog.Action>
-            <Button
-              variant="solid"
-              color={isDestructive ? 'red' : 'indigo'}
-              loading={loading}
-              onClick={onConfirm}
-            >
-              {confirmText ?? t('confirm')}
-            </Button>
-          </AlertDialog.Action>
+          <Button
+            type="button"
+            variant="solid"
+            color={isDestructive ? 'red' : 'indigo'}
+            loading={loading}
+            onClick={async (event) => {
+              event.preventDefault()
+              await onConfirm()
+            }}
+          >
+            {confirmText ?? t('confirm')}
+          </Button>
         </Flex>
       </AlertDialog.Content>
     </AlertDialog.Root>

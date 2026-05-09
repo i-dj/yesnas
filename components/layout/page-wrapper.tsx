@@ -7,5 +7,14 @@ export const PageWrapper = ({
   children: React.ReactNode
   className?: string
 }) => {
-  return <div className={cn('py-10', className)}>{children}</div>
+  return (
+    <div
+      className={cn(
+        'flex min-h-0 flex-1 flex-col overflow-hidden py-6',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  )
 }

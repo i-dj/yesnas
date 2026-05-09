@@ -136,11 +136,15 @@ export const bytesFormat = (
 
   const symbols =
     standard === 's'
-      ? ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+      ? ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']
       : ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
 
+  if (bytes > 0 && bytes < 1) {
+    return `${parseFloat(bytes.toFixed(decimalPlaces))} B`
+  }
+
   // Use logarithms to avoid a manual loop
-  const i = Math.floor(Math.log(bytes) / Math.log(base))
+  const i = Math.max(0, Math.floor(Math.log(bytes) / Math.log(base)))
 
   // Clamp the computed index to the available range
   const unitIndex = Math.min(i, symbols.length - 1)
@@ -288,4 +292,11 @@ export function encodeFilePath(path: string): string {
   const base64 = btoa(path)
   // Convert Base64 into a URL-safe variant (+ -> -, / -> _) and strip padding (=)
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+export function getProgressColorClass(value: number): string {
+  return value >= 90
+    ? 'bg-red-500'
+    : value >= 70
+      ? 'bg-yellow-500'
+      : 'bg-blue-500'
 }

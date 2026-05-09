@@ -210,7 +210,7 @@ export const DataTable = <T extends { id: number | string }>({
                       />
                       <div
                         className={cn(
-                          'relative z-10 select-none',
+                          'relative z-10 select-text',
                           h.key !== '__selection__' && 'truncate',
                         )}
                       >

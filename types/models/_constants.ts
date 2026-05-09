@@ -44,3 +44,12 @@ export const STORAGE_TYPES = {
   SMB: 'smb',
 } as const
 export type StorageType = (typeof STORAGE_TYPES)[keyof typeof STORAGE_TYPES]
+
+export const RAID_LEVELS = {
+  SINGLE: 'single',
+  RAID0: 'raid0',
+  RAID1: 'raid1',
+  RAID5: 'raid5',
+  RAID10: 'raid10',
+} as const
+export type RaidLevel = (typeof RAID_LEVELS)[keyof typeof RAID_LEVELS]

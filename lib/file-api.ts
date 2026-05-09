@@ -3,6 +3,20 @@ const FILE_API_HOST = 'http://yesnas:8080/api/v1'
 export const getFileApiHost = () => FILE_API_HOST
 
 export const getStoragesUrl = () => `${FILE_API_HOST}/storages`
+export const getRaidCandidatesUrl = () =>
+  `${FILE_API_HOST}/system/raid/candidates`
+export const getSystemDisksUrl = () => `${FILE_API_HOST}/system/disks`
+export const getStoragePoolsUrl = () => `${FILE_API_HOST}/system/storage-pools`
+export const getStoragePoolBenchmarkStreamUrl = (
+  poolId: string,
+  sizeGiB?: number,
+) => {
+  const query = new URLSearchParams()
+  if (sizeGiB) query.set('sizeGiB', String(sizeGiB))
+  const suffix = query.toString()
+  const base = `${FILE_API_HOST}/system/storage-pools/${poolId}/benchmark/stream`
+  return suffix ? `${base}?${suffix}` : base
+}
 
 export const getTaggedFilesUrl = () => `${FILE_API_HOST}/files/tags`
 

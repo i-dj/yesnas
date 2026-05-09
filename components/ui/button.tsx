@@ -9,12 +9,13 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: IconType | LucideIcon
   iconSize?: number
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'borderghost'
   size?: 'xs' | 'sm' | 'md' | 'lg'
   isDelete?: boolean
   badge?: number
   tip?: string
   noHover?: boolean
+  loading?: boolean
 }
 
 // badge: numeric indicator shown in the top-right corner
@@ -29,6 +30,7 @@ export const Button = ({
   badge,
   tip,
   noHover = false,
+  loading = false,
   ...props
 }: ButtonProps) => {
   const FinalIcon = isDelete ? Icon || Trash2 : Icon
@@ -38,6 +40,8 @@ export const Button = ({
     secondary: 'bg-app-surface text-app-text-muted border border-app-border',
     danger: 'bg-app-surface text-red-500 border border-red-500/60',
     ghost: 'bg-transparent text-app-text-muted border-none',
+    borderghost:
+      'bg-app-surface text-app-text-muted border border-text-app-text-muted/60',
   }
 
   const hoverVariants = {
@@ -48,6 +52,8 @@ export const Button = ({
     danger:
       'enabled:hover:bg-red-500/8 enabled:hover:text-red-600 enabled:hover:shadow-xs enabled:active:bg-red-500/12',
     ghost:
+      'enabled:hover:bg-app-hover enabled:hover:text-app-text enabled:active:bg-app-active',
+    borderghost:
       'enabled:hover:bg-app-hover enabled:hover:text-app-text enabled:active:bg-app-active',
   }
 
@@ -90,6 +96,7 @@ export const Button = ({
         className,
       )}
       {...props}
+      disabled={loading || props.disabled}
     >
       <AnimatePresence>
         {badge !== undefined && badge > 0 && (

@@ -127,7 +127,7 @@ export const ActionMenu = ({
                 }
               }}
               className={cn(
-                'group flex cursor-pointer items-center rounded-lg px-2.5 py-2 text-[13px] transition-colors duration-200 ease-out outline-none',
+                'group flex cursor-pointer items-center rounded-md px-2 py-1.5 text-[12px] transition-colors duration-200 ease-out outline-none',
                 itemJustify === 'between'
                   ? 'justify-between gap-4'
                   : 'justify-start gap-3',
@@ -175,8 +175,8 @@ export const ActionMenu = ({
   )
 
   const contentClassName = cn(
-    'bg-app-bg min-w-56 mx-2 overflow-hidden rounded-xl border border-app-border shadow-xl',
-    'p-1.5',
+    'bg-app-bg min-w-48 mx-1 overflow-hidden rounded-lg border border-app-border shadow-xl',
+    'p-1',
   )
 
   const TriggerNode = trigger || children
