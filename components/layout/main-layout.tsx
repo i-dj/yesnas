@@ -1,8 +1,8 @@
 'use client'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { ReactNode, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { FiSearch, FiUser } from 'react-icons/fi'
 import { menuGroups } from './menu'
@@ -14,14 +14,44 @@ import {
   KeyRound,
   LogOut,
   MessageCircleMore,
+  Upload,
 } from 'lucide-react'
-import { ActionMenu, ThemeToggle } from '../ui'
+import { ActionMenu, Button, SideDrawer, ThemeToggle, ToastStack } from '../ui'
+import { GlobalUpload } from './global-upload'
+import { useUploadStore } from '@/store/use-upload-store'
+import { useToastStore } from '@/store/use-toast-store'
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
   const tLayout = useTranslations('Layout')
   const tCommon = useTranslations('Common')
   const pathname = usePathname()
+  const router = useRouter()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [uploadDrawer, setUploadDrawer] = useState<boolean>(false)
+  const uploadFiles = useUploadStore((state) => state.files)
+  const clearCompletedUploads = useUploadStore((state) => state.clearCompleted)
+  const toasts = useToastStore((state) => state.toasts)
+  const removeToast = useToastStore((state) => state.remove)
+  const uploadFileList = Object.values(uploadFiles)
+  const lastRefreshedBatchRef = useRef<string>('')
+
+  const hasUploadingFiles = uploadFileList.some(
+    (file) => file.status === 'uploading',
+  )
+  const allUploadsCompleted =
+    uploadFileList.length > 0 &&
+    uploadFileList.every((file) => file.status === 'complete')
+
+  useEffect(() => {
+    if (!allUploadsCompleted) return
+    const batchKey = uploadFileList
+      .map((file) => file.id)
+      .sort()
+      .join('|')
+    if (!batchKey || lastRefreshedBatchRef.current === batchKey) return
+    lastRefreshedBatchRef.current = batchKey
+    router.refresh()
+  }, [allUploadsCompleted, router, uploadFileList])
   const pageTitle =
     menuGroups
       .flatMap((group) => group.sub)
@@ -200,6 +230,14 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                 className="bg-app-active/50 text-app-text w-full rounded-full border border-none px-10 py-1.5 text-sm focus:outline-none"
               />
             </div>
+            <div className="flex flex-col items-center">
+              <Button
+                icon={Upload}
+                variant="ghost"
+                iconClassName={hasUploadingFiles ? 'animate-pulse' : undefined}
+                onClick={() => setUploadDrawer(true)}
+              />
+            </div>
             <div className="ml-auto flex items-center gap-4">
               <ActionMenu
                 mode="left-click"
@@ -234,6 +272,28 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
           {children}
         </main>
       </div>
+
+      <SideDrawer
+        open={uploadDrawer}
+        onOpenChange={(open) => {
+          if (!open) {
+            const files = Object.values(uploadFiles)
+            const hasFiles = files.length > 0
+            const allCompleted =
+              hasFiles && files.every((file) => file.status === 'complete')
+            if (allCompleted) {
+              clearCompletedUploads()
+            }
+            router.refresh()
+          }
+          setUploadDrawer(open)
+        }}
+        title="Upload"
+      >
+        <GlobalUpload />
+      </SideDrawer>
+
+      <ToastStack toasts={toasts} onClose={removeToast} />
     </div>
   )
 }

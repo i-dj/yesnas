@@ -45,6 +45,22 @@ export function SideDrawer({
     return () => window.clearTimeout(timer)
   }, [open, onAfterOpen])
 
+  useEffect(() => {
+    if (!open) return
+
+    const { body, documentElement } = document
+    const prevBodyOverflow = body.style.overflow
+    const prevHtmlOverflow = documentElement.style.overflow
+
+    body.style.overflow = 'hidden'
+    documentElement.style.overflow = 'hidden'
+
+    return () => {
+      body.style.overflow = prevBodyOverflow
+      documentElement.style.overflow = prevHtmlOverflow
+    }
+  }, [open])
+
   if (!mounted) return null
 
   return createPortal(
@@ -85,7 +101,7 @@ export function SideDrawer({
 
         <div
           className={cn(
-            'min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-4 [scrollbar-gutter:stable]',
+            'min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-4 [scrollbar-gutter:stable] [overscroll-behavior:contain]',
             className,
           )}
         >

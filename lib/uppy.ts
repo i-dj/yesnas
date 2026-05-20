@@ -1,6 +1,9 @@
 import Uppy from '@uppy/core'
 import Tus from '@uppy/tus'
 
+const TUS_ENDPOINT = 'http://yesnas:8080/api/v1/uploads/tus'
+const TUS_CHUNK_SIZE = 1 * 1024 * 1024
+
 // Keep a single Uppy instance for the entire app lifecycle
 export const uppy = new Uppy({
   id: 'main-uploader',
@@ -10,7 +13,9 @@ export const uppy = new Uppy({
     maxFileSize: 1024 * 1024 * 1000 * 100, // Limit uploads to 100 GB
   },
 }).use(Tus, {
-  endpoint: 'https://tusd.tusdemo.net/files/', // Replace with the real Tus backend endpoint
-  retryDelays: [0, 1000, 3000, 5000],
-  chunkSize: 5 * 1024 * 1024, // 5 MB chunks
+  endpoint: TUS_ENDPOINT,
+  limit: 1,
+  retryDelays: [0, 1000, 3000, 5000, 10000, 20000, 30000],
+  chunkSize: TUS_CHUNK_SIZE,
+  removeFingerprintOnSuccess: true,
 })

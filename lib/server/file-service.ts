@@ -10,7 +10,14 @@ import {
   getTrashFilesUrl,
 } from '@/lib/file-api'
 import { StorageDrive } from '@/types' // Assumes StorageDrive is exported from the shared types module
-import { DiskModel, StoragePoolModel } from '@/types/models/storage'
+import {
+  CreateStoragePoolPayload,
+  CreateStoragePoolSnapshotPayload,
+  DiskModel,
+  ReplaceStoragePoolDevicePayload,
+  RestoreStoragePoolSnapshotPayload,
+  StoragePoolModel,
+} from '@/types/models/storage'
 import { BreadcrumbItem, FileNode } from '@nextdj/file-explorer'
 
 /**
@@ -24,11 +31,18 @@ export async function getAllStorages(): Promise<StorageDrive[]> {
   return res.json()
 }
 
-export interface CreateStoragePoolPayload {
-  name: string
-  raidLevel: string
-  paths: string[]
-  cacheDiskPaths?: string[]
+const parseErrorMessage = (raw: string, fallback: string) => {
+  if (!raw) return fallback
+  try {
+    const parsed = JSON.parse(raw) as {
+      message?: string
+      error?: string
+      code?: string
+    }
+    return parsed.message || parsed.error || parsed.code || raw
+  } catch {
+    return raw
+  }
 }
 
 export async function getDisks(): Promise<DiskModel[]> {
@@ -60,7 +74,9 @@ export async function createStoragePool(payload: CreateStoragePoolPayload) {
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(text || `Create storage pool failed: ${res.status}`)
+    throw new Error(
+      parseErrorMessage(text, `Create storage pool failed: ${res.status}`),
+    )
   }
 
   return res
@@ -73,7 +89,132 @@ export async function deleteStoragePool(poolId: string) {
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(text || `Delete storage pool failed: ${res.status}`)
+    throw new Error(
+      parseErrorMessage(text, `Delete storage pool failed: ${res.status}`),
+    )
+  }
+
+  return res
+}
+
+export async function createStoragePoolSnapshot(
+  poolId: string,
+  payload: CreateStoragePoolSnapshotPayload,
+) {
+  const res = await fetch(`${getStoragePoolsUrl()}/${poolId}/snapshots`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: payload.name,
+      sourcePath: payload.sourcePath ?? '',
+      description: payload.description ?? '',
+      readOnly: payload.readOnly ?? true,
+    }),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(
+      parseErrorMessage(text, `Create snapshot failed: ${res.status}`),
+    )
+  }
+
+  return res
+}
+
+export interface RestoreStoragePoolSnapshotResponse {
+  id: string
+  restored: boolean
+  name?: string
+  targetPath?: string
+  backupPath?: string
+}
+
+export async function restoreStoragePoolSnapshot(
+  poolId: string,
+  snapshotId: string,
+  payload: RestoreStoragePoolSnapshotPayload,
+): Promise<RestoreStoragePoolSnapshotResponse> {
+  const res = await fetch(
+    `${getStoragePoolsUrl()}/${poolId}/snapshots/${snapshotId}/restore`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        password: payload.password,
+        createBackup: payload.createBackup ?? true,
+      }),
+    },
+  )
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(
+      parseErrorMessage(text, `Restore snapshot failed: ${res.status}`),
+    )
+  }
+
+  return res.json()
+}
+
+export interface FormatStoragePoolPayload {
+  password: string
+}
+
+export interface FormatStoragePoolResponse {
+  id: string
+  formatted: boolean
+  formattedAt?: string
+  pool?: StoragePoolModel
+}
+
+export async function formatStoragePool(
+  poolId: string,
+  payload: FormatStoragePoolPayload,
+): Promise<FormatStoragePoolResponse> {
+  const res = await fetch(`${getStoragePoolsUrl()}/${poolId}/format`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(
+      parseErrorMessage(text, `Format pool failed: ${res.status}`),
+    )
+  }
+
+  return res.json()
+}
+
+export async function replaceStoragePoolDevice(
+  poolId: string,
+  payload: ReplaceStoragePoolDevicePayload,
+) {
+  const res = await fetch(`${getStoragePoolsUrl()}/${poolId}/devices/replace`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      password: payload.password,
+      oldDevicePath: payload.oldDevicePath,
+      newDevicePath: payload.newDevicePath,
+    }),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(
+      parseErrorMessage(text, `Replace pool device failed: ${res.status}`),
+    )
   }
 
   return res

@@ -1,4 +1,5 @@
-import { Card } from '@/components/ui'
+'use client'
+import { Button, Card } from '@/components/ui'
 import { useTranslations } from 'next-intl'
 
 import {
@@ -7,12 +8,21 @@ import {
   NetworkFlowChart,
   Speedometer,
 } from './components'
+import { toast } from '@/store/use-toast-store'
+import { useEffect } from 'react'
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard')
-
+  useEffect(() => {
+    toast.error(
+      'System already!',
+      'generated path name already exists for pool name: 匹配',
+      33333,
+    )
+  }, [])
   return (
     <div className="flex flex-col gap-3 pt-10">
+      <Button>Test toast</Button>
       {/* Main content area */}
       <div className="flex h-auto flex-col gap-4 lg:h-[25rem] lg:flex-row">
         {/* Main chart section */}
@@ -79,8 +89,14 @@ export default function DashboardPage() {
           items={[
             { label: t('systemInfo.os'), value: 'Ubuntu 23.99' },
             { label: t('systemInfo.version'), value: 'V1.002' },
-            { label: t('systemInfo.uptime'), value: t('systemInfo.uptimeValue') },
-            { label: t('systemInfo.lastBoot'), value: t('systemInfo.lastBootValue') },
+            {
+              label: t('systemInfo.uptime'),
+              value: t('systemInfo.uptimeValue'),
+            },
+            {
+              label: t('systemInfo.lastBoot'),
+              value: t('systemInfo.lastBootValue'),
+            },
             { label: t('systemInfo.ipAddress'), value: '192.168.11.21' },
           ]}
         />
@@ -91,9 +107,18 @@ export default function DashboardPage() {
           items={[
             { label: t('hardwareInfo.cpu'), value: 'AMD 5900X3D' },
             { label: t('hardwareInfo.gpu'), value: 'GeFoce 5900' },
-            { label: t('hardwareInfo.motherboard'), value: t('hardwareInfo.motherboardValue') },
-            { label: t('hardwareInfo.systemDisk'), value: t('hardwareInfo.systemDiskValue') },
-            { label: t('hardwareInfo.memory'), value: t('hardwareInfo.memoryValue') },
+            {
+              label: t('hardwareInfo.motherboard'),
+              value: t('hardwareInfo.motherboardValue'),
+            },
+            {
+              label: t('hardwareInfo.systemDisk'),
+              value: t('hardwareInfo.systemDiskValue'),
+            },
+            {
+              label: t('hardwareInfo.memory'),
+              value: t('hardwareInfo.memoryValue'),
+            },
           ]}
         />
       </div>

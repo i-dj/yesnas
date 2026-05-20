@@ -17,24 +17,17 @@ interface UseSseResult<T> {
   error: Event | null
 }
 
-const defaultParser = <T,>(raw: string) => raw as T
+const defaultParser = <T>(raw: string) => raw as T
 
-export function useSse<T = string>(
-  url: string | null,
-  options: UseSseOptions<T> = {},
-): UseSseResult<T> {
-  const {
-    event = 'message',
-    enabled = true,
-    parser = defaultParser,
-    onMessage,
-  } = options
+export function useSse<T = string>(url: string | null, options: UseSseOptions<T> = {}): UseSseResult<T> {
+  const { event = 'message', enabled = true, parser = defaultParser, onMessage } = options
 
   const [data, setData] = useState<T | null>(null)
   const [status, setStatus] = useState<UseSseStatus>('idle')
   const [error, setError] = useState<Event | null>(null)
   const parserRef = useRef(parser)
   const onMessageRef = useRef(onMessage)
+  const lastRawRef = useRef<string | null>(null)
 
   useEffect(() => {
     parserRef.current = parser
@@ -55,6 +48,8 @@ export function useSse<T = string>(
     setError(null)
 
     const handleMessage = (messageEvent: MessageEvent<string>) => {
+      if (messageEvent.data === lastRawRef.current) return
+      lastRawRef.current = messageEvent.data
       try {
         const nextData = parserRef.current(messageEvent.data)
         setData(nextData)

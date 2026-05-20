@@ -7,7 +7,7 @@ import {
   type FileNode,
 } from '@nextdj/file-explorer'
 import { useRouter } from 'next/navigation'
-import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
 
 interface FilesClientProps {
   storage: StorageDrive
@@ -16,7 +16,11 @@ interface FilesClientProps {
 
 export function FilesClient({ storage, initialData }: FilesClientProps) {
   const router = useRouter()
-  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const navigateToFolder = (parentId?: string) => {
     const url = parentId
@@ -34,6 +38,10 @@ export function FilesClient({ storage, initialData }: FilesClientProps) {
     navigateToFolder(folder.id)
   }
 
+  if (!mounted) {
+    return null
+  }
+
   return (
     <FileExplorer
       data={initialData}
@@ -44,7 +52,7 @@ export function FilesClient({ storage, initialData }: FilesClientProps) {
       lang="zh-CN"
       defaultViewMode="grid"
       fontSize="sm"
-      theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+      theme="auto"
       onOpen={handleOpenFile}
       onOpenFolder={handleOpenFolder}
       onNavigateBreadcrumb={(item) => {

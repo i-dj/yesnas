@@ -131,7 +131,7 @@ export const bytesFormat = (
   if (bytes === 0) return '0 B' // Special-case zero
   if (isNaN(bytes) || bytes < 0) return '--'
 
-  const { standard = 's', decimalPlaces = 2 } = options
+  const { standard = 'm', decimalPlaces = 2 } = options
   const base = standard === 's' ? 1024 : 1000
 
   const symbols =
@@ -266,7 +266,7 @@ export function formatDateTime(
   const month = d.getMonth() + 1
   const day = d.getDate()
 
-  const hours = d.getHours()
+  const hours = d.getHours().toString().padStart(2, '0')
   // Pad minutes and seconds to two digits
   const minutes = d.getMinutes().toString().padStart(2, '0')
   const seconds = d.getSeconds().toString().padStart(2, '0')
@@ -299,4 +299,17 @@ export function getProgressColorClass(value: number): string {
     : value >= 70
       ? 'bg-yellow-500'
       : 'bg-blue-500'
+}
+
+export function formatUsagePercent(
+  usedBytes: number,
+  totalBytes: number,
+  raw: number,
+): string {
+  if (!Number.isFinite(raw) || raw <= 0) {
+    return usedBytes > 0 && totalBytes > 0 ? '1%' : '0%'
+  }
+  const rounded = Math.round(raw)
+  if (rounded <= 0 && usedBytes > 0 && totalBytes > 0) return '1%'
+  return `${rounded}%`
 }

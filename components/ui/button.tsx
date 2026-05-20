@@ -4,11 +4,12 @@ import { cn } from '@/lib/utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Trash2, LucideIcon } from 'lucide-react'
 import { IconType } from 'react-icons'
-import * as Tooltip from '@radix-ui/react-tooltip'
+import { Tooltip } from './tooltip'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: IconType | LucideIcon
   iconSize?: number
+  iconClassName?: string
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'borderghost'
   size?: 'xs' | 'sm' | 'md' | 'lg'
   isDelete?: boolean
@@ -22,6 +23,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = ({
   icon: Icon,
   iconSize: providedIconSize,
+  iconClassName,
   variant = 'primary',
   size = 'md',
   isDelete = false,
@@ -119,7 +121,7 @@ export const Button = ({
       </AnimatePresence>
 
       {FinalIcon && (
-        <FinalIcon size={finalIconSize} className={cn('shrink-0')} />
+        <FinalIcon size={finalIconSize} className={cn('shrink-0', iconClassName)} />
       )}
       {children && <span>{children}</span>}
     </button>
@@ -128,21 +130,8 @@ export const Button = ({
   if (!tip) return ButtonElement
 
   return (
-    <Tooltip.Provider delayDuration={200}>
-      <Tooltip.Root>
-        <Tooltip.Trigger asChild>{ButtonElement}</Tooltip.Trigger>
-        <Tooltip.Portal>
-          <Tooltip.Content
-            side="bottom"
-            align="center"
-            sideOffset={5}
-            className="animate-in fade-in zoom-in z-100 rounded-md bg-gray-700 px-3 py-1.5 text-xs font-medium text-white duration-200"
-          >
-            {tip}
-            <Tooltip.Arrow className="fill-gray-700" />
-          </Tooltip.Content>
-        </Tooltip.Portal>
-      </Tooltip.Root>
-    </Tooltip.Provider>
+    <Tooltip content={tip} side="bottom" sideOffset={6}>
+      {ButtonElement}
+    </Tooltip>
   )
 }

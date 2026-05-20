@@ -4,27 +4,73 @@ import {
   DataTableHeader,
   MoreButton,
   Progress,
+  StatusPill,
+  Tooltip,
 } from '@/components/ui'
-import { bytesFormat, getProgressColorClass } from '@/lib/utils'
+import { bytesFormat, formatUsagePercent, getProgressColorClass } from '@/lib/utils'
 import { StoragePoolModel } from '@/types/models/storage'
-import {
-  AlertCircle,
-  ArrowDown,
-  ArrowUp,
-  Camera,
-  Check,
-  Eye,
-  Gauge,
-  Layers,
-  Trash2,
-  Wrench,
-} from 'lucide-react'
+import { AlertCircle, ArrowDown, ArrowUp, Camera, Check, Eye, Gauge, Layers, Trash2, Wrench } from 'lucide-react'
 
 export const getStoragePoolColumns = (
   onOpenDetails: (pool: StoragePoolModel) => void,
   onRequestDelete: (pool: StoragePoolModel) => void,
   onRequestBenchmark: (pool: StoragePoolModel) => void,
+  onRequestSnapshot: (pool: StoragePoolModel) => void,
+  onRequestFormat: (pool: StoragePoolModel) => void,
 ): DataTableHeader<StoragePoolModel>[] => {
+  const getPoolCondition = (pool: StoragePoolModel) => {
+    const members = pool.devices ?? []
+    const states = members.map((device) => String(device.state || '').toUpperCase())
+    const hasOffline = states.includes('OFFLINE')
+    const hasDegraded = states.includes('DEGRADED')
+    const hasRebuilding = states.includes('REBUILDING') || states.includes('RESYNCING')
+    const hasRiskHealth = members.some((device) => {
+      const health = String(device.health || '').toLowerCase()
+      return health === 'failed' || health === 'fail' || health === 'warning' || health === 'critical'
+    })
+
+    if (hasOffline) {
+      return {
+        label: 'WARNING',
+        detail: '部分磁盘离线',
+        color: 'danger' as const,
+      }
+    }
+    if (hasDegraded || String(pool.status || '').toLowerCase() === 'degraded') {
+      return {
+        label: 'WARNING',
+        detail: '部分磁盘异常',
+        color: 'warning' as const,
+      }
+    }
+    if (hasRebuilding) {
+      return {
+        label: 'WARNING',
+        detail: '磁盘正在重建/同步中',
+        color: 'warning' as const,
+      }
+    }
+    if (hasRiskHealth) {
+      return {
+        label: 'WARNING',
+        detail: '检测到磁盘健康告警',
+        color: 'warning' as const,
+      }
+    }
+    if (String(pool.health || '').toLowerCase() === 'healthy') {
+      return {
+        label: 'HEALTHY',
+        detail: '所有磁盘状态正常',
+        color: 'success' as const,
+      }
+    }
+    return {
+      label: 'UNKNOWN',
+      detail: '状态未知',
+      color: 'neutral' as const,
+    }
+  }
+
   const makeLabel = (title: string, desc: string) => (
     <span className="leading-tight">
       <span className="block text-[12px] font-medium">{title}</span>
@@ -77,11 +123,7 @@ export const getStoragePoolColumns = (
                   : 'absolute -right-1 -bottom-0.5 z-20 inline-flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-white'
               }
             >
-              {healthy ? (
-                <Check className="h-2.5 w-2.5" />
-              ) : (
-                <AlertCircle className="h-2.5 w-2.5" />
-              )}
+              {healthy ? <Check className="h-2.5 w-2.5" /> : <AlertCircle className="h-2.5 w-2.5" />}
             </span>
           </div>
         )
@@ -105,19 +147,25 @@ export const getStoragePoolColumns = (
       width: '250px',
 
       render: (value, record) => {
+        const rawPercent = Number(value) || 0
+        const showPercent = formatUsagePercent(record.usedBytes ?? 0, record.totalBytes ?? 0, rawPercent)
+        const barPercent = record.usedBytes > 0 && rawPercent < 1 ? 1 : Math.max(0, rawPercent)
         return (
           <div className="space-y-px pr-20">
-            <Progress
-              value={value}
-              showLabel={false}
-              className={getProgressColorClass(value)}
-            />
+            <Progress value={barPercent} showLabel={false} className={getProgressColorClass(barPercent)} />
             <div className="text-app-text-muted flex justify-between text-[10px] font-semibold tracking-tighter uppercase">
               <span>
-                {bytesFormat(record.usedBytes ?? 0, { standard: 'm', decimalPlaces: 2 })} /{' '}
-                {bytesFormat(record.totalBytes ?? 0, { standard: 'm', decimalPlaces: 2 })}
+                {bytesFormat(record.usedBytes ?? 0, {
+                  standard: 'm',
+                  decimalPlaces: 2,
+                })}{' '}
+                /{' '}
+                {bytesFormat(record.totalBytes ?? 0, {
+                  standard: 'm',
+                  decimalPlaces: 0,
+                })}
               </span>
-              <span>{value}%</span>
+              <span>{showPercent} </span>
             </div>
           </div>
         )
@@ -134,7 +182,10 @@ export const getStoragePoolColumns = (
             <span className="uppercase">Read</span>
             <span className="text-app-text ml-auto">
               {record.readSpeedBytesPerSec
-                ? `${bytesFormat(record.readSpeedBytesPerSec, { standard: 'm', decimalPlaces: 2 })}/s`
+                ? `${bytesFormat(record.readSpeedBytesPerSec, {
+                    standard: 'm',
+                    decimalPlaces: 0,
+                  })}/s`
                 : '-'}
             </span>
           </div>
@@ -143,7 +194,10 @@ export const getStoragePoolColumns = (
             <span className="uppercase">Write</span>
             <span className="text-app-text ml-auto">
               {record.writeSpeedBytesPerSec
-                ? `${bytesFormat(record.writeSpeedBytesPerSec, { standard: 'm', decimalPlaces: 2 })}/s`
+                ? `${bytesFormat(record.writeSpeedBytesPerSec, {
+                    standard: 'm',
+                    decimalPlaces: 0,
+                  })}/s`
                 : '-'}
             </span>
           </div>
@@ -172,6 +226,21 @@ export const getStoragePoolColumns = (
       ),
     },
     {
+      key: '__condition__',
+      label: 'condition',
+      width: '200px',
+      render: (_, record) => {
+        const condition = getPoolCondition(record)
+        return (
+          <div className="space-y-1">
+            <Tooltip content={condition.detail}>
+              <StatusPill color={condition.color} content={condition.label} />
+            </Tooltip>
+          </div>
+        )
+      },
+    },
+    {
       key: '__actions__',
       label: '',
       width: '56px',
@@ -190,11 +259,11 @@ export const getStoragePoolColumns = (
               return
             }
             if (action === 'format') {
-              console.log('format pool:', record.id)
+              onRequestFormat(record)
               return
             }
             if (action === 'snapshot') {
-              console.log('create snapshot pool:', record.id)
+              onRequestSnapshot(record)
               return
             }
             if (action === 'delete') {

@@ -26,6 +26,7 @@
   --color-app-active: var(--app-active);
 }
 
+
 @layer base {
   /* Light theme */
   :root {

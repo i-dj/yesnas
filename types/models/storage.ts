@@ -74,6 +74,7 @@ export interface StoragePoolModel {
   id: string
   storageId: string
   name: string
+  kind?: 'local' | 'cloud' | string
   filesystem: string
   raidLevel: string
   mountPath: string
@@ -87,6 +88,8 @@ export interface StoragePoolModel {
       devicePath: string
       deviceName: string
       deviceRole: string
+      state?: string
+      health?: string
     }
   >
   status: string
@@ -102,7 +105,49 @@ export interface StoragePoolModel {
   metadataProfile: string
   systemProfile: string
   snapshotCount: number
-  snapshots: unknown[]
+  snapshots: StoragePoolSnapshotModel[]
   warnings: string[]
   lastCheckedAt: string
+}
+
+export interface StoragePoolSnapshotModel {
+  id: string
+  systemSnapshotId?: number
+  systemGeneration?: number
+  path: string
+  name: string
+  sourcePath?: string
+  sizeBytes: number
+  description?: string
+  createdBy?: string
+  createdAt: string
+  updatedAt?: string
+  isReadOnly?: boolean
+  readOnly?: boolean
+  registered?: boolean
+}
+
+export interface CreateStoragePoolPayload {
+  name: string
+  raidLevel: string
+  paths: string[]
+  cacheDiskPaths?: string[]
+}
+
+export interface CreateStoragePoolSnapshotPayload {
+  name: string
+  sourcePath?: string
+  description?: string
+  readOnly?: boolean
+}
+
+export interface RestoreStoragePoolSnapshotPayload {
+  password: string
+  createBackup?: boolean
+}
+
+export interface ReplaceStoragePoolDevicePayload {
+  password: string
+  oldDevicePath: string
+  newDevicePath: string
 }

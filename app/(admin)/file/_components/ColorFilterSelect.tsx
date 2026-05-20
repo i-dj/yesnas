@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import * as Popover from '@radix-ui/react-popover'
 import { Check, ChevronDown } from 'lucide-react'
@@ -24,6 +24,11 @@ export const ColorFilterSelect = ({
 }: ColorFilterSelectProps) => {
   const t = useTranslations('File.filters')
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const colorOptions = useMemo(
     () =>
@@ -87,7 +92,20 @@ export const ColorFilterSelect = ({
             <ColorTags colors={displayColors} size={12} className="mr-0.5" />
             <span className="max-w-23 truncate font-medium">{label}</span>
           </button>
-          <Popover.Trigger asChild>
+          {mounted ? (
+            <Popover.Trigger asChild>
+              <button
+                type="button"
+                aria-label={t('openTagFilter')}
+                className="flex items-center border-l border-current/15 px-3 outline-none"
+              >
+                <ChevronDown
+                  size={16}
+                  className={cn('transition-transform', open && 'rotate-180')}
+                />
+              </button>
+            </Popover.Trigger>
+          ) : (
             <button
               type="button"
               aria-label={t('openTagFilter')}
@@ -98,7 +116,7 @@ export const ColorFilterSelect = ({
                 className={cn('transition-transform', open && 'rotate-180')}
               />
             </button>
-          </Popover.Trigger>
+          )}
         </div>
       </Popover.Anchor>
 

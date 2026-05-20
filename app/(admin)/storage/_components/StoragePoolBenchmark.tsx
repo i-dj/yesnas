@@ -82,7 +82,7 @@ export function StoragePoolBenchmark({
     <SideDrawer open={open} onOpenChange={onOpenChange} title={'Benchmark'}>
       {!pool ? null : (
         <div className="space-y-8 pb-4">
-          <div className="bg-app-surface border-app-border rounded-lg border p-3">
+          <div className=" ">
             <div className="text-app-text text-sm font-semibold">
               {pool.name}
             </div>
@@ -97,8 +97,15 @@ export function StoragePoolBenchmark({
               />{' '}
               <div className="text-app-text-muted flex items-center justify-between text-xs">
                 <span>
-                  {bytesFormat(pool.usedBytes ?? 0, { standard: 'm', decimalPlaces: 2 })} /{' '}
-                  {bytesFormat(pool.totalBytes ?? 0, { standard: 'm', decimalPlaces: 2 })}
+                  {bytesFormat(pool.usedBytes ?? 0, {
+                    standard: 'm',
+                    decimalPlaces: 2,
+                  })}{' '}
+                  /{' '}
+                  {bytesFormat(pool.totalBytes ?? 0, {
+                    standard: 'm',
+                    decimalPlaces: 2,
+                  })}
                 </span>
                 <span>{Math.round(usedPercent)}%</span>
               </div>
@@ -167,8 +174,15 @@ export function StoragePoolBenchmark({
             />
             <div className="text-app-text-muted flex items-center justify-between text-xs">
               <span>
-                {bytesFormat(state.completedBytes, { standard: 'm', decimalPlaces: 2 })} /{' '}
-                {bytesFormat(state.totalBytes, { standard: 'm', decimalPlaces: 2 })}{' '}
+                {bytesFormat(state.completedBytes, {
+                  standard: 'm',
+                  decimalPlaces: 2,
+                })}{' '}
+                /{' '}
+                {bytesFormat(state.totalBytes, {
+                  standard: 'm',
+                  decimalPlaces: 2,
+                })}{' '}
                 <span>({Math.round(progressPercent)}%)</span>
               </span>
               <span>
@@ -196,26 +210,30 @@ export function StoragePoolBenchmark({
               <div className="text-app-text text-xs font-semibold uppercase">
                 Final Result
               </div>
-                <div className="text-app-text-muted mt-2 text-xs">
-                  Read:{' '}
-                  {state.readSpeedBytesPerSec || pool.readSpeedBytesPerSec
-                    ? `${bytesFormat(
-                        (state.readSpeedBytesPerSec || pool.readSpeedBytesPerSec) ?? 0,
-                        { standard: 'm', decimalPlaces: 2 },
-                      )}/s`
-                    : '-'}
-                </div>
-                <div className="text-app-text-muted text-xs">
-                  Write:{' '}
-                  {state.writeSpeedBytesPerSec || pool.writeSpeedBytesPerSec
-                    ? `${bytesFormat(
-                        (state.writeSpeedBytesPerSec || pool.writeSpeedBytesPerSec) ?? 0,
-                        { standard: 'm', decimalPlaces: 2 },
-                      )}/s`
-                    : '-'}
-                </div>
+              <div className="text-app-text-muted mt-2 text-xs">
+                Read:{' '}
+                {state.readSpeedBytesPerSec || pool.readSpeedBytesPerSec
+                  ? `${bytesFormat(
+                      (state.readSpeedBytesPerSec ||
+                        pool.readSpeedBytesPerSec) ??
+                        0,
+                      { standard: 'm', decimalPlaces: 2 },
+                    )}/s`
+                  : '-'}
               </div>
-            ) : null}
+              <div className="text-app-text-muted text-xs">
+                Write:{' '}
+                {state.writeSpeedBytesPerSec || pool.writeSpeedBytesPerSec
+                  ? `${bytesFormat(
+                      (state.writeSpeedBytesPerSec ||
+                        pool.writeSpeedBytesPerSec) ??
+                        0,
+                      { standard: 'm', decimalPlaces: 2 },
+                    )}/s`
+                  : '-'}
+              </div>
+            </div>
+          ) : null}
 
           <div className="flex justify-end">
             {state.running ? (
