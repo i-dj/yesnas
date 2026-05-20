@@ -36,6 +36,7 @@ yarn-error.log*
 
 # local server workspace
 /nas-server/
+/uploads/
 ._*
 # vercel
 .vercel
