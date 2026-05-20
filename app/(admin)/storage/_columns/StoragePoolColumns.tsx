@@ -136,7 +136,8 @@ export const getStoragePoolColumns = (
         <div className="min-w-0">
           <div className="truncate font-semibold">{value}</div>
           <div className="text-app-text-muted mt-0.5 truncate text-xs uppercase">
-            {record.raidLevel} · {record.filesystem}
+            {record.kind === 'local' ? record.raidLevel + ' · ' : ''}
+            {record.filesystem}
           </div>
         </div>
       ),
@@ -156,13 +157,13 @@ export const getStoragePoolColumns = (
             <div className="text-app-text-muted flex justify-between text-[10px] font-semibold tracking-tighter uppercase">
               <span>
                 {bytesFormat(record.usedBytes ?? 0, {
-                  standard: 'm',
+                  standard: 's',
                   decimalPlaces: 2,
                 })}{' '}
                 /{' '}
                 {bytesFormat(record.totalBytes ?? 0, {
-                  standard: 'm',
-                  decimalPlaces: 0,
+                  standard: 's',
+                  decimalPlaces: 2,
                 })}
               </span>
               <span>{showPercent} </span>
@@ -210,7 +211,7 @@ export const getStoragePoolColumns = (
       label: 'devices',
       render: (value, record) => (
         <div className="flex flex-col gap-1 text-center">
-          <span className="uppercase">{record.devices.length}</span>
+          <span className="uppercase">{record.kind === 'local' ? record.devices.length : '-'}</span>
           <span className="text-app-text-muted text-xs">Disks</span>
         </div>
       ),
@@ -220,7 +221,7 @@ export const getStoragePoolColumns = (
       label: 'snapshotCount',
       render: (value, record) => (
         <div className="flex flex-col gap-1 text-center">
-          <span className="uppercase">{record.snapshotCount}</span>
+          <span className="uppercase">{record.kind === 'local' ? record.snapshotCount : '-'}</span>
           <span className="text-app-text-muted text-xs">Snapshot</span>
         </div>
       ),

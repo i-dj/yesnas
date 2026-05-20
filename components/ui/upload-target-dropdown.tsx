@@ -10,7 +10,7 @@ import { Input } from './input'
 import { toast } from '@/store/use-toast-store'
 
 export interface UploadTargetValue {
-  storageId: string
+  storagePoolId: string
   folderId: string
   pathNames: string[]
 }
@@ -54,6 +54,13 @@ const getPoolStorageId = (pool: StoragePoolModel) => pool.storageId || pool.id
 const findPoolByTargetId = (pools: StoragePoolModel[], id: string) =>
   pools.find((pool) => pool.id === id || getPoolStorageId(pool) === id)
 
+const getPoolAvailableBytes = (pool: StoragePoolModel) => {
+  if (pool.totalBytes > 0 && pool.usedBytes >= 0) {
+    return Math.max(pool.totalBytes - pool.usedBytes, 0)
+  }
+  return pool.freeBytes ?? 0
+}
+
 export function UploadTargetDropdown({ storagePools, value, onChange, onError }: UploadTargetDropdownProps) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [preparingPicker, setPreparingPicker] = useState(false)
@@ -64,8 +71,8 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
   const [createName, setCreateName] = useState('')
   const treeListRef = useRef<HTMLDivElement | null>(null)
 
-  const selectedPool = useMemo(() => findPoolByTargetId(storagePools, value.storageId), [storagePools, value.storageId])
-  const selectedStorageId = selectedPool ? getPoolStorageId(selectedPool) : value.storageId
+  const selectedPool = useMemo(() => findPoolByTargetId(storagePools, value.storagePoolId), [storagePools, value.storagePoolId])
+  const selectedStorageId = selectedPool ? getPoolStorageId(selectedPool) : value.storagePoolId
 
   const targetText = selectedPool
     ? value.pathNames.length > 0
@@ -80,32 +87,37 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
     try {
       const raw = window.localStorage.getItem(DEFAULT_UPLOAD_TARGET_KEY)
       if (!raw) return
-      const parsed = JSON.parse(raw) as UploadTargetValue
-      if (!parsed?.storageId) return
-      defaultRawRef.current = parsed
-      onChange(parsed)
+      const parsed = JSON.parse(raw) as UploadTargetValue & { storageId?: string }
+      const storagePoolId = parsed.storagePoolId || parsed.storageId || ''
+      if (!storagePoolId) return
+      const normalized = {
+        storagePoolId,
+        folderId: parsed.folderId || '',
+        pathNames: parsed.pathNames || [],
+      }
+      defaultRawRef.current = normalized
+      onChange(normalized)
     } catch {
       defaultRawRef.current = null
     }
   }, [onChange])
 
   useEffect(() => {
-    if (!value.storageId) return
+    if (!value.storagePoolId) return
     if (storagePools.length === 0) return
-    const pool = findPoolByTargetId(storagePools, value.storageId)
+    const pool = findPoolByTargetId(storagePools, value.storagePoolId)
     if (pool) {
-      const storageId = getPoolStorageId(pool)
-      if (storageId !== value.storageId) {
-        if (defaultRawRef.current?.storageId === value.storageId) {
+      if (pool.id !== value.storagePoolId) {
+        if (defaultRawRef.current?.storagePoolId === value.storagePoolId) {
           const normalizedDefault = {
             ...defaultRawRef.current,
-            storageId,
+            storagePoolId: pool.id,
           }
           defaultRawRef.current = normalizedDefault
           window.localStorage.setItem(DEFAULT_UPLOAD_TARGET_KEY, JSON.stringify(normalizedDefault))
         }
         onChange({
-          storageId,
+          storagePoolId: pool.id,
           folderId: value.folderId,
           pathNames: value.pathNames,
         })
@@ -113,13 +125,13 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
       return
     }
     onError?.(null)
-    onChange({ storageId: '', folderId: '', pathNames: [] })
-  }, [onChange, onError, storagePools, value.folderId, value.pathNames, value.storageId])
+    onChange({ storagePoolId: '', folderId: '', pathNames: [] })
+  }, [onChange, onError, storagePools, value.folderId, value.pathNames, value.storagePoolId])
 
   const isSameAsDefault =
-    defaultRawRef.current?.storageId === selectedStorageId &&
+    defaultRawRef.current?.storagePoolId === value.storagePoolId &&
     (defaultRawRef.current?.folderId || '') === (value.folderId || '')
-  const canSetDefault = Boolean(selectedStorageId) && !isSameAsDefault
+  const canSetDefault = Boolean(value.storagePoolId) && !isSameAsDefault
 
   const buildPath = (input: FolderNode[], id: string) => {
     const byId = new Map(input.map((item) => [item.id, item]))
@@ -155,7 +167,7 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
         message.includes('存储节点不存在') || message.toLowerCase().includes('storage node not found')
       if (isMissingStorageNode) {
         onError?.(null)
-        onChange({ storageId: '', folderId: '', pathNames: [] })
+        onChange({ storagePoolId: '', folderId: '', pathNames: [] })
         return []
       }
       onError?.(message)
@@ -198,8 +210,9 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
     return { nodes: result, selectedId }
   }
 
-  const openPool = async (storageId: string) => {
-    onChange({ storageId, folderId: '', pathNames: [] })
+  const openPool = async (pool: StoragePoolModel) => {
+    const storageId = getPoolStorageId(pool)
+    onChange({ storagePoolId: pool.id, folderId: '', pathNames: [] })
     setLoadingFolders(true)
     const root = await loadFolders(storageId)
     setNodes(
@@ -280,10 +293,13 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
       const createdName = created.name || name
       setCreateParentId(null)
       setCreateName('')
-      await openPool(storageId)
+      const pool = findPoolByTargetId(storagePools, storageId)
+      if (pool) {
+        await openPool(pool)
+      }
       if (created.id) {
         onChange({
-          storageId,
+          storagePoolId: pool?.id || storageId,
           folderId: created.id,
           pathNames: [...fallback.map((v) => v.name), createdName],
         })
@@ -319,19 +335,19 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
           type="button"
           onClick={async () => {
             if (preparingPicker) return
-            if (!value.storageId && storagePools.length > 0) {
+            if (!value.storagePoolId && storagePools.length > 0) {
               onChange({
-                storageId: getPoolStorageId(storagePools[0]),
+                storagePoolId: storagePools[0].id,
                 folderId: '',
                 pathNames: [],
               })
             }
-            const currentPool = findPoolByTargetId(storagePools, value.storageId)
+            const currentPool = findPoolByTargetId(storagePools, value.storagePoolId)
             const fallbackPool = storagePools[0]
             const sid = currentPool ? getPoolStorageId(currentPool) : fallbackPool ? getPoolStorageId(fallbackPool) : ''
             if (!sid) return
-            if (!currentPool && value.storageId) {
-              onChange({ storageId: sid, folderId: '', pathNames: [] })
+            if (!currentPool && value.storagePoolId && fallbackPool) {
+              onChange({ storagePoolId: fallbackPool.id, folderId: '', pathNames: [] })
             }
             setPreparingPicker(true)
             setLoadingFolders(true)
@@ -340,7 +356,7 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
             setNodes(hydrated.nodes)
             if (hydrated.selectedId) {
               onChange({
-                storageId: sid,
+                storagePoolId: currentPool?.id || fallbackPool?.id || '',
                 folderId: hydrated.selectedId,
                 pathNames: path,
               })
@@ -370,7 +386,7 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
           onClick={() => {
             if (!canSetDefault) return
             const payload: UploadTargetValue = {
-              storageId: selectedStorageId,
+              storagePoolId: value.storagePoolId,
               folderId: value.folderId,
               pathNames: value.pathNames,
             }
@@ -393,26 +409,51 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
               <div ref={treeListRef} className="max-h-72 overflow-y-auto rounded-md p-1">
                 {storagePools.map((pool) => {
                   const poolStorageId = getPoolStorageId(pool)
+                  const availableBytes = getPoolAvailableBytes(pool)
                   const expanded = selectedPool?.id === pool.id
                   return (
                     <div key={pool.id} className="mb-1">
-                      <div className="group flex items-center gap-1 px-1 py-0.5">
+                      <div
+                        className="group hover:bg-app-hover/35 flex cursor-pointer items-center gap-1 rounded px-1 py-0.5"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          onChange({
+                            storagePoolId: pool.id,
+                            folderId: '',
+                            pathNames: [],
+                          })
+                          setPickerOpen(false)
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.nativeEvent.isComposing) return
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            onChange({
+                              storagePoolId: pool.id,
+                              folderId: '',
+                              pathNames: [],
+                            })
+                            setPickerOpen(false)
+                          }
+                        }}
+                      >
                         <button
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation()
                             if (expanded) {
                               onChange({
-                                storageId: '',
+                                storagePoolId: '',
                                 folderId: '',
                                 pathNames: [],
                               })
                               setNodes([])
                               return
                             }
-                            void openPool(poolStorageId)
+                            void openPool(pool)
                           }}
-                          className="text-app-text-muted hover:text-app-text hover:border-app-border hover:bg-app-bg inline-flex h-5 w-5 items-center justify-center rounded-sm border border-transparent transition-colors"
+                          className="text-app-text-muted hover:text-app-text hover:border-app-border hover:bg-app-bg inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-sm border border-transparent transition-colors"
                         >
                           {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                         </button>
@@ -421,26 +462,21 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
                           type="button"
                           onClick={() => {
                             onChange({
-                              storageId: poolStorageId,
+                              storagePoolId: pool.id,
                               folderId: '',
                               pathNames: [],
                             })
                             setPickerOpen(false)
                           }}
-                          className="text-app-text h-7 flex-1 rounded px-1.5 text-left text-sm"
+                          className="text-app-text h-7 flex-1 cursor-pointer rounded px-1.5 text-left text-sm"
                         >
                           <span className="flex items-center gap-2">
                             <span>{pool.name}</span>
                             <span className="text-app-text-muted text-[11px]">
-                              {bytesFormat(pool.freeBytes ?? 0, {
+                              {bytesFormat(availableBytes, {
                                 standard: 'm',
                                 decimalPlaces: 2,
                               })}{' '}
-                              /{' '}
-                              {bytesFormat(pool.totalBytes ?? 0, {
-                                standard: 'm',
-                                decimalPlaces: 0,
-                              })}
                             </span>
                           </span>
                         </button>
@@ -482,7 +518,7 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
                                   tabIndex={0}
                                   onClick={() => {
                                     onChange({
-                                      storageId: poolStorageId,
+                                      storagePoolId: pool.id,
                                       folderId: folder.id,
                                       pathNames: path.map((item) => item.name),
                                     })
@@ -493,7 +529,7 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
                                     if (e.key === 'Enter' || e.key === ' ') {
                                       e.preventDefault()
                                       onChange({
-                                        storageId: poolStorageId,
+                                        storagePoolId: pool.id,
                                         folderId: folder.id,
                                         pathNames: path.map((item) => item.name),
                                       })

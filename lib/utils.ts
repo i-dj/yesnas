@@ -21,11 +21,7 @@ export const cn = (...inputs: ClassValue[]): string => {
  * Natural sort helper.
  * Order: symbols > numbers > Latin letters > Chinese characters.
  */
-export function performSort<T>(
-  data: T[],
-  key: keyof T,
-  direction: SortDirection,
-): T[] {
+export function performSort<T>(data: T[], key: keyof T, direction: SortDirection): T[] {
   if (!direction) {
     return [...data]
   }
@@ -134,10 +130,7 @@ export const bytesFormat = (
   const { standard = 'm', decimalPlaces = 2 } = options
   const base = standard === 's' ? 1024 : 1000
 
-  const symbols =
-    standard === 's'
-      ? ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']
-      : ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+  const symbols = standard === 's' ? ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'] : ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
 
   if (bytes > 0 && bytes < 1) {
     return `${parseFloat(bytes.toFixed(decimalPlaces))} B`
@@ -171,9 +164,7 @@ export const hoursFormat = (totalHours: number): string => {
   const remainingDaysAfterMonths = remainingDaysAfterYears % DAYS_PER_MONTH
 
   const days = Math.floor(remainingDaysAfterMonths)
-  const remainingHours = Math.round(
-    (remainingDaysAfterMonths - days) * HOURS_PER_DAY,
-  )
+  const remainingHours = Math.round((remainingDaysAfterMonths - days) * HOURS_PER_DAY)
 
   const parts = []
   if (years > 0) parts.push(`${years}年`)
@@ -251,9 +242,7 @@ export const getNanoid = (len = 16): string => {
  * Formats a date like: 2023/2/2 22:11:33
  * @param dateStr Accepts a Date object, string, or timestamp
  */
-export function formatDateTime(
-  dateStr: Date | string | number | null | undefined,
-): string {
+export function formatDateTime(dateStr: Date | string | number | null | undefined): string {
   if (!dateStr) return '--'
 
   const d = new Date(dateStr)
@@ -294,22 +283,26 @@ export function encodeFilePath(path: string): string {
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 export function getProgressColorClass(value: number): string {
-  return value >= 90
-    ? 'bg-red-500'
-    : value >= 70
-      ? 'bg-yellow-500'
-      : 'bg-blue-500'
+  return value >= 90 ? 'bg-red-500' : value >= 70 ? 'bg-yellow-500' : 'bg-blue-500'
 }
 
-export function formatUsagePercent(
-  usedBytes: number,
-  totalBytes: number,
-  raw: number,
-): string {
+export function formatUsagePercent(usedBytes: number, totalBytes: number, raw: number): string {
   if (!Number.isFinite(raw) || raw <= 0) {
     return usedBytes > 0 && totalBytes > 0 ? '1%' : '0%'
   }
   const rounded = Math.round(raw)
   if (rounded <= 0 && usedBytes > 0 && totalBytes > 0) return '1%'
   return `${rounded}%`
+}
+export function calculateUsedPercent(usedBytes: number, totalBytes: number, minVisiblePercent = 1): number {
+  if (totalBytes <= 0) {
+    return 0
+  }
+  const rawPercent = (usedBytes / totalBytes) * 100
+
+  if (usedBytes > 0 && rawPercent < minVisiblePercent) {
+    return minVisiblePercent
+  }
+
+  return Math.min(100, Math.max(0, rawPercent))
 }

@@ -23,7 +23,7 @@ export const GlobalUpload = () => {
   const [storagePools, setStoragePools] = useState<StoragePoolModel[]>([])
   const [targetError, setTargetError] = useState<string | null>(null)
   const [target, setTarget] = useState<UploadTargetValue>({
-    storageId: '',
+    storagePoolId: '',
     folderId: '',
     pathNames: [],
   })
@@ -133,7 +133,7 @@ export const GlobalUpload = () => {
           source: 'global-upload',
           meta: {
             relativePath: (file as File & { webkitRelativePath?: string }).webkitRelativePath || '',
-            storageId: target.storageId,
+            storagePoolId: target.storagePoolId,
             parentId: target.folderId,
           },
         })
@@ -144,7 +144,7 @@ export const GlobalUpload = () => {
   }
 
   const uploadFiles = (files: File[]) => {
-    if (!target.storageId) {
+    if (!target.storagePoolId) {
       toast.error('Upload failed', 'Please select upload target.')
       return
     }

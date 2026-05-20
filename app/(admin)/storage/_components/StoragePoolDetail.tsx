@@ -1,32 +1,15 @@
 'use client'
 
-import {
-  Button,
-  EmptyState,
-  Input,
-  SideDrawer,
-  StatusPill,
-} from '@/components/ui'
+import { Button, EmptyState, Input, Progress, SideDrawer, StatusPill } from '@/components/ui'
 import {
   bytesFormat,
+  calculateUsedPercent,
   formatDateTime,
   formatUsagePercent,
   getProgressColorClass,
 } from '@/lib/utils'
-import type {
-  StoragePoolModel,
-  StoragePoolSnapshotModel,
-} from '@/types/models/storage'
-import {
-  AlertTriangle,
-  ArrowDown,
-  ArrowUp,
-  Camera,
-  HardDrive,
-  HeartPulse,
-  RotateCcw,
-  ShieldAlert,
-} from 'lucide-react'
+import type { StoragePoolModel, StoragePoolSnapshotModel } from '@/types/models/storage'
+import { AlertTriangle, ArrowDown, ArrowUp, Camera, HardDrive, HeartPulse, RotateCcw, ShieldAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface StoragePoolDetailProps {
@@ -96,9 +79,7 @@ export function StoragePoolDetail({
   onRestoreSnapshot,
   onReplaceDisk,
 }: StoragePoolDetailProps) {
-  const [restoreSnapshotId, setRestoreSnapshotId] = useState<string | null>(
-    null,
-  )
+  const [restoreSnapshotId, setRestoreSnapshotId] = useState<string | null>(null)
   const [restorePassword, setRestorePassword] = useState('')
   const [restoreCreateBackup, setRestoreCreateBackup] = useState(true)
   const [restoreSubmitting, setRestoreSubmitting] = useState(false)
@@ -142,11 +123,7 @@ export function StoragePoolDetail({
   const getMemberStatus = (device: StoragePoolModel['devices'][number]) => {
     const state = String(device.state || '').toUpperCase()
     const health = String(device.health || '').toLowerCase()
-    const isFailedHealth =
-      health === 'failed' ||
-      health === 'fail' ||
-      health === 'warning' ||
-      health === 'critical'
+    const isFailedHealth = health === 'failed' || health === 'fail' || health === 'warning' || health === 'critical'
 
     if (state === 'OFFLINE') {
       return { text: 'OFFLINE', color: 'danger' as const, atRisk: true }
@@ -210,6 +187,7 @@ export function StoragePoolDetail({
       setReplaceSubmitting(false)
     }
   }
+  const usedPercent = calculateUsedPercent(activePool?.usedBytes ?? 0, activePool?.totalBytes ?? 0)
 
   return (
     <SideDrawer open={open} onOpenChange={onOpenChange} title={'Pool Details'}>
@@ -220,54 +198,40 @@ export function StoragePoolDetail({
           <section className="bg-app-bg space-y-3 rounded-lg">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-app-text truncate text-2xl leading-tight font-semibold">
-                  {activePool.name}
-                </div>
+                <div className="text-app-text truncate text-2xl leading-tight font-semibold">{activePool.name}</div>
                 <div className="text-app-text-muted mt-1 text-sm uppercase">
-                  {activePool.raidLevel} · {activePool.filesystem}
+                  {activePool.kind === 'local' && activePool.raidLevel + ' · '}
+                  {activePool.filesystem}
                 </div>
               </div>
               <div className="border-app-border text-app-text flex shrink-0 flex-col items-center rounded-lg border px-3 py-2 text-center">
                 <div className="text-sm leading-none font-semibold">
                   {bytesFormat(activePool.totalBytes ?? 0, {
-                    standard: 'm',
+                    standard: 's',
                     decimalPlaces: 0,
                   })}
                 </div>
-                <div className="text-app-text-muted mt-1 text-xs uppercase">
-                  Capacity
-                </div>
+                <div className="text-app-text-muted mt-1 text-xs uppercase">Capacity</div>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <div className="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-white/50">
-                <div
-                  className={`h-full rounded-full ${getProgressColorClass(activePool.usagePercent ?? 0)}`}
-                  style={{
-                    width: `${Math.max(0, Math.min(100, activePool.usagePercent ?? 0))}%`,
-                  }}
-                />
-              </div>
+              <Progress value={usedPercent} showLabel={false} className={getProgressColorClass(usedPercent)} />
               <div className="text-app-text-muted flex items-center justify-between text-[11px] uppercase">
                 <span>
                   {bytesFormat(activePool.usedBytes ?? 0, {
-                    standard: 'm',
+                    standard: 's',
                     decimalPlaces: 2,
                   })}{' '}
                   /{' '}
                   {bytesFormat(activePool.totalBytes ?? 0, {
-                    standard: 'm',
+                    standard: 's',
                     decimalPlaces: 0,
                   })}{' '}
                   ({activePool.dataPath})
                 </span>
                 <span>
-                  {formatUsagePercent(
-                    activePool.usedBytes ?? 0,
-                    activePool.totalBytes ?? 0,
-                    activePool.usagePercent,
-                  )}
+                  {formatUsagePercent(activePool.usedBytes ?? 0, activePool.totalBytes ?? 0, activePool.usagePercent)}
                 </span>
               </div>
             </div>
@@ -310,13 +274,8 @@ export function StoragePoolDetail({
               ['Created At', formatDateTime(activePool.createdAt)],
               ['Last Checked', formatDateTime(activePool.lastCheckedAt)],
             ].map(([label, value]) => (
-              <div
-                key={String(label)}
-                className="bg-app-bg border-app-border rounded-lg border p-2.5"
-              >
-                <div className="text-app-text-muted text-[11px] font-semibold uppercase">
-                  {label}
-                </div>
+              <div key={String(label)} className="bg-app-bg border-app-border rounded-lg border p-2.5">
+                <div className="text-app-text-muted text-[11px] font-semibold uppercase">{label}</div>
                 <div className="text-app-text mt-1 text-sm">{value}</div>
               </div>
             ))}
@@ -326,9 +285,7 @@ export function StoragePoolDetail({
             <section className="space-y-2 rounded-lg border border-amber-500/35 bg-amber-500/8 p-3">
               <div className="flex items-center gap-2 text-amber-400">
                 <AlertTriangle className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase">
-                  Warnings
-                </span>
+                <span className="text-xs font-semibold uppercase">Warnings</span>
               </div>
               <div className="space-y-1">
                 {activePool.warnings.map((warning, index) => (
@@ -340,247 +297,101 @@ export function StoragePoolDetail({
             </section>
           )}
 
-          <section className="space-y-2">
-            <div className="border-app-border flex items-center gap-1.5 border-b pb-1">
-              <HardDrive className="text-app-text-muted h-3.5 w-3.5" />
-              <span className="text-app-text text-xs font-semibold uppercase">
-                RAID Members
-              </span>
-            </div>
-            <div className="grid grid-cols-1 gap-1">
-              {activePool.devices.map((device) => {
-                const memberStatus = getMemberStatus(device)
-                return (
-                  <div
-                    key={device.id || device.devicePath}
-                    className="space-y-1"
-                  >
-                    <div
-                      className="bg-app-hover/25 flex items-center justify-between gap-2 rounded-md px-2 py-1.5"
-                    >
-                      <div className="min-w-0">
-                        <div className="text-app-text truncate text-xs">
-                          {device.model}
-                        </div>
-                        <div className="text-app-text-muted truncate text-[11px]">
-                          SN: {device.serial} · {device.devicePath || 'N/A'}
-                        </div>
-                        <div className="text-app-text-muted text-[10px] uppercase">
-                          {bytesFormat(device.sizeBytes ?? 0, {
-                            standard: 'm',
-                            decimalPlaces: 0,
-                          })}
-                          · {String(device.transport || '').toUpperCase()} ·{' '}
-                          {(device.deviceRole || 'data').toUpperCase()}
-                        </div>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-1.5">
-                        <StatusPill
-                          color={memberStatus.color}
-                          content={memberStatus.text}
-                        />
-                        {memberStatus.atRisk ? (
-                          <Button
-                            size="xs"
-                            variant="secondary"
-                            icon={ShieldAlert}
-                            onClick={() => {
-                              const oldPath = device.devicePath || device.path
-                              setReplaceTargetPath((prev) =>
-                                prev === oldPath ? null : oldPath,
-                              )
-                              setReplaceNewPath('')
-                              setReplacePassword('')
-                            }}
-                          >
-                            Replace
-                          </Button>
-                        ) : null}
-                      </div>
-                    </div>
-                    {replaceTargetPath === (device.devicePath || device.path) && (
-                      <div className="bg-app-bg mt-1 rounded-md p-2">
-                        <div className="space-y-2">
-                          <div className="text-app-text-muted text-[11px]">
-                            Select replacement disk
-                          </div>
-                          {replaceCandidates.length === 0 ? (
-                            <EmptyState message="No available disk for replacement." />
-                          ) : (
-                            <div className="grid grid-cols-1 gap-1">
-                              {replaceCandidates.map((candidate) => (
-                                <button
-                                  key={candidate.path}
-                                  type="button"
-                                  onClick={() =>
-                                    setReplaceNewPath(candidate.path)
-                                  }
-                                  className={
-                                    replaceNewPath === candidate.path
-                                      ? 'border-app-border-strong bg-app-hover rounded-md border px-2 py-1 text-left'
-                                      : 'border-app-border bg-app-surface rounded-md border px-2 py-1 text-left'
-                                  }
-                                >
-                                  <div className="text-app-text text-xs">
-                                    {candidate.path}
-                                  </div>
-                                  <div className="text-app-text-muted text-[10px] uppercase">
-                                    {candidate.label} ·{' '}
-                                    {bytesFormat(candidate.sizeBytes ?? 0, {
-                                      standard: 'm',
-                                      decimalPlaces: 0,
-                                    })}{' '}
-                                    · {candidate.kind.toUpperCase()}
-                                  </div>
-                                </button>
-                              ))}
+          {activePool.kind === 'local' && (
+            <>
+              <section className="space-y-2">
+                <div className="border-app-border flex items-center gap-1.5 border-b pb-1">
+                  <HardDrive className="text-app-text-muted h-3.5 w-3.5" />
+                  <span className="text-app-text text-xs font-semibold uppercase">RAID Members</span>
+                </div>
+                <div className="grid grid-cols-1 gap-1">
+                  {activePool.devices.map((device) => {
+                    const memberStatus = getMemberStatus(device)
+                    return (
+                      <div key={device.id || device.devicePath} className="space-y-1">
+                        <div className="bg-app-hover/25 flex items-center justify-between gap-2 rounded-md px-2 py-1.5">
+                          <div className="min-w-0">
+                            <div className="text-app-text truncate text-xs">{device.model}</div>
+                            <div className="text-app-text-muted truncate text-[11px]">
+                              SN: {device.serial} · {device.devicePath || 'N/A'}
                             </div>
-                          )}
-
-                          <Input
-                            type="password"
-                            value={replacePassword}
-                            onChange={(event) =>
-                              setReplacePassword(event.target.value)
-                            }
-                            placeholder="Admin password"
-                            className="h-8 text-xs"
-                          />
-
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              size="xs"
-                              variant="secondary"
-                              onClick={() => {
-                                setReplaceTargetPath(null)
-                                setReplaceNewPath('')
-                                setReplacePassword('')
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              size="xs"
-                              variant="danger"
-                              loading={replaceSubmitting}
-                              disabled={
-                                !replacePassword.trim() ||
-                                !replaceNewPath ||
-                                replaceSubmitting
-                              }
-                              onClick={handleConfirmReplaceDisk}
-                            >
-                              Confirm Replace
-                            </Button>
+                            <div className="text-app-text-muted text-[10px] uppercase">
+                              {bytesFormat(device.sizeBytes ?? 0, {
+                                standard: 'm',
+                                decimalPlaces: 0,
+                              })}
+                              · {String(device.transport || '').toUpperCase()} ·{' '}
+                              {(device.deviceRole || 'data').toUpperCase()}
+                            </div>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            <StatusPill color={memberStatus.color} content={memberStatus.text} />
+                            {memberStatus.atRisk ? (
+                              <Button
+                                size="xs"
+                                variant="secondary"
+                                icon={ShieldAlert}
+                                onClick={() => {
+                                  const oldPath = device.devicePath || device.path
+                                  setReplaceTargetPath((prev) => (prev === oldPath ? null : oldPath))
+                                  setReplaceNewPath('')
+                                  setReplacePassword('')
+                                }}
+                              >
+                                Replace
+                              </Button>
+                            ) : null}
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </section>
+                        {replaceTargetPath === (device.devicePath || device.path) && (
+                          <div className="bg-app-bg mt-1 rounded-md p-2">
+                            <div className="space-y-2">
+                              <div className="text-app-text-muted text-[11px]">Select replacement disk</div>
+                              {replaceCandidates.length === 0 ? (
+                                <EmptyState message="No available disk for replacement." />
+                              ) : (
+                                <div className="grid grid-cols-1 gap-1">
+                                  {replaceCandidates.map((candidate) => (
+                                    <button
+                                      key={candidate.path}
+                                      type="button"
+                                      onClick={() => setReplaceNewPath(candidate.path)}
+                                      className={
+                                        replaceNewPath === candidate.path
+                                          ? 'border-app-border-strong bg-app-hover rounded-md border px-2 py-1 text-left'
+                                          : 'border-app-border bg-app-surface rounded-md border px-2 py-1 text-left'
+                                      }
+                                    >
+                                      <div className="text-app-text text-xs">{candidate.path}</div>
+                                      <div className="text-app-text-muted text-[10px] uppercase">
+                                        {candidate.label} ·{' '}
+                                        {bytesFormat(candidate.sizeBytes ?? 0, {
+                                          standard: 'm',
+                                          decimalPlaces: 0,
+                                        })}{' '}
+                                        · {candidate.kind.toUpperCase()}
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
 
-          <section className="space-y-2">
-            <div className="border-app-border flex items-center gap-1.5 border-b pb-1">
-              <Camera className="text-app-text-muted h-3.5 w-3.5" />
-              <div className="text-app-text text-xs font-semibold uppercase">
-                Snapshots
-              </div>
-            </div>
-            {snapshots.length === 0 && <EmptyState />}
-            <div className="space-y-1.5">
-              {(
-                [
-                  {
-                    label: '最近七天',
-                    items: groupedSnapshots.recent7Days,
-                  },
-                  { label: '上周', items: groupedSnapshots.lastWeek },
-                  { label: '上个月', items: groupedSnapshots.lastMonth },
-                ] as Array<{
-                  label: string
-                  items: StoragePoolSnapshotModel[]
-                }>
-              ).map(({ label, items }) => {
-                const rows = items
-                if (rows.length === 0) return null
-                return (
-                  <div key={label} className="space-y-1">
-                    <div className="text-app-text-muted text-[11px] font-semibold uppercase">
-                      {label}
-                    </div>
-                    <div className="grid grid-cols-1 gap-1">
-                      {rows.map((snapshot) => (
-                        <div
-                          key={snapshot.id}
-                          className="bg-app-hover/25 rounded-md px-2 py-1.5"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0">
-                              <div className="text-app-text truncate text-xs">
-                                {snapshot.name}
-                              </div>
-                              <div className="text-app-text-muted truncate text-[10px]">
-                                {formatDateTime(snapshot.createdAt)}
-                                {snapshot.description
-                                  ? ` · ${snapshot.description}`
-                                  : ''}
-                              </div>
-                            </div>
-                            <Button
-                              size="xs"
-                              className="text-[11px]"
-                              variant="secondary"
-                              icon={RotateCcw}
-                              loading={
-                                restoreSubmitting &&
-                                restoreSnapshotId === snapshot.id
-                              }
-                              onClick={() => {
-                                setRestoreSnapshotId((prev) =>
-                                  prev === snapshot.id ? null : snapshot.id,
-                                )
-                              }}
-                            >
-                              Restore
-                            </Button>
-                          </div>
-                          {restoreSnapshotId === snapshot.id && (
-                            <div className="bg-app-bg mt-2 rounded-md p-2">
-                              <div className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-                                <Input
-                                  type="password"
-                                  value={restorePassword}
-                                  onChange={(event) => {
-                                    setRestorePassword(event.target.value)
-                                  }}
-                                  placeholder="Admin password"
-                                  className="h-8 text-xs"
-                                />
-                                <label className="text-app-text-muted flex items-center gap-2 text-xs">
-                                  <input
-                                    type="checkbox"
-                                    checked={restoreCreateBackup}
-                                    onChange={(event) =>
-                                      setRestoreCreateBackup(
-                                        event.target.checked,
-                                      )
-                                    }
-                                  />
-                                  Backup before restore
-                                </label>
-                              </div>
+                              <Input
+                                type="password"
+                                value={replacePassword}
+                                onChange={(event) => setReplacePassword(event.target.value)}
+                                placeholder="Admin password"
+                                className="h-8 text-xs"
+                              />
 
-                              <div className="mt-2 flex justify-end gap-2">
+                              <div className="flex justify-end gap-2">
                                 <Button
                                   size="xs"
-                                  className="text-[11px]"
                                   variant="secondary"
                                   onClick={() => {
-                                    setRestoreSnapshotId(null)
-                                    setRestorePassword('')
+                                    setReplaceTargetPath(null)
+                                    setReplaceNewPath('')
+                                    setReplacePassword('')
                                   }}
                                 >
                                   Cancel
@@ -588,28 +399,126 @@ export function StoragePoolDetail({
                                 <Button
                                   size="xs"
                                   variant="danger"
-                                  className="text-[11px]"
-                                  loading={
-                                    restoreSubmitting &&
-                                    restoreSnapshotId === snapshot.id
-                                  }
-                                  onClick={() =>
-                                    handleConfirmRestoreSnapshot(snapshot.id)
-                                  }
+                                  loading={replaceSubmitting}
+                                  disabled={!replacePassword.trim() || !replaceNewPath || replaceSubmitting}
+                                  onClick={handleConfirmReplaceDisk}
                                 >
-                                  Confirm Restore
+                                  Confirm Replace
                                 </Button>
                               </div>
                             </div>
-                          )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+              <section className="space-y-2">
+                <div className="border-app-border flex items-center gap-1.5 border-b pb-1">
+                  <Camera className="text-app-text-muted h-3.5 w-3.5" />
+                  <div className="text-app-text text-xs font-semibold uppercase">Snapshots</div>
+                </div>
+                {snapshots.length === 0 && <EmptyState />}
+                <div className="space-y-1.5">
+                  {(
+                    [
+                      {
+                        label: '最近七天',
+                        items: groupedSnapshots.recent7Days,
+                      },
+                      { label: '上周', items: groupedSnapshots.lastWeek },
+                      { label: '上个月', items: groupedSnapshots.lastMonth },
+                    ] as Array<{
+                      label: string
+                      items: StoragePoolSnapshotModel[]
+                    }>
+                  ).map(({ label, items }) => {
+                    const rows = items
+                    if (rows.length === 0) return null
+                    return (
+                      <div key={label} className="space-y-1">
+                        <div className="text-app-text-muted text-[11px] font-semibold uppercase">{label}</div>
+                        <div className="grid grid-cols-1 gap-1">
+                          {rows.map((snapshot) => (
+                            <div key={snapshot.id} className="bg-app-hover/25 rounded-md px-2 py-1.5">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="min-w-0">
+                                  <div className="text-app-text truncate text-xs">{snapshot.name}</div>
+                                  <div className="text-app-text-muted truncate text-[10px]">
+                                    {formatDateTime(snapshot.createdAt)}
+                                    {snapshot.description ? ` · ${snapshot.description}` : ''}
+                                  </div>
+                                </div>
+                                <Button
+                                  size="xs"
+                                  className="text-[11px]"
+                                  variant="secondary"
+                                  icon={RotateCcw}
+                                  loading={restoreSubmitting && restoreSnapshotId === snapshot.id}
+                                  onClick={() => {
+                                    setRestoreSnapshotId((prev) => (prev === snapshot.id ? null : snapshot.id))
+                                  }}
+                                >
+                                  Restore
+                                </Button>
+                              </div>
+                              {restoreSnapshotId === snapshot.id && (
+                                <div className="bg-app-bg mt-2 rounded-md p-2">
+                                  <div className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                                    <Input
+                                      type="password"
+                                      value={restorePassword}
+                                      onChange={(event) => {
+                                        setRestorePassword(event.target.value)
+                                      }}
+                                      placeholder="Admin password"
+                                      className="h-8 text-xs"
+                                    />
+                                    <label className="text-app-text-muted flex items-center gap-2 text-xs">
+                                      <input
+                                        type="checkbox"
+                                        checked={restoreCreateBackup}
+                                        onChange={(event) => setRestoreCreateBackup(event.target.checked)}
+                                      />
+                                      Backup before restore
+                                    </label>
+                                  </div>
+
+                                  <div className="mt-2 flex justify-end gap-2">
+                                    <Button
+                                      size="xs"
+                                      className="text-[11px]"
+                                      variant="secondary"
+                                      onClick={() => {
+                                        setRestoreSnapshotId(null)
+                                        setRestorePassword('')
+                                      }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                    <Button
+                                      size="xs"
+                                      variant="danger"
+                                      className="text-[11px]"
+                                      loading={restoreSubmitting && restoreSnapshotId === snapshot.id}
+                                      onClick={() => handleConfirmRestoreSnapshot(snapshot.id)}
+                                    >
+                                      Confirm Restore
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </section>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>{' '}
+            </>
+          )}
         </div>
       )}
     </SideDrawer>

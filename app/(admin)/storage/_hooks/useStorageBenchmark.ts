@@ -1,6 +1,7 @@
 'use client'
 
 import { getStoragePoolBenchmarkStreamUrl } from '@/lib/file-api'
+import { toast } from '@/store/use-toast-store'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type {
   BenchmarkViewState,
@@ -33,6 +34,57 @@ interface BenchmarkCompletedPayload {
 
 interface UseStorageBenchmarkOptions {
   onCompleted?: (poolId: string, payload: BenchmarkCompletedPayload) => void
+}
+
+const parseBenchmarkError = (raw: string) => {
+  if (!raw) return { message: '', code: '' }
+  try {
+    const parsed = JSON.parse(raw) as {
+      code?: string
+      message?: string
+      error?: string
+    }
+    return {
+      message: parsed.message || parsed.error || '',
+      code: parsed.code || '',
+    }
+  } catch {
+    return { message: raw, code: '' }
+  }
+}
+
+const resolveBenchmarkError = async (streamUrl: string, raw: string) => {
+  const parsed = parseBenchmarkError(raw)
+  if (parsed.message || parsed.code) return parsed
+
+  const controller = new AbortController()
+  const timeout = window.setTimeout(() => controller.abort(), 3000)
+  try {
+    const res = await fetch(streamUrl, {
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    })
+    const text = await res.text()
+    const fromBody = parseBenchmarkError(text)
+    return {
+      message:
+        fromBody.message ||
+        fromBody.code ||
+        (res.ok ? '' : `Benchmark request failed (${res.status})`),
+      code: fromBody.code,
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return { message: 'Benchmark request timed out', code: '' }
+    }
+    return {
+      message:
+        error instanceof Error ? error.message : 'Benchmark request failed',
+      code: '',
+    }
+  } finally {
+    window.clearTimeout(timeout)
+  }
 }
 
 export function useStorageBenchmark(options?: UseStorageBenchmarkOptions) {
@@ -177,33 +229,19 @@ export function useStorageBenchmark(options?: UseStorageBenchmarkOptions) {
       source.addEventListener('error', (event) => {
         finalized = true
         const messageEvent = event as MessageEvent
-        let parsed: { message?: string; error?: string; code?: string } | null =
-          null
         let raw = ''
-        try {
-          if (typeof messageEvent.data === 'string') raw = messageEvent.data
-          parsed = raw
-            ? (JSON.parse(raw) as {
-                message?: string
-                error?: string
-                code?: string
-              })
-            : null
-        } catch {
-          parsed = null
-        }
-        const reason =
-          parsed?.message ||
-          parsed?.error ||
-          parsed?.code ||
-          raw ||
-          'Benchmark failed'
-        setBenchmarkState(poolId, () => ({
-          running: false,
-          stage: 'failed',
-          error: reason,
-        }))
+        if (typeof messageEvent.data === 'string') raw = messageEvent.data
         closeStream(poolId)
+
+        void resolveBenchmarkError(streamUrl, raw).then(({ message, code }) => {
+          const reason = message || code || 'Benchmark request failed'
+          toast.error(reason, code || undefined, 5000)
+          setBenchmarkState(poolId, () => ({
+            running: false,
+            stage: 'failed',
+            error: message || null,
+          }))
+        })
       })
 
       source.onerror = () => {
