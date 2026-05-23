@@ -30,7 +30,7 @@
       "dashboard": "Dashboard",
       "storage": "Storage",
       "file": "Files",
-      "task": "Tasks"
+      "jobs": "Tasks"
     },
     "aria": {
       "expandSidebar": "Expand sidebar",
@@ -78,23 +78,37 @@
       "downloadTraffic": "Download Traffic (Mbps)"
     }
   },
-  "Task": {
+  "Jobs": {
+    "loading": "Loading tasks...",
+    "empty": "No tasks yet",
+    "selectJob": "Select {name}",
     "statuses": {
       "all": "All",
       "running": "Running",
+      "paused": "Paused",
       "success": "Success",
       "failed": "Failed",
       "canceled": "Canceled"
     },
-    "deleteTitle": "Delete Tasks ({count})",
-    "deleteDescription": "Delete the selected tasks? Unfinished tasks will be canceled.",
-    "deleteConfirm": "Delete",
-    "deleteTip": "Delete",
+    "types": {
+      "cloud_sync": "Cloud sync",
+      "data_transfer": "Data transfer",
+      "back_to_cloud": "Back up to cloud"
+    },
+    "actions": {
+      "more": "More task actions",
+      "pause": "Pause",
+      "resume": "Resume",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
     "columns": {
       "name": "Name",
+      "job": "Task",
       "progress": "Progress",
       "status": "Status",
       "updatedAt": "Last Updated",
+      "speed": "Speed",
       "remaining": "Remaining: {duration}",
       "updatedAgo": "{value} ago",
       "updatedSample": "10 minutes"

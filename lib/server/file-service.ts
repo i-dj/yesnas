@@ -1,6 +1,7 @@
 import {
   getFileContentUrl,
   getFileThumbnailUrl,
+  getJobsUrl,
   getRaidCandidatesUrl,
   getStoragePoolsUrl,
   getSystemDisksUrl,
@@ -9,7 +10,7 @@ import {
   getTaggedFilesUrl,
   getTrashFilesUrl,
 } from '@/lib/file-api'
-import { StorageDrive } from '@/types' // Assumes StorageDrive is exported from the shared types module
+import { Job, StorageDrive } from '@/types' // Assumes StorageDrive is exported from the shared types module
 import {
   CreateStoragePoolPayload,
   CreateStoragePoolSnapshotPayload,
@@ -61,6 +62,57 @@ export async function getStoragePools(): Promise<StoragePoolModel[]> {
   }
   const payload = (await res.json()) as StoragePoolModel[]
   return payload
+}
+
+export async function getJobs(): Promise<Job[]> {
+  const res = await fetch(getJobsUrl(), { cache: 'no-store' })
+  if (!res.ok) {
+    throw new Error(`Fetch jobs failed: ${res.status}`)
+  }
+  const payload = (await res.json()) as { items: Job[] }
+  return payload.items
+}
+
+export function getServerTimeZone() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+}
+
+export async function deleteJob(jobId: string | number) {
+  const res = await fetch(`${getJobsUrl()}/${jobId}`, {
+    method: 'DELETE',
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(parseErrorMessage(text, `Delete job failed: ${res.status}`))
+  }
+
+  return res
+}
+
+export async function pauseJob(jobId: string | number) {
+  return runJobAction(jobId, 'pause')
+}
+
+export async function resumeJob(jobId: string | number) {
+  return runJobAction(jobId, 'resume')
+}
+
+export async function cancelJob(jobId: string | number) {
+  return runJobAction(jobId, 'cancel')
+}
+
+async function runJobAction(jobId: string | number, action: 'pause' | 'resume' | 'cancel') {
+  const res = await fetch(`${getJobsUrl()}/${jobId}/${action}`, {
+    method: 'POST',
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(parseErrorMessage(text, `${action} job failed: ${res.status}`))
+  }
+
+  return res
 }
 
 export async function createStoragePool(payload: CreateStoragePoolPayload) {

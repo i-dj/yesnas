@@ -242,13 +242,37 @@ export const getNanoid = (len = 16): string => {
  * Formats a date like: 2023/2/2 22:11:33
  * @param dateStr Accepts a Date object, string, or timestamp
  */
-export function formatDateTime(dateStr: Date | string | number | null | undefined): string {
+export function formatDateTime(dateStr: Date | string | number | null | undefined, timeZone?: string): string {
   if (!dateStr) return '--'
 
   const d = new Date(dateStr)
 
   // Guard against invalid dates
   if (isNaN(d.getTime())) return '--'
+
+  if (timeZone) {
+    try {
+      const parts = new Intl.DateTimeFormat('zh-CN', {
+        timeZone,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      })
+        .formatToParts(d)
+        .reduce<Record<string, string>>((acc, part) => {
+          acc[part.type] = part.value
+          return acc
+        }, {})
+
+      return `${parts.year}/${parts.month}/${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`
+    } catch {
+      return '--'
+    }
+  }
 
   const year = d.getFullYear()
   // JavaScript months are zero-based

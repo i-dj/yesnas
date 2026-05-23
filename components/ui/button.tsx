@@ -42,21 +42,17 @@ export const Button = ({
     secondary: 'bg-app-surface text-app-text-muted border border-app-border',
     danger: 'bg-app-surface text-red-500 border border-red-500/60',
     ghost: 'bg-transparent text-app-text-muted border-none',
-    borderghost:
-      'bg-app-surface text-app-text-muted border border-text-app-text-muted/60',
+    borderghost: 'bg-app-surface text-app-text-muted border border-text-app-text-muted/60',
   }
 
   const hoverVariants = {
-    primary:
-      'enabled:hover:opacity-85 enabled:hover:shadow-xs enabled:active:scale-[0.97]',
+    primary: 'enabled:hover:opacity-85 enabled:hover:shadow-xs enabled:active:scale-[0.97]',
     secondary:
       'enabled:hover:border-app-border-strong enabled:hover:text-app-text enabled:hover:shadow-xs enabled:active:bg-app-active',
     danger:
       'enabled:hover:bg-red-500/8 enabled:hover:text-red-600 enabled:hover:shadow-xs enabled:active:bg-red-500/12',
-    ghost:
-      'enabled:hover:bg-app-hover enabled:hover:text-app-text enabled:active:bg-app-active',
-    borderghost:
-      'enabled:hover:bg-app-hover enabled:hover:text-app-text enabled:active:bg-app-active',
+    ghost: 'enabled:hover:bg-app-hover enabled:hover:text-app-text enabled:active:bg-app-active',
+    borderghost: 'enabled:hover:bg-app-hover enabled:hover:text-app-text enabled:active:bg-app-active',
   }
 
   const sizes = {
@@ -76,10 +72,7 @@ export const Button = ({
   const finalIconSize = providedIconSize || autoIconSize[size]
   const finalVariant = isDelete && variant !== 'ghost' ? 'danger' : variant
 
-  const variantClass = cn(
-    baseVariants[finalVariant],
-    !noHover && hoverVariants[finalVariant],
-  )
+  const variantClass = cn(baseVariants[finalVariant], !noHover && hoverVariants[finalVariant])
 
   const ButtonElement = (
     <button
@@ -88,13 +81,8 @@ export const Button = ({
         'whitespace-nowrap transition-all outline-none select-none disabled:opacity-30',
         sizes[size],
         variantClass,
-        !children && [
-          'aspect-square px-0',
-          variant === 'ghost' ? 'rounded-full' : '',
-        ],
-        isDelete &&
-          variant === 'ghost' &&
-          'text-red-500 enabled:hover:bg-red-100',
+        !children && ['aspect-square px-0', variant === 'ghost' ? 'rounded-full' : ''],
+        isDelete && variant === 'ghost' && 'text-red-500 enabled:hover:bg-red-500/10 enabled:hover:text-red-600',
         className,
       )}
       {...props}
@@ -110,9 +98,7 @@ export const Button = ({
             className={cn(
               'pointer-events-none absolute flex items-center justify-center rounded-full font-bold text-white shadow-sm',
               'border-2 border-white bg-red-500',
-              size === 'sm'
-                ? '-top-1 -right-1 h-4 min-w-4 text-[9px]'
-                : '-top-1.5 -right-1.5 h-5 min-w-5 text-[10px]',
+              size === 'sm' ? '-top-1 -right-1 h-4 min-w-4 text-[9px]' : '-top-1.5 -right-1.5 h-5 min-w-5 text-[10px]',
             )}
           >
             {badge > 99 ? '99+' : badge}
@@ -120,9 +106,7 @@ export const Button = ({
         )}
       </AnimatePresence>
 
-      {FinalIcon && (
-        <FinalIcon size={finalIconSize} className={cn('shrink-0', iconClassName)} />
-      )}
+      {FinalIcon && <FinalIcon size={finalIconSize} className={cn('shrink-0', iconClassName)} />}
       {children && <span>{children}</span>}
     </button>
   )

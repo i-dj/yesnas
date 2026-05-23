@@ -24,7 +24,7 @@ export const menuGroups: MenuGroup[] = [
       { nameKey: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
       { nameKey: 'storage', href: '/storage', icon: HardDrive },
       { nameKey: 'file', href: '/file', icon: Files },
-      { nameKey: 'task', href: '/task', icon: ListTodo },
+      { nameKey: 'jobs', href: '/jobs', icon: ListTodo },
     ],
   },
 ]

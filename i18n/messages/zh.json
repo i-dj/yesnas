@@ -30,7 +30,7 @@
       "dashboard": "控制台",
       "storage": "存储",
       "file": "文件",
-      "task": "任务中心"
+      "jobs": "任务"
     },
     "aria": {
       "expandSidebar": "展开侧边栏",
@@ -78,23 +78,37 @@
       "downloadTraffic": "下行流量 (Mbps)"
     }
   },
-  "Task": {
+  "Jobs": {
+    "loading": "正在加载任务...",
+    "empty": "暂无任务",
+    "selectJob": "选择 {name}",
     "statuses": {
       "all": "全部",
       "running": "运行中",
+      "paused": "已暂停",
       "success": "成功",
       "failed": "已失败",
       "canceled": "已取消"
     },
-    "deleteTitle": "删除任务 ({count})",
-    "deleteDescription": "确定要删除选中的任务吗？删除后未完成的任务将取消运行。",
-    "deleteConfirm": "确认删除",
-    "deleteTip": "删除",
+    "types": {
+      "cloud_sync": "云同步",
+      "data_transfer": "数据传输",
+      "back_to_cloud": "备份到云端"
+    },
+    "actions": {
+      "more": "更多任务操作",
+      "pause": "暂停",
+      "resume": "恢复",
+      "cancel": "取消",
+      "delete": "删除"
+    },
     "columns": {
       "name": "名称",
+      "job": "任务",
       "progress": "进度",
       "status": "状态",
       "updatedAt": "最后更新",
+      "speed": "速度",
       "remaining": "剩余：{duration}",
       "updatedAgo": "{value}前",
       "updatedSample": "10分钟"

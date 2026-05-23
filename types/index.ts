@@ -9,9 +9,7 @@ export const SORT_DIRECTIONS = {
 /**
  * @description 排序方向类型
  */
-export type SortDirection =
-  | (typeof SORT_DIRECTIONS)[keyof typeof SORT_DIRECTIONS]
-  | null
+export type SortDirection = (typeof SORT_DIRECTIONS)[keyof typeof SORT_DIRECTIONS] | null
 
 /**
  * @description 排序配置项
@@ -39,4 +37,5 @@ export const VIEW_MODES = {
 export type ViewMode = (typeof VIEW_MODES)[keyof typeof VIEW_MODES]
 
 export * from './models/task'
+export * from './models/job'
 export * from './models/file'

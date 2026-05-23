@@ -1,7 +1,7 @@
 'use client'
 
 import { AlertDialog, Button, Flex, Inset } from '@radix-ui/themes'
-import React, { useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 interface ConfirmModalProps {
@@ -35,6 +35,13 @@ export const ConfirmModal = ({
 }: ConfirmModalProps) => {
   const t = useTranslations('Common.actions')
   const contentRef = useRef<HTMLDivElement | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return trigger
 
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
