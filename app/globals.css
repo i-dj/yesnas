@@ -7,8 +7,8 @@
 @theme {
   /* Typography */
   --font-sans:
-    'Inter', 'SF Pro Text', 'SF Pro SC', 'Helvetica Neue', 'PingFang SC',
-    'Microsoft YaHei UI', 'Noto Sans SC', sans-serif;
+    'Inter', 'SF Pro Text', 'SF Pro SC', 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei UI', 'Noto Sans SC',
+    sans-serif;
 
   /* Semantic app tokens */
   --color-app-bg: var(--app-bg);
@@ -25,7 +25,6 @@
   --color-app-hover: var(--app-hover);
   --color-app-active: var(--app-active);
 }
-
 
 @layer base {
   /* Light theme */

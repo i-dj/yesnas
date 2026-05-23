@@ -7,6 +7,7 @@ import {
   StatusPill,
   Tooltip,
 } from '@/components/ui'
+import { ColumnIcon } from '@/components/ui/column-icon'
 import { bytesFormat, formatUsagePercent, getProgressColorClass } from '@/lib/utils'
 import { StoragePoolModel } from '@/types/models/storage'
 import { AlertCircle, ArrowDown, ArrowUp, Camera, Check, Eye, Gauge, Layers, Trash2, Wrench } from 'lucide-react'
@@ -78,70 +79,66 @@ export const getStoragePoolColumns = (
     </span>
   )
 
-  const getActionMenuItems = (entry: StoragePoolModel): ActionMenuConfig[] => [
-    {
-      label: makeLabel('View Details', 'Inspect pool information'),
-      action: 'open',
-      icon: Eye,
-    },
-    {
-      label: makeLabel('Run Speed Test', 'Measure read/write performance'),
-      action: 'speed-test',
-      icon: Gauge,
-    },
-    {
-      label: makeLabel('Format Pool', 'Erase and reinitialize filesystem'),
-      action: 'format',
-      icon: Wrench,
-    },
-    {
-      label: makeLabel('Create Snapshot', 'Create a restore point'),
-      action: 'snapshot',
-      icon: Camera,
-    },
-    {
-      label: makeLabel('Delete Pool', 'Remove this storage pool'),
-      action: 'delete',
-      icon: Trash2,
-      isDelete: true,
-    },
-  ]
+  const getActionMenuItems = (entry: StoragePoolModel): ActionMenuConfig[] => {
+    const isCloud = entry.kind === 'cloud'
+
+    return [
+      {
+        label: makeLabel('View Details', 'Inspect pool information'),
+        action: 'open',
+        icon: Eye,
+      },
+      {
+        label: makeLabel('Run Speed Test', 'Measure read/write performance'),
+        action: 'speed-test',
+        icon: Gauge,
+      },
+      ...(!isCloud
+        ? [
+            {
+              label: makeLabel('Format Pool', 'Erase and reinitialize filesystem'),
+              action: 'format',
+              icon: Wrench,
+            },
+            {
+              label: makeLabel('Create Snapshot', 'Create a restore point'),
+              action: 'snapshot',
+              icon: Camera,
+            },
+          ]
+        : []),
+      {
+        label: makeLabel('Delete Pool', 'Remove this storage pool'),
+        action: 'delete',
+        icon: Trash2,
+        isDelete: true,
+      },
+    ]
+  }
   return [
     {
       key: 'id',
       label: '',
-      width: '72px',
+      width: '222px',
       render: (_, record) => {
         const healthy = String(record.health).toLowerCase() === 'healthy'
         return (
-          <div className="border-app-border bg-app-bg relative z-10 mb-0.5 inline-flex items-center justify-center overflow-visible rounded-full border p-2">
-            <Layers className="h-4.5 w-4.5" />
-            <span
-              className={
-                healthy
-                  ? 'absolute -right-1 -bottom-0.5 z-20 inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white'
-                  : 'absolute -right-1 -bottom-0.5 z-20 inline-flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-white'
-              }
-            >
-              {healthy ? <Check className="h-2.5 w-2.5" /> : <AlertCircle className="h-2.5 w-2.5" />}
-            </span>
-          </div>
+          <ColumnIcon
+            icon={Layers}
+            title={record.name}
+            subTitle={[record.kind === 'local' ? record.raidLevel : null, record.filesystem]
+              .filter(Boolean)
+              .join(' · ')
+              .toUpperCase()}
+            badge={{
+              icon: healthy ? Check : AlertCircle,
+              className: healthy ? 'bg-emerald-500' : 'bg-amber-500',
+            }}
+          />
         )
       },
     },
-    {
-      key: 'name',
-      label: 'NAME',
-      render: (value, record) => (
-        <div className="min-w-0">
-          <div className="truncate font-semibold">{value}</div>
-          <div className="text-app-text-muted mt-0.5 truncate text-xs uppercase">
-            {record.kind === 'local' ? record.raidLevel + ' · ' : ''}
-            {record.filesystem}
-          </div>
-        </div>
-      ),
-    },
+
     {
       key: 'usagePercent',
       label: 'USAGE',

@@ -1,6 +1,15 @@
 'use client'
 
-import { Button, ConfirmModal, DataTable, EmptyState, Input, SideDrawer, ToggleButton } from '@/components/ui'
+import {
+  Button,
+  ConfirmModal,
+  DataTable,
+  EmptyState,
+  Input,
+  SectionTitle,
+  SideDrawer,
+  ToggleButton,
+} from '@/components/ui'
 import { PageWrapper } from '@/components/layout/page-wrapper'
 import { useEffect, useMemo, useState } from 'react'
 import { getDiskColumns } from './_columns/DiskColumns'
@@ -425,12 +434,10 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
 
   return (
     <PageWrapper className="flex h-full min-h-0 flex-col">
-      <section className="space-y-1.5 pb-2">
-        <h2 className="text-app-text text-base font-semibold">Disks</h2>
-        <p className="text-app-text-muted text-xs">
-          Total devices: {diskStats.total} · Available: {diskStats.available} · In use: {diskStats.inUse}
-        </p>
-      </section>
+      <SectionTitle
+        title="Disks"
+        subTitle={`Total devices: ${diskStats.total} · Available: ${diskStats.available} · In use: ${diskStats.inUse}`}
+      />
 
       <ToggleButton
         className="gap-6 rounded-none"
@@ -442,20 +449,11 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
       />
 
       <div className="min-h-0 flex-1 overflow-auto">
-        <DataTable
-          showHeader={false}
-          headers={diskColumns}
-          data={diskRows}
-          tdClassName="py-2 px-2 text-[13px]"
-          variant="primary"
-        />
+        <DataTable showHeader={false} headers={diskColumns} data={diskRows} variant="primary" />
 
         <section className="mt-10 space-y-3 pb-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-app-text text-base font-semibold">Storage Pools</h2>
-              <p className="text-app-text-muted mt-0.5 text-xs">Existing pools and usage overview.</p>
-            </div>
+            <SectionTitle title="Storage Pools" subTitle={`Existing pools and usage overview.`} />
             <Button type="button" icon={Plus} size="sm" variant="borderghost" onClick={handleOpenCreator}>
               Add Pool
             </Button>
@@ -464,13 +462,7 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
           {poolList.length === 0 ? (
             <EmptyState message="No storage pools found." />
           ) : (
-            <DataTable
-              showHeader={false}
-              headers={poolColumns}
-              data={poolList}
-              tdClassName="py-2 px-2 text-[13px]"
-              variant="primary"
-            />
+            <DataTable showHeader={false} headers={poolColumns} data={poolList} variant="primary" />
           )}
         </section>
       </div>
@@ -612,7 +604,7 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
         isDestructive={false}
         onConfirm={handleConfirmSnapshot}
       >
-        <div className="mt-3 space-y-2 px-6">
+        <div className="space-y-2 px-6">
           <Input
             value={snapshotPayload.name}
             onChange={(event) =>

@@ -126,9 +126,7 @@ export async function createStoragePool(payload: CreateStoragePoolPayload) {
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(
-      parseErrorMessage(text, `Create storage pool failed: ${res.status}`),
-    )
+    throw new Error(parseErrorMessage(text, `Create storage pool failed: ${res.status}`))
   }
 
   return res
@@ -141,18 +139,13 @@ export async function deleteStoragePool(poolId: string) {
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(
-      parseErrorMessage(text, `Delete storage pool failed: ${res.status}`),
-    )
+    throw new Error(parseErrorMessage(text, `Delete storage pool failed: ${res.status}`))
   }
 
   return res
 }
 
-export async function createStoragePoolSnapshot(
-  poolId: string,
-  payload: CreateStoragePoolSnapshotPayload,
-) {
+export async function createStoragePoolSnapshot(poolId: string, payload: CreateStoragePoolSnapshotPayload) {
   const res = await fetch(`${getStoragePoolsUrl()}/${poolId}/snapshots`, {
     method: 'POST',
     headers: {
@@ -168,9 +161,7 @@ export async function createStoragePoolSnapshot(
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(
-      parseErrorMessage(text, `Create snapshot failed: ${res.status}`),
-    )
+    throw new Error(parseErrorMessage(text, `Create snapshot failed: ${res.status}`))
   }
 
   return res
@@ -189,25 +180,20 @@ export async function restoreStoragePoolSnapshot(
   snapshotId: string,
   payload: RestoreStoragePoolSnapshotPayload,
 ): Promise<RestoreStoragePoolSnapshotResponse> {
-  const res = await fetch(
-    `${getStoragePoolsUrl()}/${poolId}/snapshots/${snapshotId}/restore`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        password: payload.password,
-        createBackup: payload.createBackup ?? true,
-      }),
+  const res = await fetch(`${getStoragePoolsUrl()}/${poolId}/snapshots/${snapshotId}/restore`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  )
+    body: JSON.stringify({
+      password: payload.password,
+      createBackup: payload.createBackup ?? true,
+    }),
+  })
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(
-      parseErrorMessage(text, `Restore snapshot failed: ${res.status}`),
-    )
+    throw new Error(parseErrorMessage(text, `Restore snapshot failed: ${res.status}`))
   }
 
   return res.json()
@@ -238,18 +224,13 @@ export async function formatStoragePool(
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(
-      parseErrorMessage(text, `Format pool failed: ${res.status}`),
-    )
+    throw new Error(parseErrorMessage(text, `Format pool failed: ${res.status}`))
   }
 
   return res.json()
 }
 
-export async function replaceStoragePoolDevice(
-  poolId: string,
-  payload: ReplaceStoragePoolDevicePayload,
-) {
+export async function replaceStoragePoolDevice(poolId: string, payload: ReplaceStoragePoolDevicePayload) {
   const res = await fetch(`${getStoragePoolsUrl()}/${poolId}/devices/replace`, {
     method: 'POST',
     headers: {
@@ -264,17 +245,13 @@ export async function replaceStoragePoolDevice(
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(
-      parseErrorMessage(text, `Replace pool device failed: ${res.status}`),
-    )
+    throw new Error(parseErrorMessage(text, `Replace pool device failed: ${res.status}`))
   }
 
   return res
 }
 
-export async function getStorageById(
-  storageId: string,
-): Promise<StorageDrive | null> {
+export async function getStorageById(storageId: string): Promise<StorageDrive | null> {
   const storages = await getAllStorages()
 
   return storages.find((storage) => storage.id === storageId) ?? null
@@ -342,11 +319,7 @@ export async function getAllTrashFiles(): Promise<FileNode[]> {
 /**
  * Returns the full file content or download URL.
  */
-export function getContentUrl(
-  storageId: string,
-  fileId: string,
-  download = false,
-) {
+export function getContentUrl(storageId: string, fileId: string, download = false) {
   return getFileContentUrl(storageId, fileId, download)
 }
 

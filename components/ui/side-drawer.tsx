@@ -5,6 +5,8 @@ import { X } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
+const DRAWER_OPEN_COUNT_KEY = '__yesnas_side_drawer_open_count__'
+
 interface SideDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -48,6 +50,12 @@ export function SideDrawer({
   useEffect(() => {
     if (!open) return
 
+    const globalWithDrawerCount = window as Window & {
+      [DRAWER_OPEN_COUNT_KEY]?: number
+    }
+    globalWithDrawerCount[DRAWER_OPEN_COUNT_KEY] =
+      (globalWithDrawerCount[DRAWER_OPEN_COUNT_KEY] ?? 0) + 1
+
     const { body, documentElement } = document
     const prevBodyOverflow = body.style.overflow
     const prevHtmlOverflow = documentElement.style.overflow
@@ -56,6 +64,10 @@ export function SideDrawer({
     documentElement.style.overflow = 'hidden'
 
     return () => {
+      globalWithDrawerCount[DRAWER_OPEN_COUNT_KEY] = Math.max(
+        0,
+        (globalWithDrawerCount[DRAWER_OPEN_COUNT_KEY] ?? 1) - 1,
+      )
       body.style.overflow = prevBodyOverflow
       documentElement.style.overflow = prevHtmlOverflow
     }

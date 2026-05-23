@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useNetworkLoadingStore } from '@/store/use-network-loading-store'
 
 const FETCH_PATCH_KEY = '__yesnas_fetch_patched__'
+const DRAWER_OPEN_COUNT_KEY = '__yesnas_side_drawer_open_count__'
 
 export function GlobalNetworkLoading() {
   const pendingCount = useNetworkLoadingStore((state) => state.pendingCount)
@@ -21,6 +22,17 @@ export function GlobalNetworkLoading() {
 
     const originalFetch = window.fetch.bind(window)
     window.fetch = async (...args) => {
+      const drawerOpenCount =
+        Number(
+          (window as Window & { [DRAWER_OPEN_COUNT_KEY]?: number })[
+            DRAWER_OPEN_COUNT_KEY
+          ] ?? 0,
+        ) || 0
+
+      if (drawerOpenCount > 0) {
+        return originalFetch(...args)
+      }
+
       begin()
       try {
         return await originalFetch(...args)

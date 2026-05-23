@@ -127,7 +127,7 @@ export const bytesFormat = (
   if (bytes === 0) return '0 B' // Special-case zero
   if (isNaN(bytes) || bytes < 0) return '--'
 
-  const { standard = 'm', decimalPlaces = 2 } = options
+  const { standard = 's', decimalPlaces = 2 } = options
   const base = standard === 's' ? 1024 : 1000
 
   const symbols = standard === 's' ? ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'] : ['B', 'KB', 'MB', 'GB', 'TB', 'PB']

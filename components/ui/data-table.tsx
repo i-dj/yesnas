@@ -7,30 +7,24 @@ import { cva } from 'class-variance-authority'
 import React from 'react'
 
 /* ===== CVA ===== */
-const headerInnerVariants = cva(
-  'flex min-h-9 items-center gap-1 bg-clip-padding px-4 py-2 backdrop-blur-sm ',
-  {
-    variants: {
-      variant: {
-        default: 'bg-app-item-bg',
-        primary: 'bg-app-bg font-semibold',
-      },
+const headerInnerVariants = cva('flex min-h-9 items-center gap-1 bg-clip-padding px-4 py-2 backdrop-blur-sm ', {
+  variants: {
+    variant: {
+      default: 'bg-app-item-bg',
+      primary: 'bg-app-bg font-semibold',
     },
-    defaultVariants: { variant: 'default' },
   },
-)
+  defaultVariants: { variant: 'default' },
+})
 
-const rowVariants = cva(
-  'group file-selectable relative cursor-default transition-colors outline-none',
-  {
-    variants: {
-      selected: {
-        true: 'bg-app-active/50 hover:bg-app-hover/60',
-        false: 'hover:bg-app-hover/50',
-      },
+const rowVariants = cva('group file-selectable relative cursor-default transition-colors outline-none', {
+  variants: {
+    selected: {
+      true: 'bg-app-active/50 hover:bg-app-hover/60',
+      false: 'hover:bg-app-hover/50',
     },
   },
-)
+})
 
 const cellVariants = cva('relative px-4 py-2.5', {
   variants: {
@@ -39,12 +33,7 @@ const cellVariants = cva('relative px-4 py-2.5', {
 })
 
 /* ===== Helper ===== */
-const getRadiusClass = (
-  isFirst: boolean,
-  isLast: boolean,
-  hasTop: boolean,
-  hasBottom: boolean,
-) => {
+const getRadiusClass = (isFirst: boolean, isLast: boolean, hasTop: boolean, hasBottom: boolean) => {
   return cn(
     isFirst && hasTop && 'rounded-tl-lg',
     isFirst && hasBottom && 'rounded-bl-lg',
@@ -111,11 +100,8 @@ export const DataTable = <T extends { id: number | string }>({
                   style={{ width: h.width }}
                   className={cn(
                     'sticky top-0 z-30 p-0 text-left font-normal transition-all',
-                    showHeader &&
-                      variant !== 'default' &&
-                      'border-app-border/50 border-b',
-                    !showHeader &&
-                      'pointer-events-none h-0 border-none opacity-0',
+                    showHeader && variant !== 'default' && 'border-app-border/50 border-b',
+                    !showHeader && 'pointer-events-none h-0 border-none opacity-0',
                   )}
                 >
                   {showHeader && (
@@ -127,9 +113,7 @@ export const DataTable = <T extends { id: number | string }>({
                         isLast && isRounded && 'rounded-r-lg',
                         h.align === 'right' && 'justify-end',
                       )}
-                      onClick={() =>
-                        h.sortable && onSortAction?.(h.key as keyof T)
-                      }
+                      onClick={() => h.sortable && onSortAction?.(h.key as keyof T)}
                     >
                       {h.label}
                       {h.sortable && (
@@ -156,8 +140,7 @@ export const DataTable = <T extends { id: number | string }>({
           {data.map((row, i) => {
             const selected = selectedIds.has(row.id)
             const prevSelected = i > 0 && selectedIds.has(data[i - 1].id)
-            const nextSelected =
-              i < data.length - 1 && selectedIds.has(data[i + 1].id)
+            const nextSelected = i < data.length - 1 && selectedIds.has(data[i + 1].id)
             const isStart = selected && !prevSelected
             const isEnd = selected && !nextSelected
             const hasTop = !selected || isStart
@@ -187,9 +170,7 @@ export const DataTable = <T extends { id: number | string }>({
                 {headers.map((h, idx) => {
                   const isFirst = idx === 0
                   const isLast = idx === headers.length - 1
-                  const radiusClass =
-                    isRounded &&
-                    getRadiusClass(isFirst, isLast, hasTop, hasBottom)
+                  const radiusClass = isRounded && getRadiusClass(isFirst, isLast, hasTop, hasBottom)
                   return (
                     <td
                       key={`${row.id}-${String(h.key)}`}
@@ -197,6 +178,7 @@ export const DataTable = <T extends { id: number | string }>({
                         cellVariants({ variant }),
                         radiusClass,
                         selected && 'bg-app-active/50',
+                        'px-2 py-2 text-[13px]',
                         tdClassName,
                       )}
                     >
@@ -208,15 +190,8 @@ export const DataTable = <T extends { id: number | string }>({
                           isStart && 'opacity-0',
                         )}
                       />
-                      <div
-                        className={cn(
-                          'relative z-10 select-text',
-                          h.key !== '__selection__' && 'truncate',
-                        )}
-                      >
-                        {h.render
-                          ? h.render((row as any)[h.key], row)
-                          : (row as any)[h.key]}
+                      <div className={cn('relative z-10 select-text', h.key !== '__selection__' && 'truncate')}>
+                        {h.render ? h.render((row as any)[h.key], row) : (row as any)[h.key]}
                       </div>
                     </td>
                   )

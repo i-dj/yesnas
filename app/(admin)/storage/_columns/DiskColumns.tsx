@@ -2,6 +2,7 @@ import { DataTableHeader, MoreButton, StatusPill } from '@/components/ui'
 import { HardDrive, MemoryStick } from 'lucide-react'
 import { DiskModel } from '@/types/models/storage'
 import { bytesFormat } from '@/lib/utils'
+import { ColumnIcon } from '@/components/ui/column-icon'
 
 export const getDiskColumns = (
   _selectedIds: Set<string>,
@@ -10,31 +11,14 @@ export const getDiskColumns = (
   {
     key: 'transport',
     label: 'NAME',
-    width: '60px',
+    width: '300px',
     sortable: true,
     render: (value, record) => (
-      <div className="flex items-center gap-3">
-        <div className="border-app-border bg-app-bg-muted rounded-full border p-2">
-          {String(value).toLowerCase() === 'nvme' ? (
-            <MemoryStick className="h-4.5 w-4.5" />
-          ) : (
-            <HardDrive className="h-4.5 w-4.5" />
-          )}
-        </div>
-      </div>
-    ),
-  },
-  {
-    key: 'model',
-    label: 'MODEL',
-    width: '260px',
-    render: (value, record) => (
-      <div className="min-w-0">
-        <div className="truncate">{value}</div>
-        <div className="text-app-text-muted mt-0.5 truncate text-xs">
-          SN: {record.serial}
-        </div>
-      </div>
+      <ColumnIcon
+        icon={String(record.transport).toLowerCase() === 'nvme' ? MemoryStick : HardDrive}
+        title={String(record.model)}
+        subTitle={[record.serial ? `SN: ${record.serial}` : null].filter(Boolean).join(' · ')}
+      />
     ),
   },
 
@@ -42,9 +26,7 @@ export const getDiskColumns = (
     key: 'sizeBytes',
     label: 'SIZE',
     render: (value) => (
-      <span className="text-base font-semibold">
-        {bytesFormat(value, { standard: 'm', decimalPlaces: 0 })}
-      </span>
+      <span className="text-base font-semibold">{bytesFormat(value, { standard: 'm', decimalPlaces: 0 })}</span>
     ),
   },
   {
@@ -53,10 +35,7 @@ export const getDiskColumns = (
     render: (_, record) => (
       <span className="text-app-text-muted text-xs">
         <div className="min-w-0">
-          <StatusPill
-            color={record.inUse ? 'warning' : 'success'}
-            content={record.inUse ? '已使用' : '未使用'}
-          />
+          <StatusPill color={record.inUse ? 'warning' : 'success'} content={record.inUse ? '已使用' : '未使用'} />
         </div>
       </span>
     ),
@@ -77,11 +56,7 @@ export const getDiskColumns = (
     render: (value) => {
       const health = String(value || '-').toLowerCase()
       const passed = health === 'passed'
-      return (
-        <span className={passed ? 'text-emerald-500' : 'text-red-500'}>
-          {String(value || '-').toUpperCase()}
-        </span>
-      )
+      return <span className={passed ? 'text-emerald-500' : 'text-red-500'}>{String(value || '-').toUpperCase()}</span>
     },
   },
   {

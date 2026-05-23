@@ -1,12 +1,3 @@
-// 任务状态
-export const TASK_STATUSES = {
-  RUNNING: 'RUNNING',
-  SUCCESS: 'SUCCESS',
-  FAILED: 'FAILED',
-  CANCELED: 'CANCELED',
-} as const
-export type TaskStatus = (typeof TASK_STATUSES)[keyof typeof TASK_STATUSES]
-
 // 节点类型 (如: 文件夹或文件)
 export const FILE_NODES = {
   FOLDER: 'folder',
