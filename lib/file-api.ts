@@ -8,6 +8,9 @@ export const getRaidCandidatesUrl = () =>
 export const getSystemDisksUrl = () => `${FILE_API_HOST}/system/disks`
 export const getStoragePoolsUrl = () => `${FILE_API_HOST}/system/storage-pools`
 export const getJobsUrl = () => `${FILE_API_HOST}/jobs`
+export const getUsersUrl = () => `${FILE_API_HOST}/users`
+export const getSmbSharesUrl = () => `${FILE_API_HOST}/smb/shares`
+export const getSmbApplyUrl = () => `${FILE_API_HOST}/smb/apply`
 export const getStoragePoolBenchmarkStreamUrl = (
   poolId: string,
   sizeGiB?: number,

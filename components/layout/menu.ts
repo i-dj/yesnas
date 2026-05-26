@@ -3,6 +3,8 @@ import {
   HardDrive,
   LayoutDashboard,
   ListTodo,
+  Network,
+  Users,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -25,6 +27,8 @@ export const menuGroups: MenuGroup[] = [
       { nameKey: 'storage', href: '/storage', icon: HardDrive },
       { nameKey: 'file', href: '/file', icon: Files },
       { nameKey: 'jobs', href: '/jobs', icon: ListTodo },
+      { nameKey: 'smb', href: '/smb', icon: Network },
+      { nameKey: 'users', href: '/users', icon: Users },
     ],
   },
 ]

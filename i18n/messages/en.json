@@ -30,7 +30,9 @@
       "dashboard": "Dashboard",
       "storage": "Storage",
       "file": "Files",
-      "jobs": "Tasks"
+      "jobs": "Tasks",
+      "smb": "SMB",
+      "users": "Users"
     },
     "aria": {
       "expandSidebar": "Expand sidebar",
@@ -139,6 +141,137 @@
         "size": "13 sec"
       }
     }
+  },
+  "Users": {
+    "title": "Users",
+    "subtitle": "Manage local accounts and SMB account status.",
+    "empty": "No users yet",
+    "emptySearch": "No matching users",
+    "searchPlaceholder": "Search users",
+    "columns": {
+      "user": "User",
+      "status": "Status",
+      "smb": "SMB",
+      "updatedAt": "Updated"
+    },
+    "statuses": {
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "smbStatuses": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "error": "Error"
+    },
+    "roles": {
+      "admin": "Admin"
+    },
+    "actions": {
+      "create": "Create user",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save",
+      "more": "More user actions"
+    },
+    "form": {
+      "createTitle": "Create user",
+      "editTitle": "Edit user",
+      "username": "Username",
+      "displayName": "Display name",
+      "isAdmin": "Administrator",
+      "avatar": "Avatar",
+      "avatarCustom": "Custom avatar URL, data URI, or preset name",
+      "avatarPreset": "Choose {preset} avatar",
+      "avatarUpload": "Upload custom avatar",
+      "avatarZoom": "Zoom",
+      "avatarZoomIn": "Zoom in",
+      "avatarZoomOut": "Zoom out",
+      "avatarRotateLeft": "Rotate left",
+      "avatarRotateRight": "Rotate right",
+      "setAvatar": "Set Avatar",
+      "password": "Password",
+      "newPassword": "New password",
+      "status": "Status"
+    },
+    "messages": {
+      "created": "User created",
+      "updated": "User updated",
+      "deleted": "User deleted",
+      "saveFailed": "Save user failed",
+      "deleteFailed": "Delete user failed",
+      "lastAdminDeleteBlocked": "At least one administrator must remain. You cannot delete the last administrator.",
+      "invalidAvatar": "Please choose an image file.",
+      "enableSmbFailed": "Enable SMB user {username} failed. Make sure the user is synced to SMB and check system permissions.",
+      "disableSmbFailed": "Disable SMB user {username} failed. Make sure the user is synced to SMB and check system permissions.",
+      "systemCommandFailed": "System command failed. Check the NAS backend logs."
+    },
+    "deleteConfirm": {
+      "title": "Delete user",
+      "description": "Delete user {name}? This user will no longer be able to sign in to SMB, FTP, and related services, but existing data and files will not be deleted."
+    }
+  },
+  "Smb": {
+    "title": "SMB Shares",
+    "subtitle": "Manage SMB share folders and allowed users.",
+    "empty": "No SMB shares yet",
+    "columns": {
+      "share": "Share",
+      "pool": "Storage Pool",
+      "flags": "Options",
+      "users": "Users",
+      "updatedAt": "Updated"
+    },
+    "flags": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "browseable": "Browseable",
+      "readOnly": "Read only"
+    },
+    "actions": {
+      "create": "Create share",
+      "apply": "Apply config",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save",
+      "more": "More share actions"
+    },
+    "form": {
+      "createTitle": "Create SMB share",
+      "editTitle": "Edit SMB share",
+      "name": "Name",
+      "location": "Share location",
+      "selectLocation": "Select share location",
+      "closeLocationPicker": "Close share location picker",
+      "loadingFolders": "Loading folders...",
+      "noFolders": "No folders",
+      "enabled": "Enable share",
+      "browseable": "Browseable",
+      "readOnly": "Read only",
+      "users": "Allowed users",
+      "noUsers": "No users available"
+    },
+    "messages": {
+      "created": "Share created",
+      "updated": "Share updated",
+      "deleted": "Share deleted",
+      "applied": "SMB config applied",
+      "saveFailed": "Save share failed",
+      "deleteFailed": "Delete share failed",
+      "applyFailed": "Apply SMB config failed"
+    }
+  },
+  "Upload": {
+    "target": "Upload Target",
+    "selectTarget": "Please select upload target",
+    "closeTargetPicker": "Close target picker",
+    "loadingFolders": "Loading folders...",
+    "noFolders": "No folders",
+    "newFolderName": "New folder name",
+    "folderCreated": "Folder created",
+    "createFolderFailed": "Create folder failed",
+    "setDefault": "Set Default"
   },
   "File": {
     "locations": {

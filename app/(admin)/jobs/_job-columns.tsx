@@ -1,5 +1,13 @@
-import { ActionMenu, type ActionMenuConfig, Button, DataTableHeader, MoreButton, Progress } from '@/components/ui'
-import { cn, formatDateTime } from '@/lib/utils'
+import {
+  ActionMenu,
+  type ActionMenuConfig,
+  Button,
+  DataTableHeader,
+  MoreButton,
+  Progress,
+  Tooltip,
+} from '@/components/ui'
+import { cn, formatDateTime, formatSmartTimeInfo } from '@/lib/utils'
 import type { Job, JobStatus } from '@/types'
 import { useSelections } from 'ahooks'
 import { MoreVertical, Pause, Play, Timer, Trash2, XCircle } from 'lucide-react'
@@ -113,14 +121,18 @@ export const getJobColumns = (
   {
     key: 'updatedAt',
     label: t('columns.updatedAt'),
-    render: (value, record) => (
-      <div className="flex flex-col gap-2">
-        <span className="text-app-text justify-left flex items-center gap-2 text-xs">创建时间</span>
-        <span className="text-app-text-muted justify-left flex items-center gap-2 text-xs">
-          {formatDateTime(record.createdAt, timeZone)}
-        </span>
-      </div>
-    ),
+    render: (value, record) => {
+      const createdAt = formatSmartTimeInfo(record.createdAt, timeZone)
+
+      return (
+        <div className="flex flex-col items-start gap-2">
+          <span className="text-app-text flex items-center gap-2 text-xs">创建时间</span>
+          <Tooltip content={createdAt.fullText} disabled={!createdAt.showTooltip} triggerClassName="w-fit">
+            <span className="text-app-text-muted inline-flex w-fit items-center gap-2 text-xs">{createdAt.text}</span>
+          </Tooltip>
+        </div>
+      )
+    },
   },
   {
     key: '__actions__',

@@ -288,6 +288,106 @@ export function formatDateTime(dateStr: Date | string | number | null | undefine
   return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`
 }
 
+type DateParts = {
+  year: number
+  month: number
+  day: number
+  hour: string
+  minute: string
+}
+
+const SMART_TIME_THRESHOLDS = [
+  { maxMs: 60 * 1000, unitMs: 1000, unit: 'second' },
+  { maxMs: 60 * 60 * 1000, unitMs: 60 * 1000, unit: 'minute' },
+  { maxMs: 24 * 60 * 60 * 1000, unitMs: 60 * 60 * 1000, unit: 'hour' },
+]
+
+function getDateParts(date: Date, timeZone?: string): DateParts {
+  if (!timeZone) {
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+      hour: date.getHours().toString().padStart(2, '0'),
+      minute: date.getMinutes().toString().padStart(2, '0'),
+    }
+  }
+
+  const parts = new Intl.DateTimeFormat('zh-CN', {
+    timeZone,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+    .formatToParts(date)
+    .reduce<Record<string, string>>((acc, part) => {
+      acc[part.type] = part.value
+      return acc
+    }, {})
+
+  return {
+    year: Number(parts.year),
+    month: Number(parts.month),
+    day: Number(parts.day),
+    hour: parts.hour ?? '00',
+    minute: parts.minute ?? '00',
+  }
+}
+
+function calendarDayNumber(parts: Pick<DateParts, 'year' | 'month' | 'day'>): number {
+  return Math.floor(Date.UTC(parts.year, parts.month - 1, parts.day) / 86400000)
+}
+
+/**
+ * Formats timestamps for compact activity lists.
+ * Examples: just now, 5 minutes ago, 2 hours ago, 昨天 23:10, 前天 09:30, 2026/5/20 18:08:12.
+ */
+export function formatSmartTime(dateStr: Date | string | number | null | undefined, timeZone?: string): string {
+  return formatSmartTimeInfo(dateStr, timeZone).text
+}
+
+export function formatSmartTimeInfo(
+  dateStr: Date | string | number | null | undefined,
+  timeZone?: string,
+): { text: string; fullText: string; showTooltip: boolean } {
+  if (!dateStr) return { text: '--', fullText: '--', showTooltip: false }
+
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return { text: '--', fullText: '--', showTooltip: false }
+
+  const fullText = formatDateTime(date, timeZone)
+
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  if (diffMs >= 0) {
+    const threshold = SMART_TIME_THRESHOLDS.find((item) => diffMs < item.maxMs)
+    if (threshold) {
+      const value = Math.max(1, Math.floor(diffMs / threshold.unitMs))
+      if (threshold.unit === 'second' && value < 10) {
+        return { text: 'just now', fullText, showTooltip: true }
+      }
+      const suffix = value === 1 ? threshold.unit : `${threshold.unit}s`
+      return { text: `${value} ${suffix} ago`, fullText, showTooltip: true }
+    }
+  }
+
+  try {
+    const currentParts = getDateParts(now, timeZone)
+    const targetParts = getDateParts(date, timeZone)
+    const dayDiff = calendarDayNumber(currentParts) - calendarDayNumber(targetParts)
+    const timeText = `${targetParts.hour}:${targetParts.minute}`
+
+    if (dayDiff === 1) return { text: `昨天 ${timeText}`, fullText, showTooltip: true }
+    if (dayDiff === 2) return { text: `前天 ${timeText}`, fullText, showTooltip: true }
+    return { text: fullText, fullText, showTooltip: false }
+  } catch {
+    return { text: fullText, fullText, showTooltip: false }
+  }
+}
+
 /**
  * Use this when you need a zero-padded format like 2023/02/02 22:11:33
  */

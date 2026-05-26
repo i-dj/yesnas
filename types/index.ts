@@ -38,4 +38,6 @@ export type ViewMode = (typeof VIEW_MODES)[keyof typeof VIEW_MODES]
 
 export * from './models/task'
 export * from './models/job'
+export * from './models/user'
+export * from './models/smb'
 export * from './models/file'

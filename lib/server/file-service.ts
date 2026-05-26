@@ -3,14 +3,17 @@ import {
   getFileThumbnailUrl,
   getJobsUrl,
   getRaidCandidatesUrl,
+  getSmbApplyUrl,
+  getSmbSharesUrl,
   getStoragePoolsUrl,
   getSystemDisksUrl,
   getStorageFilesUrl,
   getStoragesUrl,
   getTaggedFilesUrl,
   getTrashFilesUrl,
+  getUsersUrl,
 } from '@/lib/file-api'
-import { Job, StorageDrive } from '@/types' // Assumes StorageDrive is exported from the shared types module
+import { CreateUserPayload, Job, SmbShare, SmbSharePayload, StorageDrive, UpdateUserPayload, User } from '@/types'
 import {
   CreateStoragePoolPayload,
   CreateStoragePoolSnapshotPayload,
@@ -46,6 +49,11 @@ const parseErrorMessage = (raw: string, fallback: string) => {
   }
 }
 
+const normalizeSmbShare = (share: SmbShare): SmbShare => ({
+  ...share,
+  userIds: Array.isArray(share.userIds) ? share.userIds : [],
+})
+
 export async function getDisks(): Promise<DiskModel[]> {
   const disksRes = await fetch(getSystemDisksUrl())
   if (!disksRes.ok) {
@@ -56,7 +64,7 @@ export async function getDisks(): Promise<DiskModel[]> {
 }
 
 export async function getStoragePools(): Promise<StoragePoolModel[]> {
-  const res = await fetch(getStoragePoolsUrl())
+  const res = await fetch(getStoragePoolsUrl(), { cache: 'no-store' })
   if (!res.ok) {
     throw new Error(`Fetch storage pools failed: ${res.status}`)
   }
@@ -113,6 +121,123 @@ async function runJobAction(jobId: string | number, action: 'pause' | 'resume' |
   }
 
   return res
+}
+
+export async function getUsers(): Promise<User[]> {
+  const res = await fetch(getUsersUrl(), { cache: 'no-store' })
+  if (!res.ok) {
+    throw new Error(`Fetch users failed: ${res.status}`)
+  }
+  const payload = (await res.json()) as { items: User[] }
+  return payload.items
+}
+
+export async function createUser(payload: CreateUserPayload): Promise<User> {
+  const res = await fetch(getUsersUrl(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(parseErrorMessage(text, `Create user failed: ${res.status}`))
+  }
+
+  return res.json()
+}
+
+export async function updateUser(userId: string, payload: UpdateUserPayload): Promise<User> {
+  const res = await fetch(`${getUsersUrl()}/${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(parseErrorMessage(text, `Update user failed: ${res.status}`))
+  }
+
+  return res.json()
+}
+
+export async function deleteUser(userId: string) {
+  const res = await fetch(`${getUsersUrl()}/${userId}`, {
+    method: 'DELETE',
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(parseErrorMessage(text, `Delete user failed: ${res.status}`))
+  }
+
+  return res.json() as Promise<{ deleted: boolean; id: string }>
+}
+
+export async function getSmbShares(): Promise<SmbShare[]> {
+  const res = await fetch(getSmbSharesUrl(), { cache: 'no-store' })
+  if (!res.ok) {
+    throw new Error(`Fetch SMB shares failed: ${res.status}`)
+  }
+  const payload = (await res.json()) as { items: SmbShare[] }
+  return payload.items.map(normalizeSmbShare)
+}
+
+export async function createSmbShare(payload: SmbSharePayload): Promise<SmbShare> {
+  const res = await fetch(getSmbSharesUrl(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(parseErrorMessage(text, `Create SMB share failed: ${res.status}`))
+  }
+
+  return normalizeSmbShare(await res.json())
+}
+
+export async function updateSmbShare(shareId: string, payload: SmbSharePayload): Promise<SmbShare> {
+  const res = await fetch(`${getSmbSharesUrl()}/${shareId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(parseErrorMessage(text, `Update SMB share failed: ${res.status}`))
+  }
+
+  return normalizeSmbShare(await res.json())
+}
+
+export async function deleteSmbShare(shareId: string) {
+  const res = await fetch(`${getSmbSharesUrl()}/${shareId}`, {
+    method: 'DELETE',
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(parseErrorMessage(text, `Delete SMB share failed: ${res.status}`))
+  }
+
+  return res.json() as Promise<{ deleted: boolean; id: string }>
+}
+
+export async function applySmbConfig() {
+  const res = await fetch(getSmbApplyUrl(), {
+    method: 'POST',
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(parseErrorMessage(text, `Apply SMB config failed: ${res.status}`))
+  }
+
+  return res.json() as Promise<{ applied: boolean }>
 }
 
 export async function createStoragePool(payload: CreateStoragePoolPayload) {

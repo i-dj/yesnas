@@ -86,7 +86,7 @@ export const DataTable = <T extends { id: number | string }>({
 
   return (
     <div className="relative w-full overflow-x-auto">
-      <table className="w-full table-fixed border-separate border-spacing-0 text-sm">
+      <table className="w-full table-fixed border-separate border-spacing-0 text-xs">
         <thead className={cn(!showHeader && 'h-0')}>
           <tr className="select-none">
             {headers.map((h, i) => {
@@ -112,6 +112,7 @@ export const DataTable = <T extends { id: number | string }>({
                         isFirst && isRounded && 'rounded-l-lg',
                         isLast && isRounded && 'rounded-r-lg',
                         h.align === 'right' && 'justify-end',
+                        'bg-app-hover/50 text-xs',
                       )}
                       onClick={() => h.sortable && onSortAction?.(h.key as keyof T)}
                     >
@@ -178,7 +179,7 @@ export const DataTable = <T extends { id: number | string }>({
                         cellVariants({ variant }),
                         radiusClass,
                         selected && 'bg-app-active/50',
-                        'px-2 py-2 text-[13px]',
+                        'px-2 py-2 text-xs',
                         tdClassName,
                       )}
                     >

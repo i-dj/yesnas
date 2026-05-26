@@ -30,7 +30,9 @@
       "dashboard": "控制台",
       "storage": "存储",
       "file": "文件",
-      "jobs": "任务"
+      "jobs": "任务",
+      "smb": "SMB",
+      "users": "用户"
     },
     "aria": {
       "expandSidebar": "展开侧边栏",
@@ -139,6 +141,137 @@
         "size": "13秒"
       }
     }
+  },
+  "Users": {
+    "title": "用户",
+    "subtitle": "管理本机账号和 SMB 账号状态。",
+    "empty": "暂无用户",
+    "emptySearch": "没有匹配的用户",
+    "searchPlaceholder": "搜索用户",
+    "columns": {
+      "user": "用户",
+      "status": "状态",
+      "smb": "SMB",
+      "updatedAt": "更新时间"
+    },
+    "statuses": {
+      "active": "启用",
+      "disabled": "禁用"
+    },
+    "smbStatuses": {
+      "enabled": "已启用",
+      "disabled": "未启用",
+      "error": "异常"
+    },
+    "roles": {
+      "admin": "管理员"
+    },
+    "actions": {
+      "create": "创建用户",
+      "edit": "编辑",
+      "delete": "删除",
+      "cancel": "取消",
+      "save": "保存",
+      "more": "更多用户操作"
+    },
+    "form": {
+      "createTitle": "创建用户",
+      "editTitle": "编辑用户",
+      "username": "用户名",
+      "displayName": "显示名称",
+      "isAdmin": "管理员",
+      "avatar": "头像",
+      "avatarCustom": "自定义头像 URL、data URI 或预设名称",
+      "avatarPreset": "选择 {preset} 头像",
+      "avatarUpload": "上传自定义头像",
+      "avatarZoom": "缩放",
+      "avatarZoomIn": "放大",
+      "avatarZoomOut": "缩小",
+      "avatarRotateLeft": "向左旋转",
+      "avatarRotateRight": "向右旋转",
+      "setAvatar": "设置头像",
+      "password": "密码",
+      "newPassword": "新密码",
+      "status": "状态"
+    },
+    "messages": {
+      "created": "用户已创建",
+      "updated": "用户已更新",
+      "deleted": "用户已删除",
+      "saveFailed": "保存用户失败",
+      "deleteFailed": "删除用户失败",
+      "lastAdminDeleteBlocked": "至少需要保留一个管理员，不能删除最后一个管理员。",
+      "invalidAvatar": "请选择图片文件。",
+      "enableSmbFailed": "启用 SMB 用户 {username} 失败，请确认该用户已同步到 SMB，并检查系统权限。",
+      "disableSmbFailed": "禁用 SMB 用户 {username} 失败，请确认该用户已同步到 SMB，并检查系统权限。",
+      "systemCommandFailed": "系统命令执行失败，请检查 NAS 后台日志。"
+    },
+    "deleteConfirm": {
+      "title": "删除用户",
+      "description": "确定要删除用户 {name} 吗？删除后该用户将无法登录 SMB、FTP 等服务，但已有数据和文件不会被删除。"
+    }
+  },
+  "Smb": {
+    "title": "SMB 共享",
+    "subtitle": "管理 SMB 共享目录和访问用户。",
+    "empty": "暂无 SMB 共享",
+    "columns": {
+      "share": "共享",
+      "pool": "存储池",
+      "flags": "选项",
+      "users": "用户",
+      "updatedAt": "更新时间"
+    },
+    "flags": {
+      "enabled": "启用",
+      "disabled": "禁用",
+      "browseable": "可浏览",
+      "readOnly": "只读"
+    },
+    "actions": {
+      "create": "创建共享",
+      "apply": "应用配置",
+      "edit": "编辑",
+      "delete": "删除",
+      "cancel": "取消",
+      "save": "保存",
+      "more": "更多共享操作"
+    },
+    "form": {
+      "createTitle": "创建 SMB 共享",
+      "editTitle": "编辑 SMB 共享",
+      "name": "名称",
+      "location": "共享位置",
+      "selectLocation": "选择共享位置",
+      "closeLocationPicker": "关闭共享位置选择",
+      "loadingFolders": "正在加载目录...",
+      "noFolders": "暂无目录",
+      "enabled": "启用共享",
+      "browseable": "允许浏览",
+      "readOnly": "只读",
+      "users": "允许访问的用户",
+      "noUsers": "暂无可选用户"
+    },
+    "messages": {
+      "created": "共享已创建",
+      "updated": "共享已更新",
+      "deleted": "共享已删除",
+      "applied": "SMB 配置已应用",
+      "saveFailed": "保存共享失败",
+      "deleteFailed": "删除共享失败",
+      "applyFailed": "应用 SMB 配置失败"
+    }
+  },
+  "Upload": {
+    "target": "上传位置",
+    "selectTarget": "请选择上传位置",
+    "closeTargetPicker": "关闭上传位置选择",
+    "loadingFolders": "正在加载目录...",
+    "noFolders": "暂无目录",
+    "newFolderName": "新建目录名称",
+    "folderCreated": "目录已创建",
+    "createFolderFailed": "创建目录失败",
+    "setDefault": "设为默认"
   },
   "File": {
     "locations": {

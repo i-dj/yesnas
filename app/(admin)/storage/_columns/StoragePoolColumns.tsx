@@ -30,6 +30,13 @@ export const getStoragePoolColumns = (
       return health === 'failed' || health === 'fail' || health === 'warning' || health === 'critical'
     })
 
+    if (pool.kind === 'cloud' && !pool.mounted) {
+      return {
+        label: 'WARNING',
+        detail: '云盘本地挂载已断开',
+        color: 'warning' as const,
+      }
+    }
     if (hasOffline) {
       return {
         label: 'WARNING',
@@ -121,7 +128,7 @@ export const getStoragePoolColumns = (
       label: '',
       width: '222px',
       render: (_, record) => {
-        const healthy = String(record.health).toLowerCase() === 'healthy'
+        const healthy = String(record.health).toLowerCase() === 'healthy' && (record.kind !== 'cloud' || record.mounted)
         return (
           <ColumnIcon
             icon={Layers}

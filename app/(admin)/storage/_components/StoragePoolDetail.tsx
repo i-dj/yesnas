@@ -188,6 +188,19 @@ export function StoragePoolDetail({
     }
   }
   const usedPercent = calculateUsedPercent(activePool?.usedBytes ?? 0, activePool?.totalBytes ?? 0)
+  const warnings = [...(activePool?.warnings ?? [])]
+  const cloudUnmountedWarning = '云盘账号可访问，但本地挂载未激活，SMB 或本地路径访问可能不可用。'
+  if (activePool?.kind === 'cloud' && !activePool.mounted && !warnings.includes(cloudUnmountedWarning)) {
+    warnings.unshift(cloudUnmountedWarning)
+  }
+  const healthValue =
+    activePool?.kind === 'cloud' && !activePool.mounted ? 'warning' : String(activePool?.health || '-').toLowerCase()
+  const healthIconClassName =
+    healthValue === 'healthy' && (activePool?.kind !== 'cloud' || activePool.mounted)
+      ? 'text-emerald-400'
+      : healthValue === 'error'
+        ? 'text-red-400'
+        : 'text-amber-400'
 
   return (
     <SideDrawer open={open} onOpenChange={onOpenChange} title={'Pool Details'}>
@@ -243,8 +256,8 @@ export function StoragePoolDetail({
               [
                 'Health',
                 <span key="health" className="inline-flex items-center gap-1.5">
-                  <HeartPulse className="h-3.5 w-3.5 text-emerald-400" />
-                  {String(activePool.health || '-').toUpperCase()}
+                  <HeartPulse className={`h-3.5 w-3.5 ${healthIconClassName}`} />
+                  {healthValue.toUpperCase()}
                 </span>,
               ],
               [
@@ -281,14 +294,14 @@ export function StoragePoolDetail({
             ))}
           </section>
 
-          {activePool.warnings.length > 0 && (
+          {warnings.length > 0 && (
             <section className="space-y-2 rounded-lg border border-amber-500/35 bg-amber-500/8 p-3">
               <div className="flex items-center gap-2 text-amber-400">
                 <AlertTriangle className="h-4 w-4" />
                 <span className="text-xs font-semibold uppercase">Warnings</span>
               </div>
               <div className="space-y-1">
-                {activePool.warnings.map((warning, index) => (
+                {warnings.map((warning, index) => (
                   <div key={index} className="text-[12px] text-amber-200/90">
                     {warning}
                   </div>
