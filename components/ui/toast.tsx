@@ -100,7 +100,7 @@ export function ToastStack({ toasts, onClose, className }: ToastStackProps) {
   return createPortal(
     <div
       className={cn(
-        'pointer-events-none fixed top-4 right-4 z-[9999] flex w-[min(90vw,400px)] flex-col gap-2.5',
+        'pointer-events-none fixed top-4 right-4 z-9999 flex w-[min(90vw,400px)] flex-col gap-2.5',
         className,
       )}
       aria-live="polite"

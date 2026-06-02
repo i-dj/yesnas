@@ -12,7 +12,7 @@ import type { Job, JobStatus } from '@/types'
 import { useSelections } from 'ahooks'
 import { MoreVertical, Pause, Play, Timer, Trash2, XCircle } from 'lucide-react'
 
-import { getJobIcon, getJobStatusMeta, JobStatusMetaKey } from './_job-constants'
+import { getJobIcon, getJobStatusMeta, JobStatusMetaKey } from '../constants'
 import { ColumnIcon } from '@/components/ui/column-icon'
 
 const statusClassNames = {

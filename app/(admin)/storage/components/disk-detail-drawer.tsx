@@ -144,7 +144,7 @@ export function DiskDetailDrawer({ disk, storagePools = [], open, onOpenChange }
                     return (
                       <span
                         key={segment.key}
-                        className={`${segment.colorClass || partitionColors[index % partitionColors.length]} h-full min-w-[2px]`}
+                        className={`${segment.colorClass || partitionColors[index % partitionColors.length]} h-full min-w-0.5`}
                         style={{ width: `${widthPct}%` }}
                         title={`${segment.name} · ${segment.sizeText}`}
                       />
@@ -154,7 +154,7 @@ export function DiskDetailDrawer({ disk, storagePools = [], open, onOpenChange }
 
                 <div className="flex flex-wrap gap-x-4 gap-y-1.5">
                   {layoutSegments.map((segment, index) => (
-                    <div key={segment.key} className="flex min-w-[220px] items-center gap-2 text-xs">
+                    <div key={segment.key} className="flex min-w-55 items-center gap-2 text-xs">
                       <span
                         className={`${segment.colorClass || partitionColors[index % partitionColors.length]} h-2.5 w-2.5 rounded-full`}
                       />

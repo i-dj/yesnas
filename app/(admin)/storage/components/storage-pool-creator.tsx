@@ -390,9 +390,9 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
                           active && 'border-app-text',
                         )}
                       >
-                        {active ? <span className="bg-app-text mt-[2px] ml-[2px] block h-2 w-2 rounded-full" /> : null}
+                        {active ? <span className="bg-app-text ml-0.5s mt-0.5 block h-2 w-2 rounded-full" /> : null}
                       </span>
-                      <span className={cn('max-w-[132px] truncate', active ? 'text-app-text' : 'text-app-text-muted')}>
+                      <span className={cn('max-w-33 truncate', active ? 'text-app-text' : 'text-app-text-muted')}>
                         {option.label}
                       </span>
                     </button>
@@ -401,7 +401,7 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
               </div>
 
               {currentRaidOption && (
-                <div className="bg-app-bg border-app-border min-h-[220px] rounded-lg border p-2.5 text-xs">
+                <div className="bg-app-bg border-app-border min-h-55 rounded-lg border p-2.5 text-xs">
                   <div className="text-app-text flex items-center justify-between text-sm font-semibold">
                     <span>{currentRaidOption.label}</span>
                     {currentRaidOption.level === recommendedRaid ? (

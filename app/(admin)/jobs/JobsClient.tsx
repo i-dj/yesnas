@@ -2,7 +2,6 @@
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
 import { DataTable, EmptyState, ToggleButton } from '@/components/ui'
-import { cancelJob, deleteJob, pauseJob, resumeJob } from '@/lib/server/file-service'
 import { toast } from '@/store/use-toast-store'
 import type { Job, JobStatus } from '@/types'
 import { useSelections } from 'ahooks'
@@ -10,9 +9,9 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
-import { StatusTabLabel } from './_components'
-import { JOB_STATUS_META, type JobStatusMetaKey } from './_job-constants'
-import { getJobColumns } from './_job-columns'
+import { StatusTabLabel, getJobColumns } from './components'
+import { JOB_STATUS_META, type JobStatusMetaKey } from './constants'
+import { jobApi } from '@/lib/api/job.api'
 
 interface JobsClientProps {
   jobs: Job[]
@@ -29,16 +28,11 @@ const getStatusKey = (status: JobStatus) => {
 export function JobsClient({ jobs, timeZone }: JobsClientProps) {
   const t = useTranslations('Jobs')
   const router = useRouter()
-  const [jobList, setJobList] = useState(jobs)
   const [filterStatus, setFilterStatus] = useState<JobStatusMetaKey>('all')
-
-  useEffect(() => {
-    setJobList(jobs)
-  }, [jobs])
 
   const statusCounts = useMemo(() => {
     const counts: Record<JobStatusMetaKey, number> = {
-      all: jobList.length,
+      all: jobs.length,
       running: 0,
       paused: 0,
       success: 0,
@@ -46,19 +40,19 @@ export function JobsClient({ jobs, timeZone }: JobsClientProps) {
       canceled: 0,
     }
 
-    jobList.forEach((job) => {
+    jobs.forEach((job) => {
       const key = getStatusKey(job.status)
       if (key) counts[key]++
     })
 
     return counts
-  }, [jobList])
+  }, [jobs])
 
   const finalData = useMemo(() => {
     const statuses = JOB_STATUS_META[filterStatus].statuses as readonly JobStatus[] | null
 
-    return statuses ? jobList.filter((job) => statuses.includes(job.status)) : jobList
-  }, [jobList, filterStatus])
+    return statuses ? jobs.filter((job) => statuses.includes(job.status)) : jobs
+  }, [jobs, filterStatus])
 
   const selections = useSelections(finalData, { itemKey: 'id' })
   const selectedIds = useMemo(() => new Set(selections.selected.map((job) => job.id)), [selections.selected])
@@ -79,12 +73,11 @@ export function JobsClient({ jobs, timeZone }: JobsClientProps) {
   const handleJobAction = useCallback(
     async (job: Job, action: 'pause' | 'resume' | 'cancel' | 'delete') => {
       try {
-        if (action === 'pause') await pauseJob(job.id)
-        if (action === 'resume') await resumeJob(job.id)
-        if (action === 'cancel') await cancelJob(job.id)
+        if (action === 'pause') await jobApi.pauseJob(job.id)
+        if (action === 'resume') await jobApi.resumeJob(job.id)
+        if (action === 'cancel') await jobApi.cancelJob(job.id)
         if (action === 'delete') {
-          await deleteJob(job.id)
-          setJobList((prev) => prev.filter((item) => item.id !== job.id))
+          await jobApi.remove(job.id)
         }
         toast.success('Task updated')
         refreshJobs()

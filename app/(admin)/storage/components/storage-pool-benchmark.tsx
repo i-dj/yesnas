@@ -118,7 +118,7 @@ export function StoragePoolBenchmark({
                           active && 'border-app-text',
                         )}
                       >
-                        {active ? <span className="bg-app-text mt-[2px] ml-[2px] block h-2 w-2 rounded-full" /> : null}
+                        {active ? <span className="bg-app-text mt-0.5 ml-0.5 block h-2 w-2 rounded-full" /> : null}
                       </span>
                       <span className={cn(active ? 'text-app-text font-semibold' : 'text-app-text-muted')}>
                         {item.label}
