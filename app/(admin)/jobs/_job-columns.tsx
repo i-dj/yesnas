@@ -83,20 +83,28 @@ export const getJobColumns = (
   {
     key: 'progress',
     label: t('columns.progress'),
-    render: (value: number, record) => (
-      <div className="flex min-w-0 flex-col gap-1">
-        <Progress value={Math.max(0, Math.min(100, value || 0))} showLabel={false} className="bg-sky-500" />
-        <div className="text-app-text-muted flex items-center justify-between gap-3 text-[11px]">
-          <span>
-            {t('columns.progress')}: {Math.round(value || 0)}%
-          </span>
-          <span className="flex items-center gap-1">
-            <Timer className="h-3 w-3" />
-            {formatDateTime(record.updatedAt, timeZone)}
-          </span>
+    render: (value: number, record) => {
+      const updatedAtText = formatSmartTimeInfo(record.updatedAt, timeZone)
+
+      return (
+        <div className="flex min-w-0 flex-col gap-1">
+          <Progress value={Math.max(0, Math.min(100, value || 0))} showLabel={false} className="bg-sky-500" />
+          <div className="text-app-text-muted flex items-center justify-between gap-3 text-[11px]">
+            <span>
+              {t('columns.progress')}: {Math.round(value || 0)}%
+            </span>
+            <span className="flex items-center gap-1">
+              <Timer className="h-3 w-3" />
+              <Tooltip content={updatedAtText.fullText} disabled={!updatedAtText.showTooltip} triggerClassName="w-fit">
+                <span className="text-app-text-muted inline-flex w-fit items-center gap-2 text-xs">
+                  {updatedAtText.text}
+                </span>
+              </Tooltip>
+            </span>
+          </div>
         </div>
-      </div>
-    ),
+      )
+    },
   },
   {
     key: 'status',

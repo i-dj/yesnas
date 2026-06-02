@@ -2,8 +2,7 @@ import { create } from 'zustand'
 import type { ToastItem, ToastVariant } from '@/components/ui/toast'
 
 interface ToastInput {
-  title: string
-  description?: string
+  message: string
   variant?: ToastVariant
   durationMs?: number
 }
@@ -19,9 +18,9 @@ const defaultDurationMs = 3200
 
 export const useToastStore = create<ToastState>((set, get) => ({
   toasts: [],
-  push: ({ title, description, variant = 'success', durationMs }) => {
+  push: ({ message, variant = 'success', durationMs }) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-    const toast: ToastItem = { id, title, description, variant }
+    const toast: ToastItem = { id, message, variant }
 
     set((state) => ({ toasts: [...state.toasts, toast] }))
 
@@ -34,30 +33,28 @@ export const useToastStore = create<ToastState>((set, get) => ({
 
     return id
   },
-  remove: (id) =>
-    set((state) => ({ toasts: state.toasts.filter((item) => item.id !== id) })),
+  remove: (id) => set((state) => ({ toasts: state.toasts.filter((item) => item.id !== id) })),
   clear: () => set({ toasts: [] }),
 }))
 
-const notify = (
-  variant: ToastVariant,
-  title: string,
-  description?: string,
-  durationMs?: number,
-) =>
+const notify = (variant: ToastVariant, message: string, durationMs?: number) =>
   useToastStore.getState().push({
     variant,
-    title,
-    description,
+    message,
     durationMs,
   })
 
 export const toast = {
   push: (input: ToastInput) => useToastStore.getState().push(input),
-  success: (title: string, description?: string, durationMs?: number) =>
-    notify('success', title, description, durationMs),
-  error: (title: string, description?: string, durationMs?: number) =>
-    notify('error', title, description, durationMs),
-  info: (title: string, description?: string, durationMs?: number) =>
-    notify('info', title, description, durationMs),
+  success: (message: string, durationMs?: number) => notify('success', message, durationMs),
+  error: (message: string, durationMs?: number) =>
+    notify('error', normalizeError(message) ?? 'Unknown error', durationMs),
+  info: (message: string, durationMs?: number) => notify('info', message, durationMs),
+  warning: (message: string, durationMs?: number) => notify('warning', message, durationMs),
+}
+const normalizeError = (err: unknown): string | undefined => {
+  if (!err) return undefined
+  if (err instanceof Error) return err.message
+  if (typeof err === 'string') return err
+  return 'Unknown error'
 }

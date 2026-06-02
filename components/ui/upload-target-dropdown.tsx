@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import type { StoragePoolModel } from '@/types/models/storage'
-import { Button } from './button'
+import { Button } from '@/components/ui'
 import { StorageLocationPicker, type StorageLocationValue } from './storage-location-picker'
 
 export type UploadTargetValue = StorageLocationValue

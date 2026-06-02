@@ -26,12 +26,10 @@ export const Table = <T extends { id: string | number }>({
   onRowClick,
   getRowClassName,
 }: TableProps<T>) => {
-  const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' | null }>(
-    {
-      key: '',
-      dir: null,
-    },
-  )
+  const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' | null }>({
+    key: '',
+    dir: null,
+  })
 
   const sortedData = useMemo(() => {
     if (!sort.key || !sort.dir) return data
@@ -57,8 +55,7 @@ export const Table = <T extends { id: string | number }>({
                   h.sortable &&
                   setSort({
                     key: h.key,
-                    dir:
-                      sort.key === h.key && sort.dir === 'asc' ? 'desc' : 'asc',
+                    dir: sort.key === h.key && sort.dir === 'asc' ? 'desc' : 'asc',
                   })
                 }
                 className={cn(
@@ -124,9 +121,7 @@ export const Table = <T extends { id: string | number }>({
                       )}
                     />
                     <div className="relative z-10 select-none">
-                      {h.render
-                        ? h.render((row as any)[h.key], row)
-                        : (row as any)[h.key]}
+                      {h.render ? h.render((row as any)[h.key], row) : (row as any)[h.key]}
                     </div>
                   </td>
                 ))}

@@ -151,15 +151,10 @@ export const useUploadStore = create<UploadState>((set) => {
     const failedCount = result?.failed?.length ?? 0
 
     if (successCount > 0) {
-      const title = failedCount > 0 ? 'Upload finished with warnings' : 'Upload completed'
-      const description =
-        failedCount > 0
-          ? `${successCount} file(s) uploaded, ${failedCount} failed.`
-          : `${successCount} file(s) uploaded successfully.`
       if (failedCount > 0) {
-        toast.info(title, description, 3300)
+        toast.warning(`Upload finished: ${successCount} file(s) uploaded, ${failedCount} failed.`, 3300)
       } else {
-        toast.success(title, description, 3300)
+        toast.success(`Upload completed: ${successCount} file(s) uploaded successfully.`, 3300)
       }
     }
 

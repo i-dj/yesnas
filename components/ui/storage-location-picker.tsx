@@ -6,7 +6,7 @@ import { getFileApiHost, getStorageFilesUrl } from '@/lib/file-api'
 import { bytesFormat, cn } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
 import type { StoragePoolModel } from '@/types/models/storage'
-import { Input } from './input'
+import { Input } from '@/components/ui'
 
 export interface StorageLocationValue {
   storagePoolId: string
@@ -122,7 +122,7 @@ export function StorageLocationPicker({
         return []
       }
       onError?.(message)
-      toast.error(labels?.loadingFolders || 'Load folders failed', message, 4500)
+      toast.error(`${labels?.loadingFolders || 'Load folders failed'}: ${message}`, 4500)
       return []
     }
   }
@@ -257,12 +257,12 @@ export function StorageLocationPicker({
           pathNames: [...fallback.map((item) => item.name), createdName],
         })
       }
-      toast.success(labels?.folderCreated || 'Folder created', `${createdName} created successfully.`)
+      toast.success(`${labels?.folderCreated || 'Folder created'}: ${createdName}`)
       setOpen(false)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create folder'
       onError?.(message)
-      toast.error(labels?.createFolderFailed || 'Create folder failed', message, 5000)
+      toast.error(`${labels?.createFolderFailed || 'Create folder failed'}: ${message}`, 5000)
     }
   }
 

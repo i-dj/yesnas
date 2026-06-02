@@ -35,9 +35,11 @@ export const VIEW_MODES = {
  * @derived 从 {@link VIEW_MODE} 自动提取，保证单一事实来源
  */
 export type ViewMode = (typeof VIEW_MODES)[keyof typeof VIEW_MODES]
+export type EnableStatus = 'enabled' | 'disabled'
 
 export * from './models/task'
+export * from './models/file-share'
 export * from './models/job'
 export * from './models/user'
-export * from './models/smb'
 export * from './models/file'
+export * from './models/dashboard'

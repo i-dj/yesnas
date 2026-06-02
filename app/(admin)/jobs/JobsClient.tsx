@@ -90,7 +90,7 @@ export function JobsClient({ jobs, timeZone }: JobsClientProps) {
         refreshJobs()
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Task action failed'
-        toast.error('Task action failed', message, 5000)
+        toast.error(`Task action failed: ${message}`, 5000)
       }
     },
     [refreshJobs],

@@ -30,8 +30,8 @@
       "dashboard": "Dashboard",
       "storage": "Storage",
       "file": "Files",
+      "fileSharing": "File Sharing",
       "jobs": "Tasks",
-      "smb": "SMB",
       "users": "Users"
     },
     "aria": {
@@ -151,11 +151,12 @@
     "columns": {
       "user": "User",
       "status": "Status",
+      "role": "Role",
       "smb": "SMB",
       "updatedAt": "Updated"
     },
     "statuses": {
-      "active": "Active",
+      "enabled": "Active",
       "disabled": "Disabled"
     },
     "smbStatuses": {
@@ -164,7 +165,8 @@
       "error": "Error"
     },
     "roles": {
-      "admin": "Admin"
+      "admin": "Admin",
+      "user": "User"
     },
     "actions": {
       "create": "Create user",
@@ -211,55 +213,79 @@
       "description": "Delete user {name}? This user will no longer be able to sign in to SMB, FTP, and related services, but existing data and files will not be deleted."
     }
   },
-  "Smb": {
-    "title": "SMB Shares",
-    "subtitle": "Manage SMB share folders and allowed users.",
-    "empty": "No SMB shares yet",
+  "FileSharing": {
+    "title": "File Sharing",
+    "subtitle": "Manage sharing protocols in one place. {enabled}/{total} protocols are enabled.",
+    "sharesTitle": "Shared Folders",
+    "sharesSubtitle": "See which protocols are exposed for each shared folder.",
+    "empty": "No shared folders yet",
+    "linkInfo": "Connection",
+    "disabledHint": "Enable this protocol to show its access link and port.",
+    "port": "Port {port}",
+    "shareCount": "{count} shares",
+    "protocols": {
+      "smb": {
+        "name": "SMB",
+        "description": "LAN file access"
+      },
+      "ftp": {
+        "name": "FTP",
+        "description": "Legacy client access"
+      },
+      "webdav": {
+        "name": "WebDAV",
+        "description": "HTTP remote mount"
+      },
+      "nfs": {
+        "name": "NFS",
+        "description": "Linux / server mount"
+      }
+    },
     "columns": {
-      "share": "Share",
-      "pool": "Storage Pool",
-      "flags": "Options",
-      "users": "Users",
+      "name": "Folder",
+      "protocols": "Protocols",
+      "clientNetworks": "Allowed networks",
+      "status": "Status",
       "updatedAt": "Updated"
     },
-    "flags": {
+    "status": {
       "enabled": "Enabled",
-      "disabled": "Disabled",
-      "browseable": "Browseable",
-      "readOnly": "Read only"
+      "disabled": "Disabled"
     },
     "actions": {
-      "create": "Create share",
-      "apply": "Apply config",
+      "create": "New share",
       "edit": "Edit",
+      "save": "Save",
       "delete": "Delete",
       "cancel": "Cancel",
-      "save": "Save",
-      "more": "More share actions"
+      "enable": "Enable",
+      "disable": "Disable",
+      "copy": "Copy link"
     },
     "form": {
-      "createTitle": "Create SMB share",
-      "editTitle": "Edit SMB share",
+      "createTitle": "New shared folder",
+      "editTitle": "Edit shared folder",
       "name": "Name",
-      "location": "Share location",
-      "selectLocation": "Select share location",
-      "closeLocationPicker": "Close share location picker",
+      "path": "Folder path",
+      "protocols": "Sharing protocols",
+      "users": "Users",
+      "noUsers": "No users available",
+      "clientNetworks": "Allowed client networks",
+      "clientNetworksHint": "CIDR or single IP addresses, separated by new lines or commas.",
+      "nfsUserWarning": "NFS may not honor user access because NFS usually controls access by client network.",
+      "selectLocation": "Select shared folder",
+      "closeLocationPicker": "Close folder picker",
       "loadingFolders": "Loading folders...",
       "noFolders": "No folders",
-      "enabled": "Enable share",
-      "browseable": "Browseable",
-      "readOnly": "Read only",
-      "users": "Allowed users",
-      "noUsers": "No users available"
+      "status": "Status"
     },
     "messages": {
-      "created": "Share created",
-      "updated": "Share updated",
-      "deleted": "Share deleted",
-      "applied": "SMB config applied",
-      "saveFailed": "Save share failed",
-      "deleteFailed": "Delete share failed",
-      "applyFailed": "Apply SMB config failed"
+      "loadOptionsFailed": "Load sharing options failed",
+      "loadProtocolsFailed": "Load protocol status failed",
+      "saveFailed": "Save file share failed",
+      "deleteFailed": "Delete file share failed",
+      "protocolActionFailed": "Protocol action failed",
+      "pathRequired": "Please select a folder path"
     }
   },
   "Upload": {

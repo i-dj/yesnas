@@ -128,28 +128,13 @@ export const HtopTable = () => {
         return newAscending ? valA - valB : valB - valA
       }
 
-      return newAscending
-        ? String(valA).localeCompare(String(valB))
-        : String(valB).localeCompare(String(valA))
+      return newAscending ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA))
     })
 
     setProcesses(sorted)
   }
 
-  const headers: SortKey[] = [
-    'PID',
-    'USER',
-    'PRI',
-    'NI',
-    'VIRT',
-    'RES',
-    'SHR',
-    'S',
-    'CPU',
-    'MEM',
-    'TIME',
-    'Command',
-  ]
+  const headers: SortKey[] = ['PID', 'USER', 'PRI', 'NI', 'VIRT', 'RES', 'SHR', 'S', 'CPU', 'MEM', 'TIME', 'Command']
 
   return (
     <div className="overflow-auto font-mono text-sm">

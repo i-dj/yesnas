@@ -1,5 +1,4 @@
-export type UserStatus = 'active' | 'disabled'
-export type SmbStatus = 'enabled' | 'disabled' | 'error'
+import { EnableStatus } from '..'
 
 export interface User {
   id: string
@@ -7,10 +6,8 @@ export interface User {
   displayName: string
   isAdmin: boolean
   avatar: string
-  status: UserStatus
+  status: EnableStatus
   smbUsername: string
-  smbStatus: SmbStatus
-  smbSyncedAt?: string
   createdAt?: string
   updatedAt?: string
 }
@@ -21,13 +18,13 @@ export interface CreateUserPayload {
   isAdmin?: boolean
   avatar?: string
   password: string
-  status: UserStatus
+  status: EnableStatus
 }
 
 export interface UpdateUserPayload {
   displayName: string
   isAdmin?: boolean
   avatar?: string
-  status: UserStatus
+  status: EnableStatus
   password?: string
 }

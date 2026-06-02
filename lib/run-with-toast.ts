@@ -1,39 +1,28 @@
-import type { ToastVariant } from '@/components/ui/toast'
 import { toast } from '@/store/use-toast-store'
 
-export const getErrorMessage = (error: unknown, fallback: string): string =>
-  error instanceof Error ? error.message : fallback
+const getErrorMessage = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback)
 
-export interface RunWithToastParams {
-  task: () => Promise<void>
-  success?: { title: string; description: string; durationMs?: number }
-  fail: { title: string; fallback: string; durationMs?: number }
-  rethrowOnFail?: boolean
-}
-
-export interface ToastInput {
-  title: string
-  description?: string
-  variant?: ToastVariant
-  durationMs?: number
-}
-
-export async function runWithToast(
-  { task, success, fail, rethrowOnFail = false }: RunWithToastParams,
-): Promise<boolean> {
+export async function runWithToast<T>({
+  task,
+  success,
+  fail,
+  onSuccess,
+  rethrow = false,
+}: {
+  task: () => Promise<T>
+  success?: string
+  fail: string
+  onSuccess?: (result: T) => void
+  rethrow?: boolean
+}) {
   try {
-    await task()
-    if (success) {
-      toast.success(success.title, success.description, success.durationMs)
-    }
+    const result = await task()
+    success && toast.success(success)
+    onSuccess?.(result)
     return true
   } catch (error) {
-    toast.error(
-      fail.title,
-      getErrorMessage(error, fail.fallback),
-      fail.durationMs ?? 5000,
-    )
-    if (rethrowOnFail) throw error
+    toast.error(getErrorMessage(error, fail))
+    if (rethrow) throw error
     return false
   }
 }

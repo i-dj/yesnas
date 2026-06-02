@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui'
 import { Minus, Plus, RotateCcw, RotateCw } from 'lucide-react'
 import type { WheelEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
@@ -57,13 +57,11 @@ export function AvatarEditorModal({ image, labels, onCancel, onConfirm }: Avatar
 
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm">
-      <div className="bg-app-bg border-app-border w-full max-w-3xl overflow-hidden rounded-2xl border shadow-2xl">
-        <div className="flex min-h-[28rem] items-center justify-center p-6" onWheel={handleWheel}>
+      <div className="bg-app-bg border-app-border w-full max-w-lg overflow-hidden rounded-2xl border shadow-2xl">
+        <div className="flex min-h-80 items-center justify-center p-6" onWheel={handleWheel}>
           <AvatarEditor
             ref={editorRef}
             image={image}
-            width={280}
-            height={280}
             border={48}
             borderRadius={140}
             color={[0, 0, 0, 0.48]}
@@ -75,30 +73,6 @@ export function AvatarEditorModal({ image, labels, onCancel, onConfirm }: Avatar
 
         <div className="border-app-border flex flex-col gap-4 border-t p-5">
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              icon={Minus}
-              onClick={() => setScale((value) => clampScale(value - 0.1))}
-              tip={labels.zoomOut}
-            />
-            <input
-              type="range"
-              min="1"
-              max="3"
-              step="0.01"
-              value={scale}
-              onChange={(event) => setScale(Number(event.target.value))}
-              className="accent-app-text h-8 w-48"
-              aria-label={labels.zoom}
-            />
-            <Button
-              type="button"
-              variant="secondary"
-              icon={Plus}
-              onClick={() => setScale((value) => clampScale(value + 0.1))}
-              tip={labels.zoomIn}
-            />
             <Button
               type="button"
               variant="secondary"

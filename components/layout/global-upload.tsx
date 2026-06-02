@@ -114,7 +114,7 @@ export const GlobalUpload = () => {
         if (cancelled) return
         const message = error instanceof Error ? error.message : 'Failed to load storage pools'
         setTargetError(message)
-        toast.error('Load upload targets failed', message, 5000)
+        toast.error(`Load upload targets failed: ${message}`, 5000)
       }
     }
     loadPools()
@@ -145,7 +145,7 @@ export const GlobalUpload = () => {
 
   const uploadFiles = (files: File[]) => {
     if (!target.storagePoolId) {
-      toast.error('Upload failed', 'Please select upload target.')
+      toast.error('Upload failed: Please select upload target.')
       return
     }
     addFilesToUppy(files)
