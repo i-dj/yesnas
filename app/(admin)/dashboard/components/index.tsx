@@ -1,7 +1,5 @@
 export * from './compact-resource-card'
 export * from './docker-card'
 export * from './file-sharing-overview'
-export * from './info-card'
-export * from './process'
 export * from './network-chart'
 export * from './mini-donut'

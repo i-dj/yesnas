@@ -19,7 +19,7 @@ export function CompactResourceCard({
   details: string[][]
 }) {
   return (
-    <div className="border-app-border bg-app-bg rounded-lg border p-3">
+    <div className="bg-app-surface rounded-lg p-3">
       <div className="mb-2 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-app-text flex flex-row items-center justify-center gap-2 truncate text-sm font-semibold">

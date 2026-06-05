@@ -12,6 +12,7 @@
 
   /* Semantic app tokens */
   --color-app-bg: var(--app-bg);
+  --color-app-aside-bg: var(--app-aside-bg);
   --color-app-surface: var(--app-surface);
 
   --color-app-text: var(--app-text);
@@ -30,6 +31,7 @@
   /* Light theme */
   :root {
     --app-bg: #ffffff;
+    --app-aside-bg: #ffffff;
     --app-surface: rgb(243 244 246 / 0.4);
     --app-item-bg: #f3f4f6;
 
@@ -46,7 +48,8 @@
 
   /* Dark theme */
   .dark {
-    --app-bg: #282c32;
+    --app-bg: #1c1d21;
+    --app-aside-bg: #1c1d21;
     --app-surface: rgb(48 52 61 / 0.45);
     --app-item-bg: #30343d;
 
@@ -54,11 +57,11 @@
     --app-text-muted: #a3a3a3;
     --app-text-sub: #525252;
 
-    --app-border: #444549;
+    --app-border: #252728;
     --app-border-strong: #a3a3a3;
 
-    --app-hover: #383c45;
-    --app-active: #454954;
+    --app-hover: #333438;
+    --app-active: #333438;
   }
 
   html,

@@ -42,7 +42,7 @@ export const Button = ({
     secondary: 'bg-app-surface text-app-text-muted border border-app-border',
     danger: 'bg-app-surface text-red-500 border border-red-500/60',
     ghost: 'bg-transparent text-app-text-muted border-none',
-    borderghost: 'bg-app-surface text-app-text-muted border border-text-app-text-muted/60',
+    borderghost: 'bg-app-surface text-app-text-muted border border-app-text-muted/25',
   }
 
   const hoverVariants = {
@@ -52,7 +52,8 @@ export const Button = ({
     danger:
       'enabled:hover:bg-red-500/8 enabled:hover:text-red-600 enabled:hover:shadow-xs enabled:active:bg-red-500/12',
     ghost: 'enabled:hover:bg-app-hover enabled:hover:text-app-text enabled:active:bg-app-active',
-    borderghost: 'enabled:hover:bg-app-hover enabled:hover:text-app-text enabled:active:bg-app-active',
+    borderghost:
+      'enabled:hover:bg-app-hover enabled:hover:border-app-text-muted/40 enabled:hover:text-app-text enabled:active:bg-app-active',
   }
 
   const sizes = {

@@ -5,17 +5,20 @@ import { storageApi } from '@/lib/api/storage.api'
 import { runWithToast } from '@/lib/run-with-toast'
 import { toast } from '@/store/use-toast-store'
 import type { RaidLevel } from '@/types/models/_constants'
-import type { StoragePoolModel } from '@/types/models/storage'
+import type { AutoSnapshotSchedule, StoragePoolModel } from '@/types/models/storage'
 
 interface StorageActionsOptions {
   onPoolDeleted?: (poolId: string) => void
   onPoolFormatted?: (pool: StoragePoolModel) => void
+  onPoolUpdated?: (pool: StoragePoolModel) => void
 }
 
 export interface CreatePoolPayload {
   name: string
   raidLevel: RaidLevel
   diskIds: string[]
+  autoSnapshotEnabled: boolean
+  autoSnapshotSchedule: AutoSnapshotSchedule
 }
 
 export interface SnapshotPayload {
@@ -36,6 +39,11 @@ export interface ReplaceDiskPayload {
   password: string
 }
 
+export interface SnapshotPolicyPayload {
+  autoSnapshotEnabled: boolean
+  autoSnapshotSchedule: AutoSnapshotSchedule
+}
+
 const reject = (message: string) => {
   toast.error(message)
   return false
@@ -46,12 +54,19 @@ const rejectAndThrow = (message: string, errorMessage = message) => {
   throw new Error(errorMessage)
 }
 
-export function useStorageActions({ onPoolDeleted, onPoolFormatted }: StorageActionsOptions = {}) {
+export function useStorageActions({ onPoolDeleted, onPoolFormatted, onPoolUpdated }: StorageActionsOptions = {}) {
   const router = useRouter()
 
   const createPool = (payload: CreatePoolPayload) =>
     runWithToast({
-      task: () => storageApi.createPool({ name: payload.name, raidLevel: payload.raidLevel, paths: payload.diskIds }),
+      task: () =>
+        storageApi.createPool({
+          name: payload.name,
+          raidLevel: payload.raidLevel,
+          paths: payload.diskIds,
+          autoSnapshotEnabled: payload.autoSnapshotEnabled,
+          autoSnapshotSchedule: payload.autoSnapshotEnabled ? payload.autoSnapshotSchedule : '',
+        }),
       success: `Storage pool created: ${payload.name}`,
       fail: 'Create pool failed',
       onSuccess: () => router.refresh(),
@@ -117,6 +132,21 @@ export function useStorageActions({ onPoolDeleted, onPoolFormatted }: StorageAct
     })
   }
 
+  const updateSnapshotPolicy = async (pool: StoragePoolModel, payload: SnapshotPolicyPayload) =>
+    runWithToast({
+      task: () =>
+        storageApi.updateSnapshotPolicy(pool.id, {
+          autoSnapshotEnabled: payload.autoSnapshotEnabled,
+          autoSnapshotSchedule: payload.autoSnapshotEnabled ? payload.autoSnapshotSchedule : '',
+        }),
+      success: `Snapshot policy updated: ${pool.name}`,
+      fail: 'Update snapshot policy failed',
+      onSuccess: (result) => {
+        onPoolUpdated?.(result)
+        router.refresh()
+      },
+    })
+
   const replaceDisk = async (pool: StoragePoolModel, payload: ReplaceDiskPayload) => {
     if (!payload.password?.trim()) rejectAndThrow('Replace disk failed: Password is required.', 'Password is required')
     if (!payload.newDevicePath?.trim()) {
@@ -142,6 +172,7 @@ export function useStorageActions({ onPoolDeleted, onPoolFormatted }: StorageAct
     createPool,
     deletePool,
     createSnapshot,
+    updateSnapshotPolicy,
     formatPool,
     restoreSnapshot,
     replaceDisk,

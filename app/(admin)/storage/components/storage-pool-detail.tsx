@@ -4,12 +4,23 @@ import { Button, EmptyState, Input, Progress, SideDrawer, StatusPill } from '@/c
 import {
   bytesFormat,
   calculateUsedPercent,
+  cn,
   formatDateTime,
   formatUsagePercent,
   getProgressColorClass,
 } from '@/lib/utils'
-import type { StoragePoolModel, StoragePoolSnapshotModel } from '@/types/models/storage'
-import { AlertTriangle, ArrowDown, ArrowUp, Camera, HardDrive, HeartPulse, RotateCcw, ShieldAlert } from 'lucide-react'
+import type { AutoSnapshotSchedule, StoragePoolModel, StoragePoolSnapshotModel } from '@/types/models/storage'
+import {
+  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  Camera,
+  HardDrive,
+  HeartPulse,
+  RotateCcw,
+  Save,
+  ShieldAlert,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface StoragePoolDetailProps {
@@ -27,6 +38,13 @@ interface StoragePoolDetailProps {
     snapshotId: string,
     payload: { password: string; createBackup: boolean },
   ) => Promise<void>
+  onUpdateSnapshotPolicy?: (
+    pool: StoragePoolModel,
+    payload: {
+      autoSnapshotEnabled: boolean
+      autoSnapshotSchedule: AutoSnapshotSchedule
+    },
+  ) => Promise<boolean | void>
   onReplaceDisk?: (
     pool: StoragePoolModel,
     payload: {
@@ -71,12 +89,29 @@ const groupSnapshots = (items: StoragePoolSnapshotModel[]) => {
   return groups
 }
 
+const snapshotScheduleLabelMap: Record<AutoSnapshotSchedule, string> = {
+  hourly: 'Every hour',
+  daily: 'Every day',
+  monthly: 'Every month',
+}
+
+const snapshotScheduleOptions = [
+  { value: 'hourly', label: 'Every hour' },
+  { value: 'daily', label: 'Every day' },
+  { value: 'monthly', label: 'Every month' },
+] as const
+
+function getSnapshotSchedule(schedule: StoragePoolModel['autoSnapshotSchedule']): AutoSnapshotSchedule {
+  return schedule === 'hourly' || schedule === 'daily' || schedule === 'monthly' ? schedule : 'daily'
+}
+
 export function StoragePoolDetail({
   open,
   activePool,
   replaceCandidates = [],
   onOpenChange,
   onRestoreSnapshot,
+  onUpdateSnapshotPolicy,
   onReplaceDisk,
 }: StoragePoolDetailProps) {
   const [restoreSnapshotId, setRestoreSnapshotId] = useState<string | null>(null)
@@ -87,6 +122,9 @@ export function StoragePoolDetail({
   const [replaceNewPath, setReplaceNewPath] = useState('')
   const [replacePassword, setReplacePassword] = useState('')
   const [replaceSubmitting, setReplaceSubmitting] = useState(false)
+  const [autoSnapshotEnabled, setAutoSnapshotEnabled] = useState(false)
+  const [autoSnapshotSchedule, setAutoSnapshotSchedule] = useState<AutoSnapshotSchedule>('daily')
+  const [snapshotPolicySubmitting, setSnapshotPolicySubmitting] = useState(false)
 
   useEffect(() => {
     if (open) return
@@ -98,6 +136,7 @@ export function StoragePoolDetail({
     setReplaceNewPath('')
     setReplacePassword('')
     setReplaceSubmitting(false)
+    setSnapshotPolicySubmitting(false)
   }, [open])
 
   useEffect(() => {
@@ -109,7 +148,10 @@ export function StoragePoolDetail({
     setReplaceNewPath('')
     setReplacePassword('')
     setReplaceSubmitting(false)
-  }, [activePool?.id])
+    setSnapshotPolicySubmitting(false)
+    setAutoSnapshotEnabled(Boolean(activePool?.autoSnapshotEnabled))
+    setAutoSnapshotSchedule(getSnapshotSchedule(activePool?.autoSnapshotSchedule))
+  }, [activePool?.autoSnapshotEnabled, activePool?.autoSnapshotSchedule, activePool?.id])
 
   const snapshots = (activePool?.snapshots ?? [])
     .filter((item): item is StoragePoolSnapshotModel => Boolean(item))
@@ -187,6 +229,23 @@ export function StoragePoolDetail({
       setReplaceSubmitting(false)
     }
   }
+
+  const handleSaveSnapshotPolicy = async () => {
+    if (!activePool || !onUpdateSnapshotPolicy) return
+    try {
+      setSnapshotPolicySubmitting(true)
+      await onUpdateSnapshotPolicy(activePool, {
+        autoSnapshotEnabled,
+        autoSnapshotSchedule,
+      })
+    } finally {
+      setSnapshotPolicySubmitting(false)
+    }
+  }
+
+  const snapshotPolicyDirty =
+    Boolean(activePool?.autoSnapshotEnabled) !== autoSnapshotEnabled ||
+    getSnapshotSchedule(activePool?.autoSnapshotSchedule) !== autoSnapshotSchedule
   const usedPercent = calculateUsedPercent(activePool?.usedBytes ?? 0, activePool?.totalBytes ?? 0)
   const warnings = [...(activePool?.warnings ?? [])]
   const cloudUnmountedWarning = '云盘账号可访问，但本地挂载未激活，SMB 或本地路径访问可能不可用。'
@@ -312,6 +371,95 @@ export function StoragePoolDetail({
 
           {activePool.kind === 'local' && (
             <>
+              <section className="space-y-2">
+                <div className="border-app-border flex items-center justify-between gap-3 border-b pb-1">
+                  <div className="flex items-center gap-1.5">
+                    <Camera className="text-app-text-muted h-3.5 w-3.5" />
+                    <span className="text-app-text text-xs font-semibold uppercase">Snapshot Policy</span>
+                  </div>
+                  <StatusPill
+                    color={autoSnapshotEnabled ? 'success' : 'neutral'}
+                    content={autoSnapshotEnabled ? 'AUTO' : 'MANUAL'}
+                  />
+                </div>
+
+                <div className="bg-app-bg border-app-border rounded-lg border p-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="text-app-text text-sm font-semibold">Auto snapshot backup</div>
+                      <div className="text-app-text-muted mt-0.5 text-xs">
+                        {autoSnapshotEnabled
+                          ? `Runs ${snapshotScheduleLabelMap[autoSnapshotSchedule].toLowerCase()}.`
+                          : 'Automatic snapshots are disabled.'}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={autoSnapshotEnabled}
+                      onClick={() => setAutoSnapshotEnabled((current) => !current)}
+                      className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors ${
+                        autoSnapshotEnabled
+                          ? 'border-emerald-400/40 bg-emerald-400/30'
+                          : 'border-app-border bg-app-surface'
+                      }`}
+                    >
+                      <span
+                        className={`bg-app-text absolute top-1/2 size-4 -translate-y-1/2 rounded-full transition-transform ${
+                          autoSnapshotEnabled ? 'left-1 translate-x-5' : 'left-1 translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="mt-3 flex flex-col gap-3">
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {snapshotScheduleOptions.map((option) => {
+                        const active = autoSnapshotSchedule === option.value
+
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            disabled={!autoSnapshotEnabled || snapshotPolicySubmitting}
+                            onClick={() => setAutoSnapshotSchedule(option.value)}
+                            className={cn(
+                              'border-app-border bg-app-surface text-app-text-muted flex h-8 items-center justify-center gap-1.5 rounded-md border px-2 text-xs transition-colors',
+                              'enabled:hover:border-app-text-muted/40 enabled:hover:bg-app-hover enabled:hover:text-app-text',
+                              active && autoSnapshotEnabled && 'border-app-text-muted/40 bg-app-hover text-app-text',
+                              (!autoSnapshotEnabled || snapshotPolicySubmitting) && 'cursor-not-allowed opacity-45',
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                'border-app-border grid size-3.5 shrink-0 place-items-center rounded-full border',
+                                active && autoSnapshotEnabled && 'border-app-text',
+                              )}
+                            >
+                              {active && autoSnapshotEnabled ? (
+                                <span className="bg-app-text size-1.5 rounded-full" />
+                              ) : null}
+                            </span>
+                            <span className="truncate">{option.label}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    <Button
+                      size="sm"
+                      icon={Save}
+                      className="self-end"
+                      variant={snapshotPolicyDirty ? 'primary' : 'secondary'}
+                      disabled={!snapshotPolicyDirty || snapshotPolicySubmitting}
+                      loading={snapshotPolicySubmitting}
+                      onClick={handleSaveSnapshotPolicy}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              </section>
               <section className="space-y-2">
                 <div className="border-app-border flex items-center gap-1.5 border-b pb-1">
                   <HardDrive className="text-app-text-muted h-3.5 w-3.5" />

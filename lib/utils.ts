@@ -150,6 +150,47 @@ export const bytesFormat = (
 
   return `${formattedValue} ${symbols[unitIndex]}`
 }
+
+export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes)) return '-'
+
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let value = bytes
+  let unitIndex = 0
+
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024
+    unitIndex += 1
+  }
+
+  const digits = value >= 100 || unitIndex === 0 ? 0 : value >= 10 ? 1 : 2
+  return `${value.toFixed(digits)} ${units[unitIndex]}`
+}
+
+export function formatPercent(value: number): string {
+  return `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}%`
+}
+
+export function formatOptionalNumber(value: number | undefined, suffix: string): string {
+  if (value === undefined || !Number.isFinite(value)) return '-'
+
+  const formatted = Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)
+  return `${formatted}${suffix}`
+}
+
+export function formatUptime(seconds: number): string {
+  const days = Math.floor(seconds / 86400)
+  const hours = Math.floor((seconds % 86400) / 3600)
+
+  if (days > 0) return `${days} 天 ${hours.toString().padStart(2, '0')} 小时`
+  return `${hours} 小时`
+}
+
+export function clampPercent(value: number): number {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(100, value))
+}
+
 export const hoursFormat = (totalHours: number): string => {
   const HOURS_PER_DAY = 24
   const DAYS_PER_YEAR = 365

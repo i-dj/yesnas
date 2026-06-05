@@ -8,7 +8,7 @@ import {
   Tooltip,
 } from '@/components/ui'
 import { ColumnIcon } from '@/components/ui/column-icon'
-import { bytesFormat, formatUsagePercent, getProgressColorClass } from '@/lib/utils'
+import { bytesFormat, formatBytes, formatUsagePercent, getProgressColorClass } from '@/lib/utils'
 import { StoragePoolModel } from '@/types/models/storage'
 import { AlertCircle, ArrowDown, ArrowUp, Camera, Check, Eye, Gauge, Layers, Trash2, Wrench } from 'lucide-react'
 
@@ -158,17 +158,9 @@ export const getStoragePoolColumns = (
         return (
           <div className="space-y-px pr-20">
             <Progress value={barPercent} showLabel={false} className={getProgressColorClass(barPercent)} />
-            <div className="text-app-text-muted flex justify-between text-[10px] font-semibold tracking-tighter uppercase">
+            <div className="text-app-text-muted flex justify-between text-[10px] font-semibold tracking-tighter">
               <span>
-                {bytesFormat(record.usedBytes ?? 0, {
-                  standard: 's',
-                  decimalPlaces: 2,
-                })}{' '}
-                /{' '}
-                {bytesFormat(record.totalBytes ?? 0, {
-                  standard: 's',
-                  decimalPlaces: 2,
-                })}
+                {formatBytes(record.usedBytes)} of {formatBytes(record.totalBytes)}
               </span>
               <span>{showPercent} </span>
             </div>

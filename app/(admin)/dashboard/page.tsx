@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Activity,
   ChevronDown,
   Computer,
   Cpu,
@@ -13,29 +14,23 @@ import {
   Power,
   ShieldCheck,
   Upload,
-  UsersRound,
   Zap,
   type LucideIcon,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
-import { Card, StatusPill } from '@/components/ui'
+import { Card } from '@/components/ui'
 import { getSystemNetworkStreamUrl, getSystemNetworkUrl, getSystemStatusStreamUrl } from '@/lib/file-api'
-import { cn } from '@/lib/utils'
+import { cn, formatBytes, formatOptionalNumber, formatPercent, formatUptime } from '@/lib/utils'
 import { CompactResourceCard, DockerCard, FileSharingOverview, NetworkChart } from './components'
 import type { NetworkRange } from './types'
 import {
-  formatBytes,
   formatCheckedAt,
   formatInterfaceOption,
-  formatOptional,
-  formatPercent,
   formatSpeed,
-  formatUptime,
   healthLabelMap,
   mergeRealtimeNetworkSnapshot,
-  processLabelMap,
   statusLabelMap,
 } from './utils'
 import { NetworkInterfacesSnapshot, SystemStatusSnapshot } from '@/types/models/dashboard'
@@ -132,7 +127,7 @@ export default function DashboardPage() {
       },
       {
         title: '系统盘',
-        value: snapshot ? `${formatPercent(snapshot.systemDisk.usagePercent)}` : '-',
+        value: snapshot ? formatPercent(snapshot.systemDisk.usagePercent) : '-',
         meta: snapshot
           ? `${formatBytes(snapshot.systemDisk.usedBytes)} / ${formatBytes(snapshot.systemDisk.totalBytes)} · ${
               healthLabelMap[snapshot.systemDisk.health]
@@ -142,12 +137,21 @@ export default function DashboardPage() {
         tone: snapshot?.systemDisk.health === 'healthy' ? 'sky' : 'amber',
       },
       {
-        title: '文件共享在线',
-        value: snapshot ? `${snapshot.fileSharing.onlineUsers} 人` : '-',
+        title: '负载',
+        value: snapshot ? snapshot.load.load1.toFixed(2) : '-',
         meta: snapshot
-          ? `SMB ${snapshot.fileSharing.services.smb} · WebDAV ${snapshot.fileSharing.services.webdav} · NFS ${snapshot.fileSharing.services.nfs}`
+          ? `5分钟 ${snapshot.load.load5.toFixed(2)} · 15分钟 ${snapshot.load.load15.toFixed(2)}`
           : '等待接口数据',
-        icon: UsersRound,
+        icon: Activity,
+        tone: 'violet',
+      },
+      {
+        title: '磁盘 IO',
+        value: snapshot ? formatSpeed(snapshot.diskIo.readBytesPerSec + snapshot.diskIo.writeBytesPerSec) : '-',
+        meta: snapshot
+          ? `读 ${formatSpeed(snapshot.diskIo.readBytesPerSec)} · 写 ${formatSpeed(snapshot.diskIo.writeBytesPerSec)}`
+          : '等待接口数据',
+        icon: Database,
         tone: 'amber',
       },
     ],
@@ -203,12 +207,12 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:flex sm:items-center sm:gap-0">
           <MiniStatus icon={Power} label="电源" value="AC 供电" />
           <MiniStatus icon={Computer} label="主机名" value="yesnas" />
-          <MiniStatus icon={Fan} label="风扇" value={formatOptional(snapshot?.cpu.fanRpm, ' RPM')} />
-          <MiniStatus icon={Zap} label="功耗" value={formatOptional(snapshot?.cpu.powerW, ' W')} />
+          <MiniStatus icon={Fan} label="风扇" value={formatOptionalNumber(snapshot?.cpu.fanRpm, ' RPM')} />
+          <MiniStatus icon={Zap} label="功耗" value={formatOptionalNumber(snapshot?.cpu.powerW, ' W')} />
         </div>
       </section>
 
-      <section className="grid gap-3 md:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => (
           <Card key={card.title} className="p-3">
             <div className="flex items-start justify-between gap-3">
@@ -244,13 +248,13 @@ export default function DashboardPage() {
               <div className="grid gap-2 sm:grid-cols-2">
                 <NetworkTrafficStat
                   icon={Download}
-                  label="下行"
+                  label="接收"
                   value={formatSpeed(networkTrafficTotal.rxBytesPerSec)}
                   className="text-sky-400"
                 />
                 <NetworkTrafficStat
                   icon={Upload}
-                  label="上行"
+                  label="发送"
                   value={formatSpeed(networkTrafficTotal.txBytesPerSec)}
                   className="text-violet-400"
                 />
@@ -308,94 +312,49 @@ export default function DashboardPage() {
             percent={snapshot?.cpu.usagePercent ?? 0}
             details={[
               ['核心', snapshot ? `${snapshot.cpu.cores} 核 ${snapshot.cpu.threads} 线程` : '-'],
-              ['风扇', formatOptional(snapshot?.cpu.fanRpm, ' RPM')],
-              ['功率', formatOptional(snapshot?.cpu.powerW, ' W')],
+              ['风扇', formatOptionalNumber(snapshot?.cpu.fanRpm, ' RPM')],
+              ['功率', formatOptionalNumber(snapshot?.cpu.powerW, ' W')],
             ]}
           />
           <CompactResourceCard
             icon={MemoryStick}
             title="内存"
             value={snapshot ? formatPercent(snapshot.memory.usagePercent) : '-'}
-            note={formatBytes(snapshot ? snapshot.memory.totalBytes : 0)}
+            note={
+              snapshot
+                ? formatBytes(snapshot.memory.totalBytes) +
+                  ' · ' +
+                  snapshot.memory.type +
+                  ' · ' +
+                  snapshot.memory.speedMHz +
+                  'MHz'
+                : '0'
+            }
             color="#8b5cf6"
             percent={snapshot?.memory.usagePercent ?? 0}
             details={[
               ['已用', snapshot ? formatBytes(snapshot.memory.usedBytes) : '-'],
               ['可用', snapshot ? formatBytes(snapshot.memory.availableBytes) : '-'],
-              ['压力', snapshot ? `${snapshot.memory.pressurePercent.toFixed(1)}` : '-'],
             ]}
           />
           <CompactResourceCard
             icon={Gauge}
             title="显卡"
             value={formatPercent(gpu?.usagePercent ?? 0)}
-            note={`${gpu?.name ?? '未检测到显卡'} · ${formatOptional(gpu?.temperatureC, '°C')}`}
+            note={`${gpu?.name ?? '未检测到显卡'} · ${formatOptionalNumber(gpu?.temperatureC, '°C')}`}
             color="#f59e0b"
             percent={gpu?.usagePercent ?? 0}
             details={[
               ['显存', gpu ? `${formatBytes(gpu.memoryUsedBytes)} / ${formatBytes(gpu.memoryTotalBytes)}` : '-'],
-              ['功率', formatOptional(gpu?.powerW, ' W')],
-              ['温度', formatOptional(gpu?.temperatureC, '°C')],
+              ['功率', formatOptionalNumber(gpu?.powerW, ' W')],
+              ['温度', formatOptionalNumber(gpu?.temperatureC, '°C')],
             ]}
           />
         </section>
       </section>
-      <FileSharingOverview snapshot={snapshot} />
+      <FileSharingOverview />
 
       <DockerCard />
-
-      <section className="grid gap-3">
-        <Card className="overflow-hidden p-0">
-          <div className="border-app-border flex items-center justify-between gap-3 border-b p-3">
-            <div>
-              <h2 className="text-app-text text-sm font-semibold">进程占用</h2>
-              <p className="text-app-text-muted mt-1 text-xs">按 CPU 占用排序的关键服务</p>
-            </div>
-            <Gauge className="text-app-text-muted size-3.5" />
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-left text-xs">
-              <thead className="border-app-border text-app-text-muted border-b text-xs">
-                <tr>
-                  <th className="px-3 py-2 font-medium">进程</th>
-                  <th className="px-3 py-2 font-medium">CPU</th>
-                  <th className="px-3 py-2 font-medium">内存</th>
-                  <th className="px-3 py-2 font-medium">状态</th>
-                </tr>
-              </thead>
-              <tbody className="divide-app-border divide-y">
-                {snapshot?.topProcesses.map((process, index) => (
-                  <tr key={`${process.name}-${index}`} className="text-app-text">
-                    <td className="px-3 py-2 font-mono text-xs">{process.name}</td>
-                    <td className="px-3 py-2">{formatPercent(process.cpuPercent)}</td>
-                    <td className="px-3 py-2">{formatBytes(process.memoryBytes)}</td>
-                    <td className="px-3 py-2">
-                      <StatusPill
-                        color={
-                          process.status === 'waiting'
-                            ? 'warning'
-                            : process.status === 'running'
-                              ? 'success'
-                              : 'neutral'
-                        }
-                        content={processLabelMap[process.status]}
-                      />
-                    </td>
-                  </tr>
-                ))}
-                {!snapshot && (
-                  <tr className="text-app-text-muted">
-                    <td className="px-3 py-6 text-center text-xs" colSpan={4}>
-                      等待接口数据
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      </section>
     </PageWrapper>
   )
 }
@@ -426,21 +385,12 @@ function NetworkTrafficStat({
   return (
     <div className="bg-app-bg/70 flex min-w-35 items-center gap-2 rounded-md px-2 py-1">
       <span className="bg-app-hover grid size-7 shrink-0 place-items-center rounded-md">
-        <Icon className={cn('size-3.5 opacity-50')} />
+        <Icon className={cn('size-3.5 opacity-50', className)} />
       </span>
       <span className="min-w-0">
         <span className="text-app-text-muted block text-[10px]">{label}</span>
         <span className="text-app-text block truncate text-xs font-semibold tracking-normal">{value}</span>
       </span>
-    </div>
-  )
-}
-
-function DiskStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-app-bg rounded-md px-3 py-2">
-      <p className="text-app-text-muted text-[10px]">{label}</p>
-      <p className="text-app-text mt-1 truncate text-xs font-semibold">{value}</p>
     </div>
   )
 }

@@ -1,5 +1,4 @@
 export type SystemState = 'healthy' | 'warning' | 'error' | 'unknown'
-export type ProcessState = 'running' | 'idle' | 'waiting' | 'unknown'
 
 export type SystemStatusSnapshot = {
   status: {
@@ -13,6 +12,15 @@ export type SystemStatusSnapshot = {
     freeBytes: number
     usagePercent: number
     health: SystemState
+  }
+  load: {
+    load1: number
+    load5: number
+    load15: number
+  }
+  diskIo: {
+    readBytesPerSec: number
+    writeBytesPerSec: number
   }
   network: {
     downloadBytesPerSec: number
@@ -41,7 +49,10 @@ export type SystemStatusSnapshot = {
     usedBytes: number
     availableBytes: number
     usagePercent: number
-    pressurePercent: number
+    speedMHz: number
+    type: string
+    manufacturer: string
+    partNumber: string
   }
   gpu?: {
     name: string
@@ -51,12 +62,6 @@ export type SystemStatusSnapshot = {
     memoryTotalBytes: number
     powerW?: number
   }
-  topProcesses: Array<{
-    name: string
-    cpuPercent: number
-    memoryBytes: number
-    status: ProcessState
-  }>
   checkedAt: string
 }
 

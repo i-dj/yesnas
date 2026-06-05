@@ -2,8 +2,9 @@
 
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
+import { formatBytes } from '@/lib/utils'
 import type { NetworkRange } from '../types'
-import { formatBytes, formatChartTime, formatInterfaceLinkSpeed, formatInterfaceName, formatSpeed } from '../utils'
+import { formatChartTime, formatInterfaceLinkSpeed, formatInterfaceName, formatSpeed } from '../utils'
 import { NetworkInterfaceSnapshot } from '@/types/models/dashboard'
 
 export function NetworkChart({ interfaces, range }: { interfaces: NetworkInterfaceSnapshot[]; range: NetworkRange }) {
@@ -58,7 +59,7 @@ export function NetworkChart({ interfaces, range }: { interfaces: NetworkInterfa
               <Line
                 type="monotone"
                 dataKey="rxValue"
-                name="下载"
+                name="接收"
                 stroke="#14b8a6"
                 strokeWidth={2}
                 dot={false}
@@ -68,7 +69,7 @@ export function NetworkChart({ interfaces, range }: { interfaces: NetworkInterfa
               <Line
                 type="monotone"
                 dataKey="txValue"
-                name="上传"
+                name="发送"
                 stroke="#8b5cf6"
                 strokeWidth={2}
                 dot={false}

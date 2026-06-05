@@ -21,6 +21,9 @@
       "light": "浅色",
       "dark": "深色"
     },
+    "language": {
+      "label": "语言"
+    },
     "profile": {
       "name": "可爱的小王子"
     }
@@ -31,6 +34,7 @@
       "storage": "存储",
       "file": "文件",
       "fileSharing": "文件共享",
+      "hardware": "硬件信息",
       "jobs": "任务",
       "users": "用户"
     },
@@ -80,6 +84,97 @@
       "downloadTraffic": "下行流量 (Mbps)"
     }
   },
+  "Hardware": {
+    "title": "硬件信息",
+    "subtitle": "系统硬件规格、健康状态与实时资源数据",
+    "lastUpdated": "最后更新 {value}",
+    "stream": {
+      "live": "实时",
+      "connecting": "连接中",
+      "error": "连接异常",
+      "loading": "正在读取硬件信息...",
+      "loadError": "硬件信息实时流连接失败"
+    },
+    "summary": {
+      "deviceName": "设备名称",
+      "os": "操作系统",
+      "kernel": "内核版本",
+      "uptime": "运行时间"
+    },
+    "sections": {
+      "cpu": "处理器",
+      "motherboard": "主板",
+      "memory": "内存",
+      "disks": "磁盘",
+      "gpus": "图形处理器",
+      "network": "网络接口"
+    },
+    "counts": {
+      "disks": "{count} 块物理磁盘",
+      "gpus": "{count} 个图形设备",
+      "network": "{count} 个网络接口"
+    },
+    "empty": {
+      "disks": "未检测到磁盘",
+      "gpus": "未检测到图形设备",
+      "network": "未检测到网络接口"
+    },
+    "fields": {
+      "cpuUsage": "CPU 使用率",
+      "coresThreads": "核心 / 线程",
+      "frequency": "当前频率",
+      "temperature": "温度",
+      "fanSpeed": "风扇转速",
+      "power": "功耗",
+      "manufacturer": "制造商",
+      "productModel": "产品型号",
+      "version": "版本",
+      "serial": "序列号",
+      "totalCapacity": "总容量",
+      "memoryUsage": "内存使用率",
+      "used": "已用",
+      "available": "可用",
+      "pressure": "压力",
+      "typeSpeed": "类型 / 速度",
+      "partNumber": "部件编号",
+      "devicePath": "设备路径",
+      "vendor": "厂商",
+      "capacity": "容量",
+      "usage": "用途",
+      "powerOnTime": "通电时间",
+      "powerCycles": "启动次数",
+      "realtimeIo": "实时 IO",
+      "usageRate": "使用率",
+      "videoMemory": "显存",
+      "macAddress": "MAC 地址",
+      "ipAddress": "IP 地址",
+      "connectionStatus": "连接状态",
+      "receiveSpeed": "接收速度",
+      "sendSpeed": "发送速度"
+    },
+    "statuses": {
+      "passed": "通过",
+      "abnormal": "异常",
+      "unsupported": "不支持",
+      "unknown": "未知",
+      "unknownVendor": "未知厂商",
+      "inUse": "使用中",
+      "unused": "未使用",
+      "online": "在线",
+      "offline": "离线",
+      "noIp": "无 IP 地址"
+    },
+    "diskUsage": {
+      "system": "系统盘",
+      "storagePool": "存储池",
+      "mixed": "系统 / 存储池"
+    },
+    "values": {
+      "hours": "{value} 小时",
+      "daysHours": "{days} 天 {hours} 小时",
+      "readWrite": "读 {read} · 写 {write}"
+    }
+  },
   "Jobs": {
     "loading": "正在加载任务...",
     "empty": "暂无任务",
@@ -95,7 +190,8 @@
     "types": {
       "cloud_sync": "云同步",
       "data_transfer": "数据传输",
-      "back_to_cloud": "备份到云端"
+      "back_to_cloud": "备份到云端",
+      "auto_snapshot": "自动快照"
     },
     "actions": {
       "more": "更多任务操作",

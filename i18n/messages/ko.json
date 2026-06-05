@@ -1,59 +1,59 @@
 {
   "Common": {
     "brand": "YesNAS",
-    "searchPlaceholder": "Search any file or folder",
+    "searchPlaceholder": "파일 또는 폴더 검색",
     "actions": {
-      "confirm": "Confirm",
-      "cancel": "Cancel",
-      "delete": "Delete",
-      "open": "Open",
-      "copy": "Copy",
-      "move": "Move",
-      "logout": "Log out",
-      "feedback": "Feedback",
-      "changeAvatar": "Change avatar",
-      "changePassword": "Change password",
-      "clearTrash": "Empty trash"
+      "confirm": "확인",
+      "cancel": "취소",
+      "delete": "삭제",
+      "open": "열기",
+      "copy": "복사",
+      "move": "이동",
+      "logout": "로그아웃",
+      "feedback": "피드백",
+      "changeAvatar": "아바타 변경",
+      "changePassword": "비밀번호 변경",
+      "clearTrash": "휴지통 비우기"
     },
     "theme": {
-      "label": "Theme",
-      "system": "System",
-      "light": "Light",
-      "dark": "Dark"
+      "label": "테마",
+      "system": "시스템",
+      "light": "라이트",
+      "dark": "다크"
     },
     "language": {
-      "label": "Language"
+      "label": "언어"
     },
     "profile": {
-      "name": "Cute Little Prince"
+      "name": "귀여운 어린 왕자"
     }
   },
   "Layout": {
     "nav": {
-      "dashboard": "Dashboard",
-      "storage": "Storage",
-      "file": "Files",
-      "fileSharing": "File Sharing",
-      "hardware": "Hardware",
-      "jobs": "Tasks",
-      "users": "Users"
+      "dashboard": "대시보드",
+      "storage": "스토리지",
+      "file": "파일",
+      "fileSharing": "파일 공유",
+      "hardware": "하드웨어",
+      "jobs": "작업",
+      "users": "사용자"
     },
     "aria": {
-      "expandSidebar": "Expand sidebar",
-      "collapseSidebar": "Collapse sidebar"
+      "expandSidebar": "사이드바 펼치기",
+      "collapseSidebar": "사이드바 접기"
     }
   },
   "Dashboard": {
-    "title": "Dashboard",
+    "title": "대시보드",
     "timeRanges": {
-      "oneHour": "1 hour",
-      "twentyFourHours": "24 hours",
-      "sevenDays": "7 days"
+      "oneHour": "1시간",
+      "twentyFourHours": "24시간",
+      "sevenDays": "7일"
     },
     "metrics": {
-      "used": "Used",
-      "free": "Free",
-      "total": "Total"
+      "used": "사용됨",
+      "free": "여유",
+      "total": "전체"
     },
     "systemInfo": {
       "title": "System Info",
@@ -85,94 +85,94 @@
     }
   },
   "Hardware": {
-    "title": "Hardware",
-    "subtitle": "System specifications, health status, and real-time resource data",
-    "lastUpdated": "Last updated {value}",
+    "title": "하드웨어 정보",
+    "subtitle": "시스템 사양, 상태 및 실시간 리소스 정보",
+    "lastUpdated": "마지막 업데이트 {value}",
     "stream": {
-      "live": "Live",
-      "connecting": "Connecting",
-      "error": "Connection error",
-      "loading": "Loading hardware information...",
-      "loadError": "Failed to connect to the hardware information stream"
+      "live": "실시간",
+      "connecting": "연결 중",
+      "error": "연결 오류",
+      "loading": "하드웨어 정보를 불러오는 중...",
+      "loadError": "하드웨어 정보 스트림 연결에 실패했습니다"
     },
     "summary": {
-      "deviceName": "Device name",
-      "os": "Operating system",
-      "kernel": "Kernel version",
-      "uptime": "Uptime"
+      "deviceName": "장치 이름",
+      "os": "운영 체제",
+      "kernel": "커널 버전",
+      "uptime": "가동 시간"
     },
     "sections": {
-      "cpu": "Processor",
-      "motherboard": "Motherboard",
-      "memory": "Memory",
-      "disks": "Disks",
-      "gpus": "Graphics processors",
-      "network": "Network interfaces"
+      "cpu": "프로세서",
+      "motherboard": "메인보드",
+      "memory": "메모리",
+      "disks": "디스크",
+      "gpus": "그래픽 프로세서",
+      "network": "네트워크 인터페이스"
     },
     "counts": {
-      "disks": "{count} physical disks",
-      "gpus": "{count} graphics devices",
-      "network": "{count} network interfaces"
+      "disks": "물리 디스크 {count}개",
+      "gpus": "그래픽 장치 {count}개",
+      "network": "네트워크 인터페이스 {count}개"
     },
     "empty": {
-      "disks": "No disks detected",
-      "gpus": "No graphics devices detected",
-      "network": "No network interfaces detected"
+      "disks": "감지된 디스크가 없습니다",
+      "gpus": "감지된 그래픽 장치가 없습니다",
+      "network": "감지된 네트워크 인터페이스가 없습니다"
     },
     "fields": {
-      "cpuUsage": "CPU usage",
-      "coresThreads": "Cores / Threads",
-      "frequency": "Current frequency",
-      "temperature": "Temperature",
-      "fanSpeed": "Fan speed",
-      "power": "Power",
-      "manufacturer": "Manufacturer",
-      "productModel": "Product model",
-      "version": "Version",
-      "serial": "Serial number",
-      "totalCapacity": "Total capacity",
-      "memoryUsage": "Memory usage",
-      "used": "Used",
-      "available": "Available",
-      "pressure": "Pressure",
-      "typeSpeed": "Type / Speed",
-      "partNumber": "Part number",
-      "devicePath": "Device path",
-      "vendor": "Vendor",
-      "capacity": "Capacity",
-      "usage": "Usage",
-      "powerOnTime": "Power-on time",
-      "powerCycles": "Power cycles",
-      "realtimeIo": "Real-time I/O",
-      "usageRate": "Usage",
-      "videoMemory": "Video memory",
-      "macAddress": "MAC address",
-      "ipAddress": "IP address",
-      "connectionStatus": "Connection status",
-      "receiveSpeed": "Receive speed",
-      "sendSpeed": "Send speed"
+      "cpuUsage": "CPU 사용률",
+      "coresThreads": "코어 / 스레드",
+      "frequency": "현재 주파수",
+      "temperature": "온도",
+      "fanSpeed": "팬 속도",
+      "power": "전력",
+      "manufacturer": "제조사",
+      "productModel": "제품 모델",
+      "version": "버전",
+      "serial": "일련번호",
+      "totalCapacity": "총 용량",
+      "memoryUsage": "메모리 사용률",
+      "used": "사용 중",
+      "available": "사용 가능",
+      "pressure": "메모리 압력",
+      "typeSpeed": "유형 / 속도",
+      "partNumber": "부품 번호",
+      "devicePath": "장치 경로",
+      "vendor": "공급업체",
+      "capacity": "용량",
+      "usage": "용도",
+      "powerOnTime": "전원 켜짐 시간",
+      "powerCycles": "시작 횟수",
+      "realtimeIo": "실시간 I/O",
+      "usageRate": "사용률",
+      "videoMemory": "비디오 메모리",
+      "macAddress": "MAC 주소",
+      "ipAddress": "IP 주소",
+      "connectionStatus": "연결 상태",
+      "receiveSpeed": "수신 속도",
+      "sendSpeed": "송신 속도"
     },
     "statuses": {
-      "passed": "Passed",
-      "abnormal": "Abnormal",
-      "unsupported": "Unsupported",
-      "unknown": "Unknown",
-      "unknownVendor": "Unknown vendor",
-      "inUse": "In use",
-      "unused": "Unused",
-      "online": "Online",
-      "offline": "Offline",
-      "noIp": "No IP address"
+      "passed": "정상",
+      "abnormal": "비정상",
+      "unsupported": "지원되지 않음",
+      "unknown": "알 수 없음",
+      "unknownVendor": "알 수 없는 공급업체",
+      "inUse": "사용 중",
+      "unused": "미사용",
+      "online": "온라인",
+      "offline": "오프라인",
+      "noIp": "IP 주소 없음"
     },
     "diskUsage": {
-      "system": "System disk",
-      "storagePool": "Storage pool",
-      "mixed": "System / Storage pool"
+      "system": "시스템 디스크",
+      "storagePool": "스토리지 풀",
+      "mixed": "시스템 / 스토리지 풀"
     },
     "values": {
-      "hours": "{value} hours",
-      "daysHours": "{days} days {hours} hours",
-      "readWrite": "Read {read} · Write {write}"
+      "hours": "{value}시간",
+      "daysHours": "{days}일 {hours}시간",
+      "readWrite": "읽기 {read} · 쓰기 {write}"
     }
   },
   "Jobs": {
@@ -191,7 +191,7 @@
       "cloud_sync": "Cloud sync",
       "data_transfer": "Data transfer",
       "back_to_cloud": "Back up to cloud",
-      "auto_snapshot": "Auto snapshot"
+      "auto_snapshot": "자동 스냅샷"
     },
     "actions": {
       "more": "More task actions",

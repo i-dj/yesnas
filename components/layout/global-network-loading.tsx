@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import type { YesNasRequestInit } from '@/lib/api/request'
 import { useNetworkLoadingStore } from '@/store/use-network-loading-store'
 
 const FETCH_PATCH_KEY = '__yesnas_fetch_patched__'
@@ -22,14 +23,11 @@ export function GlobalNetworkLoading() {
 
     const originalFetch = window.fetch.bind(window)
     window.fetch = async (...args) => {
+      const requestInit = args[1] as YesNasRequestInit | undefined
       const drawerOpenCount =
-        Number(
-          (window as Window & { [DRAWER_OPEN_COUNT_KEY]?: number })[
-            DRAWER_OPEN_COUNT_KEY
-          ] ?? 0,
-        ) || 0
+        Number((window as Window & { [DRAWER_OPEN_COUNT_KEY]?: number })[DRAWER_OPEN_COUNT_KEY] ?? 0) || 0
 
-      if (drawerOpenCount > 0) {
+      if (drawerOpenCount > 0 || requestInit?.yesnasSilentNetworkLoading) {
         return originalFetch(...args)
       }
 

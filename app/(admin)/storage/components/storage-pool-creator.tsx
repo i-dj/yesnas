@@ -3,13 +3,19 @@
 import { Button, EmptyState, Input, StatusPill } from '@/components/ui'
 import { bytesFormat, cn } from '@/lib/utils'
 import { RAID_LEVELS, type RaidLevel } from '@/types/models/_constants'
-import type { DiskModel } from '@/types/models/storage'
+import type { AutoSnapshotSchedule, DiskModel } from '@/types/models/storage'
 import { CheckSquare, Loader2, Square } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface StoragePoolCreatorProps {
   disks: DiskModel[]
-  onSubmit: (payload: { name: string; diskIds: string[]; raidLevel: RaidLevel }) => Promise<void>
+  onSubmit: (payload: {
+    name: string
+    diskIds: string[]
+    raidLevel: RaidLevel
+    autoSnapshotEnabled: boolean
+    autoSnapshotSchedule: AutoSnapshotSchedule
+  }) => Promise<void>
 }
 
 interface PoolCandidateItem {
@@ -200,9 +206,17 @@ const getRecommendedRaid = (options: RaidPlanOption[], diskCount: number): RaidL
   )
 }
 
+const snapshotScheduleOptions = [
+  { value: 'hourly', label: 'Every hour' },
+  { value: 'daily', label: 'Every day' },
+  { value: 'monthly', label: 'Every month' },
+] as const
+
 export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps) {
   const [poolName, setPoolName] = useState('')
   const [selectedDiskIds, setSelectedDiskIds] = useState<string[]>([])
+  const [autoSnapshotEnabled, setAutoSnapshotEnabled] = useState(false)
+  const [autoSnapshotSchedule, setAutoSnapshotSchedule] = useState<AutoSnapshotSchedule>('daily')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const errorRef = useRef<HTMLDivElement | null>(null)
@@ -291,6 +305,8 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
     setPoolName('')
     setSelectedDiskIds([])
     setRaidLevel(RAID_LEVELS.SINGLE)
+    setAutoSnapshotEnabled(false)
+    setAutoSnapshotSchedule('daily')
     setSubmitError(null)
   }
 
@@ -303,6 +319,8 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
         name: poolName.trim(),
         diskIds: selectedDiskIds,
         raidLevel: effectiveRaid,
+        autoSnapshotEnabled,
+        autoSnapshotSchedule,
       })
       resetFormState()
     } catch (error) {
@@ -469,6 +487,65 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
             </div>
           </div>
         )}
+
+        <div className="border-app-border bg-app-bg rounded-lg border p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-app-text text-xs font-semibold uppercase">Auto Snapshot Backup</div>
+              <div className="text-app-text-muted mt-1 text-xs">
+                Automatically create scheduled snapshots after the pool is created.
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autoSnapshotEnabled}
+              onClick={() => setAutoSnapshotEnabled((current) => !current)}
+              className={cn(
+                'relative h-6 w-11 shrink-0 rounded-full border transition-colors',
+                autoSnapshotEnabled ? 'border-emerald-400/40 bg-emerald-400/30' : 'border-app-border bg-app-surface',
+              )}
+            >
+              <span
+                className={cn(
+                  'bg-app-text absolute top-1/2 size-4 -translate-y-1/2 rounded-full transition-transform',
+                  autoSnapshotEnabled ? 'left-1 translate-x-5' : 'left-1 translate-x-0',
+                )}
+              />
+            </button>
+          </div>
+
+          {autoSnapshotEnabled && (
+            <div className="mt-3 grid grid-cols-3 gap-1.5">
+              {snapshotScheduleOptions.map((option) => {
+                const active = autoSnapshotSchedule === option.value
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setAutoSnapshotSchedule(option.value)}
+                    className={cn(
+                      'border-app-border bg-app-surface text-app-text-muted flex h-8 items-center justify-center gap-1.5 rounded-md border px-2 text-xs transition-colors',
+                      'hover:border-app-text-muted/40 hover:bg-app-hover hover:text-app-text',
+                      active && 'border-app-text-muted/40 bg-app-hover text-app-text',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'border-app-border grid size-3.5 shrink-0 place-items-center rounded-full border',
+                        active && 'border-app-text',
+                      )}
+                    >
+                      {active ? <span className="bg-app-text size-1.5 rounded-full" /> : null}
+                    </span>
+                    <span className="truncate">{option.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
       <div className="border-app-border bg-app-hover mt-auto border-t px-4 py-3">
         <div className="flex items-center justify-between gap-3">

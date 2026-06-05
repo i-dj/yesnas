@@ -67,6 +67,7 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
   const storageActions = useStorageActions({
     onPoolDeleted: removePool,
     onPoolFormatted: updatePool,
+    onPoolUpdated: updatePool,
   })
 
   const benchmark = useStorageBenchmark({
@@ -112,6 +113,7 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
   const handleOpenFormat = storageModal.openFormat
 
   const handleRestoreSnapshot = storageActions.restoreSnapshot
+  const handleUpdateSnapshotPolicy = storageActions.updateSnapshotPolicy
   const handleReplaceDisk = storageActions.replaceDisk
   const handleCreateStoragePool = async (payload: Parameters<typeof storageActions.createPool>[0]) => {
     const ok = await storageActions.createPool(payload)
@@ -249,6 +251,7 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
           drawers.clearPayload('poolDetail')
         }}
         onRestoreSnapshot={handleRestoreSnapshot}
+        onUpdateSnapshotPolicy={handleUpdateSnapshotPolicy}
         onReplaceDisk={handleReplaceDisk}
       />
 

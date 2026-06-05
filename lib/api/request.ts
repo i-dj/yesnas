@@ -9,10 +9,15 @@ export interface ApiOptions {
   body?: any
   headers?: Record<string, string>
   cache?: RequestCache
+  silentNetworkLoading?: boolean
   throwOnError?: boolean
   toastError?: boolean
   errorMessage?: string
   unwrapList?: boolean
+}
+
+export interface YesNasRequestInit extends RequestInit {
+  yesnasSilentNetworkLoading?: boolean
 }
 function unwrapList<T>(json: any): T[] {
   if (Array.isArray(json)) return json
@@ -38,7 +43,7 @@ function parseErrorMessage(raw: string, fallback: string) {
  * 通用 request
  */
 export async function request<T>(url: string, options: ApiOptions = {}): Promise<T> {
-  const res = await fetch(BASE_URL + url, {
+  const init: YesNasRequestInit = {
     method: options.method || 'GET',
     cache: options.cache || 'no-store',
     headers: {
@@ -46,7 +51,9 @@ export async function request<T>(url: string, options: ApiOptions = {}): Promise
       ...options.headers,
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
-  })
+    yesnasSilentNetworkLoading: options.silentNetworkLoading,
+  }
+  const res = await fetch(BASE_URL + url, init)
 
   if (!res.ok) {
     const text = await res.text()

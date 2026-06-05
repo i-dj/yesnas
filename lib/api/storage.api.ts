@@ -1,20 +1,39 @@
 import { request } from '@/lib/api/request'
 import { createCrudApi } from './crud'
-import { StoragePoolModel } from '@/types/models/storage'
+import { StoragePoolModel, type AutoSnapshotSchedule } from '@/types/models/storage'
 import type { RaidLevel } from '@/types/models/_constants'
 
 export interface CreateStoragePoolPayload {
   name: string
   raidLevel: RaidLevel
   paths: string[]
+  autoSnapshotEnabled?: boolean
+  autoSnapshotSchedule?: AutoSnapshotSchedule | ''
+}
+
+export interface UpdateStoragePoolSnapshotPolicyPayload {
+  autoSnapshotEnabled: boolean
+  autoSnapshotSchedule?: AutoSnapshotSchedule | ''
 }
 
 export const storageApi = {
   ...createCrudApi<StoragePoolModel>('/system/storage-pools'),
 
+  listSilently: () =>
+    request<StoragePoolModel[]>('/system/storage-pools', {
+      unwrapList: true,
+      silentNetworkLoading: true,
+    }),
+
   createPool: (payload: CreateStoragePoolPayload) =>
     request<StoragePoolModel>('/system/storage-pools', {
       method: 'POST',
+      body: payload,
+    }),
+
+  updateSnapshotPolicy: (poolId: string, payload: UpdateStoragePoolSnapshotPolicyPayload) =>
+    request<StoragePoolModel>(`/system/storage-pools/${poolId}`, {
+      method: 'PUT',
       body: payload,
     }),
 

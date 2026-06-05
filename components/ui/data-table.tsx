@@ -63,6 +63,7 @@ interface DataTableProps<T extends { id: number | string }> {
   rowWrapper?: (row: T, children: React.ReactElement) => React.ReactNode
   selectedIds?: Set<number | string>
   tdClassName?: string
+  className?: string
   variant?: 'default' | 'primary'
   showHeader?: boolean
 }
@@ -81,11 +82,12 @@ export const DataTable = <T extends { id: number | string }>({
   variant = 'default',
   selectedIds = new Set(),
   showHeader = true,
+  className,
 }: DataTableProps<T>) => {
   const isRounded = variant !== 'primary'
 
   return (
-    <div className="relative w-full overflow-x-auto">
+    <div className={cn('relative w-full overflow-x-auto', className)}>
       <table className="w-full table-fixed border-separate border-spacing-0 text-xs">
         <thead className={cn(!showHeader && 'h-0')}>
           <tr className="select-none">
@@ -180,6 +182,8 @@ export const DataTable = <T extends { id: number | string }>({
                         radiusClass,
                         selected && 'bg-app-active/50',
                         'px-2 py-2 text-xs',
+                        h.align === 'right' && 'text-right',
+                        h.align === 'center' && 'text-center',
                         tdClassName,
                       )}
                     >

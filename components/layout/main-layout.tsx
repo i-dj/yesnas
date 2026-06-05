@@ -3,25 +3,18 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect, useRef, useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { FiSearch, FiUser } from 'react-icons/fi'
 import { menuGroups } from './menu'
 import Image from 'next/image'
-import {
-  ChevronDown,
-  ChevronLeft,
-  ImageUp,
-  KeyRound,
-  LogOut,
-  MessageCircleMore,
-  Upload,
-} from 'lucide-react'
+import { ChevronDown, ChevronLeft, ImageUp, KeyRound, LogOut, MessageCircleMore, Upload } from 'lucide-react'
 import { ActionMenu, Button, SideDrawer, ThemeToggle, ToastStack } from '../ui'
 import { GlobalUpload } from './global-upload'
 import { useUploadStore } from '@/store/use-upload-store'
 import { useToastStore } from '@/store/use-toast-store'
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
+  const locale = useLocale()
   const tLayout = useTranslations('Layout')
   const tCommon = useTranslations('Common')
   const pathname = usePathname()
@@ -35,12 +28,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const uploadFileList = Object.values(uploadFiles)
   const lastRefreshedBatchRef = useRef<string>('')
 
-  const hasUploadingFiles = uploadFileList.some(
-    (file) => file.status === 'uploading',
-  )
-  const allUploadsCompleted =
-    uploadFileList.length > 0 &&
-    uploadFileList.every((file) => file.status === 'complete')
+  const hasUploadingFiles = uploadFileList.some((file) => file.status === 'uploading')
+  const allUploadsCompleted = uploadFileList.length > 0 && uploadFileList.every((file) => file.status === 'complete')
 
   useEffect(() => {
     if (!allUploadsCompleted) return
@@ -55,22 +44,16 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const pageTitle =
     menuGroups
       .flatMap((group) => group.sub)
-      .find(
-        (item) =>
-          pathname === item.href || pathname.startsWith(item.href + '/'),
-      )?.nameKey ?? null
+      .find((item) => pathname === item.href || pathname.startsWith(item.href + '/'))?.nameKey ?? null
 
   // Shared active-route matcher
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(href + '/')
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
 
   const userMenuItems = [
     {
       render: () => (
         <div className="flex items-center justify-between gap-4 px-1 py-1">
-          <span className="text-app-text text-[13px]">
-            {tCommon('theme.label')}
-          </span>
+          <span className="text-app-text text-[13px]">{tCommon('theme.label')}</span>
           <ThemeToggle />
         </div>
       ),
@@ -123,7 +106,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'bg-app-bg border-app-border hidden shrink-0 flex-col border-r transition-[width] duration-200 ease-out md:flex',
+          'bg-app-aside-bg border-app-border hidden shrink-0 flex-col border-r transition-[width] duration-200 ease-out md:flex',
           sidebarCollapsed ? 'w-18' : 'w-60',
         )}
       >
@@ -140,30 +123,31 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             )}
           >
             <Image
-              src="/logo.png"
+              src="/logo-yesnas-light.png"
               alt="YesNAS Logo"
-              width={90}
-              height={60}
+              width={116}
+              height={27}
               priority
-              className="h-auto w-auto max-w-none"
+              className="h-auto w-auto max-w-none dark:hidden"
+            />
+            <Image
+              src="/logo-yesnas-dark.png"
+              alt="YesNAS Logo"
+              width={116}
+              height={25}
+              priority
+              className="hidden h-auto w-auto max-w-none dark:block"
             />
           </div>
           <button
             type="button"
-            aria-label={
-              sidebarCollapsed
-                ? tLayout('aria.expandSidebar')
-                : tLayout('aria.collapseSidebar')
-            }
+            aria-label={sidebarCollapsed ? tLayout('aria.expandSidebar') : tLayout('aria.collapseSidebar')}
             onClick={() => setSidebarCollapsed((current) => !current)}
             className="text-app-text-muted hover:bg-app-hover hover:text-app-text flex h-7 w-7 items-center justify-center rounded-md transition-colors duration-200 ease-out"
           >
             <ChevronLeft
               size={18}
-              className={cn(
-                'transition-transform duration-200',
-                sidebarCollapsed && 'rotate-180',
-              )}
+              className={cn('transition-transform duration-200', sidebarCollapsed && 'rotate-180')}
             />
           </button>
         </div>
@@ -171,10 +155,10 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         <nav className="flex-1">
           {menuGroups.map((group) => (
             <div key={group.nameKey} className="mt-6">
-              {/*<div className="px-4 text-sm text-neutral-500 uppercase">
-                {group.name}
-              </div>*/}
-              <ul className="mt-3 mr-3 ml-3 flex flex-col gap-1">
+              {!sidebarCollapsed && (
+                <div className="text-app-text-muted/50 px-4 text-xs uppercase">{group.nameKey}</div>
+              )}
+              <ul className="mt-1.5 mr-3 ml-3 flex flex-col gap-1">
                 {group.sub.map((item) => {
                   const Icon = item.icon
                   const active = isActive(item.href)
@@ -188,8 +172,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                           'group relative flex cursor-pointer items-center rounded-lg py-2 text-xs font-medium transition-all',
                           sidebarCollapsed ? 'justify-center px-2' : 'px-4',
                           active
-                            ? 'bg-app-active text-app-text'
-                            : 'text-app-text-muted hover:bg-app-hover hover:text-app-text',
+                            ? 'bg-app-active/55 text-app-text'
+                            : 'text-app-text-muted hover:bg-app-hover/55 hover:text-app-text',
                         )}
                         title={sidebarCollapsed ? itemLabel : undefined}
                       >
@@ -198,9 +182,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                           className={cn(
                             'shrink-0 transition-colors',
                             sidebarCollapsed ? 'mr-0' : 'mr-4',
-                            active
-                              ? 'text-app-text'
-                              : 'text-app-text-muted group-hover:text-app-text',
+                            active ? 'text-app-text/90' : 'text-app-text-muted group-hover:text-app-text',
                           )}
                         />
                         {!sidebarCollapsed && <span>{itemLabel}</span>}
@@ -239,6 +221,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
               />
             </div>
             <div className="ml-auto flex items-center gap-4">
+              <LanguageMenu currentLocale={locale} onChange={() => router.refresh()} />
               <ActionMenu
                 mode="left-click"
                 align="end"
@@ -254,9 +237,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                     <div className="bg-app-active flex size-6 items-center justify-center rounded-full text-xs font-semibold">
                       DJ
                     </div>
-                    <span className="hidden text-sm sm:block">
-                      {tCommon('profile.name')}
-                    </span>
+                    <span className="hidden text-sm sm:block">{tCommon('profile.name')}</span>
                     <ChevronDown size={16} className="-ml-1" />
                   </button>
                 }
@@ -268,9 +249,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         </header>
 
         {/* Scrollable content area **/}
-        <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-8">
-          {children}
-        </main>
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-8">{children}</main>
       </div>
 
       <SideDrawer
@@ -279,8 +258,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
           if (!open) {
             const files = Object.values(uploadFiles)
             const hasFiles = files.length > 0
-            const allCompleted =
-              hasFiles && files.every((file) => file.status === 'complete')
+            const allCompleted = hasFiles && files.every((file) => file.status === 'complete')
             if (allCompleted) {
               clearCompletedUploads()
             }
@@ -295,6 +273,52 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
       <ToastStack toasts={toasts} onClose={removeToast} />
     </div>
+  )
+}
+
+const localeOptions = [
+  { value: 'zh', label: '中', triggerLabel: '中文', name: '中文' },
+  { value: 'ja', label: '日', triggerLabel: '日本語', name: '日本語' },
+  { value: 'ko', label: '韩', triggerLabel: '한국어', name: '한국어' },
+  { value: 'en', label: 'EN', triggerLabel: 'EN', name: 'English' },
+] as const
+
+function LanguageMenu({ currentLocale, onChange }: { currentLocale: string; onChange: () => void }) {
+  const currentOption = localeOptions.find((option) => option.value === currentLocale) ?? localeOptions[0]
+
+  const handleChange = (locale: (typeof localeOptions)[number]['value']) => {
+    document.cookie = `yesnas-locale=${locale}; path=/; max-age=31536000; samesite=lax`
+    onChange()
+  }
+
+  return (
+    <ActionMenu
+      mode="left-click"
+      align="end"
+      onAction={(action) => handleChange(action as (typeof localeOptions)[number]['value'])}
+      items={localeOptions.map((option) => ({
+        label: (
+          <span className="flex items-center gap-2">
+            <span className="text-app-text bg-app-active flex size-5 items-center justify-center rounded-full text-[10px] font-semibold">
+              {option.label}
+            </span>
+            <span>{option.name}</span>
+          </span>
+        ),
+        action: option.value,
+        checked: currentLocale === option.value,
+      }))}
+      trigger={
+        <button
+          type="button"
+          aria-label={currentOption.name}
+          className="bg-app-active/70 text-app-text hover:bg-app-hover flex h-9 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors duration-200 ease-out outline-none"
+        >
+          <span>{currentOption.triggerLabel}</span>
+          <ChevronDown size={16} />
+        </button>
+      }
+    />
   )
 }
 

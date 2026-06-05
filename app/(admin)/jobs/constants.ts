@@ -1,5 +1,5 @@
 import type { JobStatus, JobType } from '@/types'
-import { ArrowRightLeft, Cloud, CloudUpload, Joystick, type LucideIcon } from 'lucide-react'
+import { ArrowRightLeft, Camera, Cloud, CloudUpload, Joystick, type LucideIcon } from 'lucide-react'
 
 export type JobStatusFilter = 'all' | 'running' | 'paused' | 'success' | 'failed' | 'canceled'
 
@@ -51,6 +51,7 @@ const jobTypeIcons = {
   cloud_sync: Cloud,
   data_transfer: ArrowRightLeft,
   back_to_cloud: CloudUpload,
+  auto_snapshot: Camera,
 } satisfies Record<JobType, LucideIcon>
 
 export const getJobIcon = (type: JobType) => jobTypeIcons[type] ?? Joystick

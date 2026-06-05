@@ -105,10 +105,14 @@ export interface StoragePoolModel {
   metadataProfile: string
   systemProfile: string
   snapshotCount: number
+  autoSnapshotEnabled?: boolean
+  autoSnapshotSchedule?: AutoSnapshotSchedule | ''
   snapshots: StoragePoolSnapshotModel[]
   warnings: string[]
   lastCheckedAt: string
 }
+
+export type AutoSnapshotSchedule = 'hourly' | 'daily' | 'monthly'
 
 export interface StoragePoolSnapshotModel {
   id: string
@@ -132,6 +136,8 @@ export interface CreateStoragePoolPayload {
   raidLevel: string
   paths: string[]
   cacheDiskPaths?: string[]
+  autoSnapshotEnabled?: boolean
+  autoSnapshotSchedule?: AutoSnapshotSchedule | ''
 }
 
 export interface CreateStoragePoolSnapshotPayload {

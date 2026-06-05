@@ -7,8 +7,12 @@ export const getRaidCandidatesUrl = () => `${FILE_API_HOST}/system/raid/candidat
 export const getSystemDisksUrl = () => `${FILE_API_HOST}/system/disks`
 export const getSystemStatusUrl = () => `${FILE_API_HOST}/system/status`
 export const getSystemStatusStreamUrl = (interval = 2) => `${FILE_API_HOST}/system/status/stream?interval=${interval}`
+export const getSystemHardwareStreamUrl = (interval = 3) =>
+  `${FILE_API_HOST}/system/hardware/stream?interval=${interval}`
 export const getSystemNetworkUrl = (range = '1h') => `${FILE_API_HOST}/system/network?range=${range}`
 export const getSystemNetworkStreamUrl = (interval = 1) => `${FILE_API_HOST}/system/network/stream?interval=${interval}`
+export const getDockerContainersStreamUrl = (interval = 1) =>
+  `${FILE_API_HOST}/docker/containers/stream?interval=${interval}`
 export const getStoragePoolsUrl = () => `${FILE_API_HOST}/system/storage-pools`
 export const getJobsUrl = () => `${FILE_API_HOST}/jobs`
 export const getUsersUrl = () => `${FILE_API_HOST}/users`

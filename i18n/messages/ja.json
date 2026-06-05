@@ -1,59 +1,59 @@
 {
   "Common": {
     "brand": "YesNAS",
-    "searchPlaceholder": "Search any file or folder",
+    "searchPlaceholder": "ファイルまたはフォルダーを検索",
     "actions": {
-      "confirm": "Confirm",
-      "cancel": "Cancel",
-      "delete": "Delete",
-      "open": "Open",
-      "copy": "Copy",
-      "move": "Move",
-      "logout": "Log out",
-      "feedback": "Feedback",
-      "changeAvatar": "Change avatar",
-      "changePassword": "Change password",
-      "clearTrash": "Empty trash"
+      "confirm": "確認",
+      "cancel": "キャンセル",
+      "delete": "削除",
+      "open": "開く",
+      "copy": "コピー",
+      "move": "移動",
+      "logout": "ログアウト",
+      "feedback": "フィードバック",
+      "changeAvatar": "アバターを変更",
+      "changePassword": "パスワードを変更",
+      "clearTrash": "ごみ箱を空にする"
     },
     "theme": {
-      "label": "Theme",
-      "system": "System",
-      "light": "Light",
-      "dark": "Dark"
+      "label": "テーマ",
+      "system": "システム",
+      "light": "ライト",
+      "dark": "ダーク"
     },
     "language": {
-      "label": "Language"
+      "label": "言語"
     },
     "profile": {
-      "name": "Cute Little Prince"
+      "name": "かわいい王子さま"
     }
   },
   "Layout": {
     "nav": {
-      "dashboard": "Dashboard",
-      "storage": "Storage",
-      "file": "Files",
-      "fileSharing": "File Sharing",
-      "hardware": "Hardware",
-      "jobs": "Tasks",
-      "users": "Users"
+      "dashboard": "ダッシュボード",
+      "storage": "ストレージ",
+      "file": "ファイル",
+      "fileSharing": "ファイル共有",
+      "hardware": "ハードウェア",
+      "jobs": "タスク",
+      "users": "ユーザー"
     },
     "aria": {
-      "expandSidebar": "Expand sidebar",
-      "collapseSidebar": "Collapse sidebar"
+      "expandSidebar": "サイドバーを展開",
+      "collapseSidebar": "サイドバーを折りたたむ"
     }
   },
   "Dashboard": {
-    "title": "Dashboard",
+    "title": "ダッシュボード",
     "timeRanges": {
-      "oneHour": "1 hour",
-      "twentyFourHours": "24 hours",
-      "sevenDays": "7 days"
+      "oneHour": "1時間",
+      "twentyFourHours": "24時間",
+      "sevenDays": "7日"
     },
     "metrics": {
-      "used": "Used",
-      "free": "Free",
-      "total": "Total"
+      "used": "使用済み",
+      "free": "空き",
+      "total": "合計"
     },
     "systemInfo": {
       "title": "System Info",
@@ -85,94 +85,94 @@
     }
   },
   "Hardware": {
-    "title": "Hardware",
-    "subtitle": "System specifications, health status, and real-time resource data",
-    "lastUpdated": "Last updated {value}",
+    "title": "ハードウェア情報",
+    "subtitle": "システム仕様、正常性、リアルタイムリソース情報",
+    "lastUpdated": "最終更新 {value}",
     "stream": {
-      "live": "Live",
-      "connecting": "Connecting",
-      "error": "Connection error",
-      "loading": "Loading hardware information...",
-      "loadError": "Failed to connect to the hardware information stream"
+      "live": "リアルタイム",
+      "connecting": "接続中",
+      "error": "接続エラー",
+      "loading": "ハードウェア情報を読み込み中...",
+      "loadError": "ハードウェア情報ストリームへの接続に失敗しました"
     },
     "summary": {
-      "deviceName": "Device name",
-      "os": "Operating system",
-      "kernel": "Kernel version",
-      "uptime": "Uptime"
+      "deviceName": "デバイス名",
+      "os": "オペレーティングシステム",
+      "kernel": "カーネルバージョン",
+      "uptime": "稼働時間"
     },
     "sections": {
-      "cpu": "Processor",
-      "motherboard": "Motherboard",
-      "memory": "Memory",
-      "disks": "Disks",
-      "gpus": "Graphics processors",
-      "network": "Network interfaces"
+      "cpu": "プロセッサー",
+      "motherboard": "マザーボード",
+      "memory": "メモリ",
+      "disks": "ディスク",
+      "gpus": "グラフィックスプロセッサー",
+      "network": "ネットワークインターフェース"
     },
     "counts": {
-      "disks": "{count} physical disks",
-      "gpus": "{count} graphics devices",
-      "network": "{count} network interfaces"
+      "disks": "物理ディスク {count} 台",
+      "gpus": "グラフィックスデバイス {count} 台",
+      "network": "ネットワークインターフェース {count} 個"
     },
     "empty": {
-      "disks": "No disks detected",
-      "gpus": "No graphics devices detected",
-      "network": "No network interfaces detected"
+      "disks": "ディスクが検出されませんでした",
+      "gpus": "グラフィックスデバイスが検出されませんでした",
+      "network": "ネットワークインターフェースが検出されませんでした"
     },
     "fields": {
-      "cpuUsage": "CPU usage",
-      "coresThreads": "Cores / Threads",
-      "frequency": "Current frequency",
-      "temperature": "Temperature",
-      "fanSpeed": "Fan speed",
-      "power": "Power",
-      "manufacturer": "Manufacturer",
-      "productModel": "Product model",
-      "version": "Version",
-      "serial": "Serial number",
-      "totalCapacity": "Total capacity",
-      "memoryUsage": "Memory usage",
-      "used": "Used",
-      "available": "Available",
-      "pressure": "Pressure",
-      "typeSpeed": "Type / Speed",
-      "partNumber": "Part number",
-      "devicePath": "Device path",
-      "vendor": "Vendor",
-      "capacity": "Capacity",
-      "usage": "Usage",
-      "powerOnTime": "Power-on time",
-      "powerCycles": "Power cycles",
-      "realtimeIo": "Real-time I/O",
-      "usageRate": "Usage",
-      "videoMemory": "Video memory",
-      "macAddress": "MAC address",
-      "ipAddress": "IP address",
-      "connectionStatus": "Connection status",
-      "receiveSpeed": "Receive speed",
-      "sendSpeed": "Send speed"
+      "cpuUsage": "CPU 使用率",
+      "coresThreads": "コア / スレッド",
+      "frequency": "現在の周波数",
+      "temperature": "温度",
+      "fanSpeed": "ファン速度",
+      "power": "消費電力",
+      "manufacturer": "メーカー",
+      "productModel": "製品モデル",
+      "version": "バージョン",
+      "serial": "シリアル番号",
+      "totalCapacity": "総容量",
+      "memoryUsage": "メモリ使用率",
+      "used": "使用済み",
+      "available": "利用可能",
+      "pressure": "メモリ負荷",
+      "typeSpeed": "タイプ / 速度",
+      "partNumber": "部品番号",
+      "devicePath": "デバイスパス",
+      "vendor": "ベンダー",
+      "capacity": "容量",
+      "usage": "用途",
+      "powerOnTime": "通電時間",
+      "powerCycles": "起動回数",
+      "realtimeIo": "リアルタイム I/O",
+      "usageRate": "使用率",
+      "videoMemory": "ビデオメモリ",
+      "macAddress": "MAC アドレス",
+      "ipAddress": "IP アドレス",
+      "connectionStatus": "接続状態",
+      "receiveSpeed": "受信速度",
+      "sendSpeed": "送信速度"
     },
     "statuses": {
-      "passed": "Passed",
-      "abnormal": "Abnormal",
-      "unsupported": "Unsupported",
-      "unknown": "Unknown",
-      "unknownVendor": "Unknown vendor",
-      "inUse": "In use",
-      "unused": "Unused",
-      "online": "Online",
-      "offline": "Offline",
-      "noIp": "No IP address"
+      "passed": "正常",
+      "abnormal": "異常",
+      "unsupported": "非対応",
+      "unknown": "不明",
+      "unknownVendor": "不明なベンダー",
+      "inUse": "使用中",
+      "unused": "未使用",
+      "online": "オンライン",
+      "offline": "オフライン",
+      "noIp": "IP アドレスなし"
     },
     "diskUsage": {
-      "system": "System disk",
-      "storagePool": "Storage pool",
-      "mixed": "System / Storage pool"
+      "system": "システムディスク",
+      "storagePool": "ストレージプール",
+      "mixed": "システム / ストレージプール"
     },
     "values": {
-      "hours": "{value} hours",
-      "daysHours": "{days} days {hours} hours",
-      "readWrite": "Read {read} · Write {write}"
+      "hours": "{value} 時間",
+      "daysHours": "{days} 日 {hours} 時間",
+      "readWrite": "読込 {read} · 書込 {write}"
     }
   },
   "Jobs": {
@@ -191,7 +191,7 @@
       "cloud_sync": "Cloud sync",
       "data_transfer": "Data transfer",
       "back_to_cloud": "Back up to cloud",
-      "auto_snapshot": "Auto snapshot"
+      "auto_snapshot": "自動スナップショット"
     },
     "actions": {
       "more": "More task actions",

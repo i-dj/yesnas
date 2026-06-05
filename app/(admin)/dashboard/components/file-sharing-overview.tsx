@@ -1,36 +1,17 @@
-import { FolderOpen, Share2, Upload, UploadCloud } from 'lucide-react'
+'use client'
+
+import { FolderOpen } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Card } from '@/components/ui'
-import { cn } from '@/lib/utils'
-import type { SystemStatusSnapshot } from '@/types'
-
-const uploadingFiles = [
-  {
-    name: '家庭相册备份.zip',
-    type: 'ZIP',
-    size: '2.4 GB',
-    progress: 73,
-  },
-  {
-    name: '设计稿归档.sketch',
-    type: 'SK',
-    size: '486 MB',
-    progress: 100,
-  },
-  {
-    name: '会议录音.m4a',
-    type: 'M4A',
-    size: '128 MB',
-    progress: 42,
-  },
-]
+import { storageApi } from '@/lib/api/storage.api'
+import { clampPercent, cn, formatBytes, formatPercent } from '@/lib/utils'
+import type { StoragePoolModel } from '@/types/models/storage'
 
 const fileShareResources = [
   {
     name: '家庭共享',
     protocol: 'SMB / WebDAV',
-    files: 125,
-    size: '32.1 GB',
     users: [
       { name: 'DJ', color: 'bg-sky-500' },
       { name: 'LY', color: 'bg-violet-500' },
@@ -40,8 +21,6 @@ const fileShareResources = [
   {
     name: '媒体中心',
     protocol: 'SMB',
-    files: 68,
-    size: '15.6 GB',
     users: [
       { name: 'MX', color: 'bg-amber-500' },
       { name: 'AL', color: 'bg-rose-500' },
@@ -50,8 +29,6 @@ const fileShareResources = [
   {
     name: '远程同步',
     protocol: 'WebDAV / NFS',
-    files: 97,
-    size: '12.4 GB',
     users: [
       { name: 'IP', color: 'bg-cyan-500' },
       { name: 'NAS', color: 'bg-indigo-500' },
@@ -61,97 +38,138 @@ const fileShareResources = [
   },
 ]
 
-export function FileSharingOverview({ snapshot }: { snapshot: SystemStatusSnapshot | null }) {
-  const onlineUsers = snapshot?.fileSharing.onlineUsers
-  const services = snapshot?.fileSharing.services
+export function FileSharingOverview() {
+  const [storagePools, setStoragePools] = useState<StoragePoolModel[]>([])
+  const [storagePoolsLoading, setStoragePoolsLoading] = useState(true)
+  const [storagePoolsError, setStoragePoolsError] = useState(false)
+  const storagePoolSummary = useMemo(
+    () =>
+      storagePools.reduce(
+        (summary, pool) => ({
+          healthyCount: summary.healthyCount + (getPoolHealth(pool) === 'healthy' ? 1 : 0),
+        }),
+        { healthyCount: 0 },
+      ),
+    [storagePools],
+  )
+
+  useEffect(() => {
+    let disposed = false
+
+    const fetchStoragePools = async () => {
+      try {
+        const nextPools = await storageApi.listSilently()
+
+        if (!disposed) {
+          setStoragePools(nextPools)
+          setStoragePoolsError(false)
+          setStoragePoolsLoading(false)
+        }
+      } catch {
+        if (!disposed) {
+          setStoragePoolsError(true)
+          setStoragePoolsLoading(false)
+        }
+      }
+    }
+
+    void fetchStoragePools()
+    const timer = window.setInterval(fetchStoragePools, 10000)
+
+    return () => {
+      disposed = true
+      window.clearInterval(timer)
+    }
+  }, [])
 
   return (
-    <section className="grid gap-3 xl:grid-cols-[0.72fr_1.28fr]">
+    <section className="grid gap-3 xl:grid-cols-[0.82fr_1.18fr]">
       <Card className="overflow-hidden p-0">
         <div className="border-app-border flex items-center justify-between gap-3 border-b p-3">
-          <div>
-            <h2 className="text-app-text text-sm font-semibold">正在上传</h2>
-            <p className="text-app-text-muted mt-1 text-xs">上传任务预览，等待上传接口接入</p>
+          <div className="min-w-0">
+            <h2 className="text-app-text text-sm font-semibold">Storage Pools</h2>
+            <p className="text-app-text-muted mt-1 text-xs">
+              {storagePoolsError
+                ? '存储池接口暂时不可用'
+                : storagePoolsLoading
+                  ? '正在读取存储池'
+                  : 'Existing pools and usage overview.'}
+            </p>
           </div>
-          <span className="grid size-8 place-items-center rounded-lg bg-sky-500/10 text-sky-500">
-            <UploadCloud className="size-3.5" />
-          </span>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <ShareStat label="存储池" value={String(storagePools.length)} />
+            <ShareStat label="健康" value={`${storagePoolSummary.healthyCount}/${storagePools.length}`} />
+          </div>
         </div>
 
-        <div className="p-3">
-          <div className="space-y-2">
-            {uploadingFiles.map((file) => (
-              <div key={file.name} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-                <span className="bg-app-hover text-app-text-muted grid size-9 place-items-center rounded-lg text-[10px] font-semibold">
-                  {file.type}
-                </span>
-                <div className="min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-app-text truncate text-xs font-semibold">{file.name}</p>
-                    <span className="text-app-text-muted shrink-0 text-[10px]">{file.size}</span>
+        <div className="p-2.5">
+          {storagePools.length > 0 ? (
+            <div className="grid max-h-[236px] grid-cols-2 gap-2 overflow-y-auto pr-1">
+              {storagePools.map((pool) => (
+                <div key={pool.id} className="bg-app-bg/70 hover:bg-app-hover/50 rounded-md p-2 transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-app-text truncate text-xs font-semibold">{pool.name}</p>
+                      <p className="text-app-text-muted mt-0.5 truncate text-[10px]">
+                        {pool.raidLevel || pool.filesystem || pool.kind} · {pool.mounted ? '已挂载' : '未挂载'}
+                      </p>
+                    </div>
+                    <span className={cn('shrink-0 text-[10px] font-semibold', getPoolHealthClass(pool))}>
+                      {getPoolHealthLabel(pool)}
+                    </span>
                   </div>
-                  <div className="bg-app-hover mt-2 h-1.5 rounded-full">
+                  <div className="bg-app-hover mt-1.5 h-1 rounded-full">
                     <div
-                      className={cn('h-1.5 rounded-full', file.progress === 100 ? 'bg-emerald-500' : 'bg-sky-500')}
-                      style={{ width: `${file.progress}%` }}
+                      className={cn('h-1 rounded-full', pool.usagePercent >= 85 ? 'bg-amber-500' : 'bg-sky-500')}
+                      style={{ width: `${clampPercent(pool.usagePercent)}%` }}
                     />
                   </div>
+                  <div className="text-app-text-muted mt-1 flex items-center justify-between gap-2 text-[10px]">
+                    <span className="truncate">
+                      {formatBytes(pool.usedBytes)} of {formatBytes(pool.totalBytes)}
+                    </span>
+                    <span>{formatPercent(pool.usagePercent)}</span>
+                  </div>
                 </div>
-                <span
-                  className={cn('text-xs font-semibold', file.progress === 100 ? 'text-emerald-500' : 'text-app-text')}
-                >
-                  {file.progress === 100 ? '完成' : `${file.progress}%`}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-app-text-muted grid min-h-31 place-items-center text-xs">
+              {storagePoolsLoading ? '正在加载存储池' : storagePoolsError ? '无法读取存储池列表' : '暂无存储池'}
+            </div>
+          )}
         </div>
       </Card>
       <Card className="overflow-hidden p-0">
         <div className="border-app-border flex flex-col gap-3 border-b p-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-app-text text-sm font-semibold">文件共享信息</h2>
-            <p className="text-app-text-muted mt-1 text-xs">
-              {snapshot ? '协议服务运行状态与共享目录访问概览' : '等待接口数据，资源列表为样式预览'}
-            </p>
+            <p className="text-app-text-muted mt-1 text-xs">协议服务运行状态与共享目录访问概览</p>
           </div>
-          <div className="grid grid-cols-4 gap-2 text-xs">
-            <ShareStat label="在线" value={snapshot ? String(onlineUsers) : '-'} />
-            <ShareStat label="SMB" value={snapshot ? String(services?.smb) : '-'} />
-            <ShareStat label="WebDAV" value={snapshot ? String(services?.webdav) : '-'} />
-            <ShareStat label="NFS" value={snapshot ? String(services?.nfs) : '-'} />
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <ShareStat label="共享目录" value={String(fileShareResources.length)} />
           </div>
         </div>
 
-        <div className="space-y-2 p-3">
-          {fileShareResources.map((resource) => (
-            <div
-              key={resource.name}
-              className="border-app-border bg-app-bg grid gap-3 rounded-lg border p-2.5 md:grid-cols-[minmax(0,1.2fr)_0.6fr_0.5fr_auto]"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-violet-500/10 text-violet-400">
-                  <FolderOpen className="size-3.5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-app-text truncate text-xs font-semibold">{resource.name}</p>
-                  <p className="text-app-text-muted mt-1 truncate text-[10px]">{resource.protocol}</p>
+        <div className="overflow-x-auto p-2.5">
+          <div className="grid auto-cols-[calc((100%-0.5rem)/2)] grid-flow-col gap-2">
+            {fileShareResources.map((resource) => (
+              <div key={resource.name} className="bg-app-bg/70 hover:bg-app-hover/50 rounded-md p-2 transition-colors">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-md bg-violet-500/10 text-violet-400">
+                    <FolderOpen className="size-3" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-app-text truncate text-xs font-semibold">{resource.name}</p>
+                    <p className="text-app-text-muted mt-0.5 truncate text-[10px]">{resource.protocol}</p>
+                  </div>
+                </div>
+                <div className="mt-1.5 flex justify-end">
+                  <AvatarStack users={resource.users} max={2} />
                 </div>
               </div>
-              <InfoPair label="文件" value={`${resource.files} 个`} />
-              <InfoPair label="容量" value={resource.size} />
-              <div className="flex items-center justify-between gap-3 md:justify-end">
-                <AvatarStack users={resource.users} max={3} />
-                <button
-                  type="button"
-                  className="bg-app-hover text-app-text-muted hover:text-app-text inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-xs transition"
-                >
-                  <Share2 className="size-3" />
-                  共享
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </Card>
     </section>
@@ -167,27 +185,18 @@ function ShareStat({ label, value }: { label: string; value: string }) {
   )
 }
 
-function InfoPair({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <p className="text-app-text-muted text-[10px]">{label}</p>
-      <p className="text-app-text mt-1 truncate text-xs font-semibold">{value}</p>
-    </div>
-  )
-}
-
 function AvatarStack({ users, max = 3 }: { users: Array<{ name: string; color: string }>; max?: number }) {
   const visibleUsers = users.slice(0, max)
   const hiddenCount = Math.max(users.length - visibleUsers.length, 0)
 
   return (
-    <div className="flex -space-x-2">
+    <div className="flex -space-x-1.5">
       {visibleUsers.map((user) => (
         <span
           key={user.name}
           title={user.name}
           className={cn(
-            'border-app-bg text-app-text grid size-7 place-items-center rounded-full border-2 text-[10px] font-semibold',
+            'border-app-bg text-app-text grid size-6 place-items-center rounded-full border-2 text-[9px] font-semibold',
             user.color,
           )}
         >
@@ -195,10 +204,33 @@ function AvatarStack({ users, max = 3 }: { users: Array<{ name: string; color: s
         </span>
       ))}
       {hiddenCount > 0 && (
-        <span className="border-app-bg grid size-7 place-items-center rounded-full border-2 bg-sky-500 text-[10px] font-semibold text-white">
+        <span className="border-app-bg grid size-6 place-items-center rounded-full border-2 bg-sky-500 text-[9px] font-semibold text-white">
           +{hiddenCount}
         </span>
       )}
     </div>
   )
+}
+
+function getPoolHealthLabel(pool: StoragePoolModel) {
+  const health = getPoolHealth(pool)
+  if (health === 'healthy') return '健康'
+  if (health === 'warning') return '警告'
+  if (health === 'error') return '异常'
+  return pool.health || pool.status || '未知'
+}
+
+function getPoolHealthClass(pool: StoragePoolModel) {
+  const health = getPoolHealth(pool)
+  if (health === 'healthy') return 'text-emerald-500'
+  if (health === 'warning') return 'text-amber-500'
+  if (health === 'error') return 'text-red-500'
+  return 'text-app-text-muted'
+}
+
+function getPoolHealth(pool: StoragePoolModel) {
+  if (pool.health === 'healthy' || pool.status === 'healthy') return 'healthy'
+  if (pool.health === 'warning' || pool.status === 'warning') return 'warning'
+  if (pool.health === 'error' || pool.status === 'error') return 'error'
+  return 'unknown'
 }

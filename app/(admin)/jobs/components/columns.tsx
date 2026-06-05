@@ -1,16 +1,8 @@
-import {
-  ActionMenu,
-  type ActionMenuConfig,
-  Button,
-  DataTableHeader,
-  MoreButton,
-  Progress,
-  Tooltip,
-} from '@/components/ui'
-import { cn, formatDateTime, formatSmartTimeInfo } from '@/lib/utils'
+import { ActionMenu, type ActionMenuConfig, Button, DataTableHeader, Progress, Tooltip } from '@/components/ui'
+import { cn, formatSmartTimeInfo } from '@/lib/utils'
 import type { Job, JobStatus } from '@/types'
 import { useSelections } from 'ahooks'
-import { MoreVertical, Pause, Play, Timer, Trash2, XCircle } from 'lucide-react'
+import { MoreVertical, Pause, Play, Timer, XCircle } from 'lucide-react'
 
 import { getJobIcon, getJobStatusMeta, JobStatusMetaKey } from '../constants'
 import { ColumnIcon } from '@/components/ui/column-icon'
@@ -47,7 +39,7 @@ export const getJobColumns = (
   {
     key: '__selection__',
     label: '',
-    width: '48px',
+    width: '3rem',
     render: (_, record) => {
       const title = t(`types.${record.type}`)
 
@@ -66,13 +58,14 @@ export const getJobColumns = (
   {
     key: 'type',
     label: t('columns.name'),
-    width: '280px',
+    width: '32%',
     render: (_, record) => {
-      const title = t(`types.${record.type}`)
+      const title = record.title || t(`types.${record.type}`)
+      const subTitle = [record.storagePoolName, record.message].filter(Boolean).join(' · ')
 
       return (
         <div className="flex min-w-0 flex-col">
-          <ColumnIcon icon={getJobIcon(record.type)} title={title} subTitle={record.message} className="gap-2" />
+          <ColumnIcon icon={getJobIcon(record.type)} title={title} subTitle={subTitle} className="gap-2" />
           {record.errorMessage && (
             <div className="mt-2 text-xs wrap-break-word whitespace-normal text-red-500">{record.errorMessage}</div>
           )}
@@ -83,6 +76,7 @@ export const getJobColumns = (
   {
     key: 'progress',
     label: t('columns.progress'),
+    width: '30%',
     render: (value: number, record) => {
       const updatedAtText = formatSmartTimeInfo(record.updatedAt, timeZone)
 
@@ -109,11 +103,11 @@ export const getJobColumns = (
   {
     key: 'status',
     label: t('columns.status'),
-    align: 'center',
+    width: '12%',
     render: (value: JobStatus) => {
       const { key } = getJobStatusMeta(value)
       return (
-        <div className="flex items-center justify-center text-center">
+        <div className="flex items-center justify-start text-left">
           <span
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase',
@@ -129,12 +123,13 @@ export const getJobColumns = (
   {
     key: 'updatedAt',
     label: t('columns.updatedAt'),
+    width: '15%',
     render: (value, record) => {
       const createdAt = formatSmartTimeInfo(record.createdAt, timeZone)
 
       return (
-        <div className="flex flex-col items-start gap-2">
-          <span className="text-app-text flex items-center gap-2 text-xs">创建时间</span>
+        <div className="flex flex-col items-start gap-1">
+          <span className="text-app-text-muted text-[11px] uppercase">Created</span>
           <Tooltip content={createdAt.fullText} disabled={!createdAt.showTooltip} triggerClassName="w-fit">
             <span className="text-app-text-muted inline-flex w-fit items-center gap-2 text-xs">{createdAt.text}</span>
           </Tooltip>
@@ -145,10 +140,9 @@ export const getJobColumns = (
   {
     key: '__actions__',
     label: '',
-    width: '88px',
-    align: 'right',
+    width: '8%',
     render: (_, record) => (
-      <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="flex items-center justify-start gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         <Button
           variant="ghost"
           size="sm"

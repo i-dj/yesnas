@@ -2,9 +2,9 @@ import {
   NetworkInterfaceSnapshot,
   NetworkInterfacesSnapshot,
   NetworkPoint,
-  ProcessState,
   SystemState,
 } from '@/types/models/dashboard'
+import { formatBytes } from '@/lib/utils'
 
 export const statusLabelMap: Record<SystemState, string> = {
   healthy: '运行正常',
@@ -20,13 +20,6 @@ export const healthLabelMap: Record<SystemState, string> = {
   unknown: '未知',
 }
 
-export const processLabelMap: Record<ProcessState, string> = {
-  running: '运行中',
-  idle: '空闲',
-  waiting: '等待中',
-  unknown: '未知',
-}
-
 export function formatInterfaceName(networkInterface: NetworkInterfaceSnapshot) {
   return networkInterface.alias ? `${networkInterface.alias} (${networkInterface.name})` : networkInterface.name
 }
@@ -35,7 +28,7 @@ export function formatInterfaceOption(networkInterface: NetworkInterfaceSnapshot
   return `${formatInterfaceName(networkInterface)} · ${formatInterfaceIps(networkInterface)}`
 }
 
-export function formatInterfaceIps(networkInterface: NetworkInterfaceSnapshot) {
+function formatInterfaceIps(networkInterface: NetworkInterfaceSnapshot) {
   if (networkInterface.ips.length > 0) return networkInterface.ips.join(' / ')
 
   return networkInterface.operState === 'up' ? '无 IP' : 'DOWN'
@@ -73,43 +66,8 @@ export function formatChartTime(timestamp?: string) {
   })
 }
 
-export function formatBytes(bytes: number) {
-  if (!Number.isFinite(bytes)) return '-'
-
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  let value = bytes
-  let unitIndex = 0
-
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024
-    unitIndex += 1
-  }
-
-  const digits = value >= 100 || unitIndex === 0 ? 0 : value >= 10 ? 1 : 2
-  return `${value.toFixed(digits)} ${units[unitIndex]}`
-}
-
 export function formatSpeed(bytesPerSec: number) {
   return `${formatBytes(bytesPerSec)}/s`
-}
-
-export function formatPercent(value: number) {
-  return `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}%`
-}
-
-export function formatOptional(value: number | undefined, suffix: string) {
-  if (value === undefined || !Number.isFinite(value)) return '-'
-
-  const formatted = Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)
-  return `${formatted}${suffix}`
-}
-
-export function formatUptime(seconds: number) {
-  const days = Math.floor(seconds / 86400)
-  const hours = Math.floor((seconds % 86400) / 3600)
-
-  if (days > 0) return `${days} 天 ${hours.toString().padStart(2, '0')} 小时`
-  return `${hours} 小时`
 }
 
 export function formatCheckedAt(checkedAt: string) {

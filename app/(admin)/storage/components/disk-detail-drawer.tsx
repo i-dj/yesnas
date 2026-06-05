@@ -38,7 +38,7 @@ const usageTypeColor = (type?: string) => {
 const Field = ({ label, value }: { label: string; value: unknown }) => (
   <div className="bg-app-bg border-app-border rounded-lg border p-2">
     <div className="text-app-text-muted text-[11px] font-semibold uppercase">{label}</div>
-    <div className="text-app-text mt-1 text-sm break-all">{prettyValue(value)}</div>
+    <div className="text-app-text mt-1 text-xs break-all">{prettyValue(value)}</div>
   </div>
 )
 
@@ -235,8 +235,8 @@ export function DiskDetailDrawer({ disk, storagePools = [], open, onOpenChange }
                     ['Write Ops Total', prettyNumber(disk.writeOpsTotal)],
                   ].map(([metric, value]) => (
                     <tr key={String(metric)} className="border-app-border border-t">
-                      <td className="text-app-text-muted px-3 py-2">{metric}</td>
-                      <td className="text-app-text px-3 py-2">{prettyValue(value)}</td>
+                      <td className="text-app-text-muted px-3 py-2 text-[11px]">{metric}</td>
+                      <td className="text-app-text px-3 py-2 text-xs">{prettyValue(value)}</td>
                     </tr>
                   ))}
                 </tbody>
