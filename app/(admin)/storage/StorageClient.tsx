@@ -191,7 +191,7 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
 
         <section className="mt-10 space-y-3 pb-4">
           <div className="flex items-center justify-between">
-            <SectionTitle title="Storage Pools" subTitle={`Existing pools and usage overview.`} />
+            <SectionTitle level="section" title="Storage Pools" subTitle={`Existing pools and usage overview.`} />
             <Button type="button" icon={Plus} size="sm" variant="borderghost" onClick={handleOpenCreator}>
               Add Pool
             </Button>

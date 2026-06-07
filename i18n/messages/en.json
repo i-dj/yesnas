@@ -36,11 +36,94 @@
       "fileSharing": "File Sharing",
       "hardware": "Hardware",
       "jobs": "Tasks",
-      "users": "Users"
+      "users": "Users",
+      "logs": "Logs"
     },
     "aria": {
       "expandSidebar": "Expand sidebar",
       "collapseSidebar": "Collapse sidebar"
+    }
+  },
+  "Logs": {
+    "title": "Logs",
+    "subtitle": "Review user actions, system events, and security activity",
+    "total": "logs",
+    "empty": "No logs match the current filters",
+    "activity": {
+      "title": "Activity heatmap",
+      "summary": "{count} logs grouped by {bucket}",
+      "tooltip": "{time}: {count} logs"
+    },
+    "ranges": {
+      "24h": "24 hours",
+      "7d": "7 days",
+      "30d": "30 days",
+      "90d": "90 days",
+      "1y": "1 year",
+      "custom": "Custom"
+    },
+    "buckets": {
+      "hour": "hour",
+      "day": "day",
+      "month": "month"
+    },
+    "filters": {
+      "search": "Search logs, events, or messages",
+      "allCategories": "All categories",
+      "allSeverities": "All levels",
+      "allResults": "All results",
+      "more": "More filters",
+      "reset": "Reset filters",
+      "source": "Source, e.g. api",
+      "event": "Event type",
+      "ipAddress": "IP address",
+      "from": "Start time",
+      "to": "End time"
+    },
+    "columns": {
+      "time": "Time",
+      "actor": "Actor",
+      "event": "Event",
+      "source": "Source",
+      "ipAddress": "IP address",
+      "result": "Result"
+    },
+    "categories": {
+      "user": "User",
+      "system": "System"
+    },
+    "severities": {
+      "info": "Info",
+      "warn": "Warning",
+      "error": "Error"
+    },
+    "values": {
+      "system": "System",
+      "success": "Success",
+      "failed": "Failed"
+    },
+    "pagination": {
+      "pageSize": "{count} per page",
+      "summary": "Page {page} / {totalPages}"
+    },
+    "detail": {
+      "title": "Log details",
+      "time": "Occurred at",
+      "category": "Category",
+      "severity": "Severity",
+      "source": "Source",
+      "event": "Event",
+      "action": "Action",
+      "actor": "Actor",
+      "ipAddress": "IP address",
+      "request": "Request",
+      "resource": "Resource",
+      "userAgent": "User agent",
+      "details": "Details"
+    },
+    "messages": {
+      "loadFailed": "Failed to load logs",
+      "heatmapFailed": "Failed to load log heatmap"
     }
   },
   "Dashboard": {
@@ -101,6 +184,13 @@
       "kernel": "Kernel version",
       "uptime": "Uptime"
     },
+    "overview": {
+      "totalIo": "Total I/O",
+      "onlineInterfaces": "Online interfaces",
+      "healthyDisks": "Healthy disks",
+      "memoryModules": "{count} memory modules",
+      "memoryModule": "Memory {index}"
+    },
     "sections": {
       "cpu": "Processor",
       "motherboard": "Motherboard",
@@ -111,7 +201,6 @@
     },
     "counts": {
       "disks": "{count} physical disks",
-      "gpus": "{count} graphics devices",
       "network": "{count} network interfaces"
     },
     "empty": {
@@ -120,7 +209,6 @@
       "network": "No network interfaces detected"
     },
     "fields": {
-      "cpuUsage": "CPU usage",
       "coresThreads": "Cores / Threads",
       "frequency": "Current frequency",
       "temperature": "Temperature",
@@ -131,10 +219,8 @@
       "version": "Version",
       "serial": "Serial number",
       "totalCapacity": "Total capacity",
-      "memoryUsage": "Memory usage",
       "used": "Used",
       "available": "Available",
-      "pressure": "Pressure",
       "typeSpeed": "Type / Speed",
       "partNumber": "Part number",
       "devicePath": "Device path",
@@ -145,11 +231,10 @@
       "powerCycles": "Power cycles",
       "realtimeIo": "Real-time I/O",
       "usageRate": "Usage",
-      "videoMemory": "Video memory",
-      "macAddress": "MAC address",
+      "videoMemoryTemperature": "Video memory / Temperature",
       "ipAddress": "IP address",
-      "connectionStatus": "Connection status",
       "receiveSpeed": "Receive speed",
+      "receiveSendSpeed": "Live rate",
       "sendSpeed": "Send speed"
     },
     "statuses": {
@@ -157,12 +242,10 @@
       "abnormal": "Abnormal",
       "unsupported": "Unsupported",
       "unknown": "Unknown",
-      "unknownVendor": "Unknown vendor",
       "inUse": "In use",
       "unused": "Unused",
       "online": "Online",
-      "offline": "Offline",
-      "noIp": "No IP address"
+      "offline": "Offline"
     },
     "diskUsage": {
       "system": "System disk",
@@ -244,6 +327,18 @@
     "empty": "No users yet",
     "emptySearch": "No matching users",
     "searchPlaceholder": "Search users",
+    "overview": {
+      "total": "Total users",
+      "enabled": "Enabled accounts",
+      "disabled": "Disabled accounts",
+      "admins": "Administrators"
+    },
+    "filters": {
+      "all": "All",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "admins": "Administrators"
+    },
     "columns": {
       "user": "User",
       "status": "Status",
@@ -297,6 +392,8 @@
       "updated": "User updated",
       "deleted": "User deleted",
       "saveFailed": "Save user failed",
+      "usernameExists": "This username already exists. Please choose another username.",
+      "requiredField": "Please fill in this field.",
       "deleteFailed": "Delete user failed",
       "lastAdminDeleteBlocked": "At least one administrator must remain. You cannot delete the last administrator.",
       "invalidAvatar": "Please choose an image file.",

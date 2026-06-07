@@ -1,4 +1,14 @@
-import { CircuitBoard, Files, HardDrive, LayoutDashboard, ListTodo, Share2, Users, type LucideIcon } from 'lucide-react'
+import {
+  CircuitBoard,
+  Files,
+  HardDrive,
+  LayoutDashboard,
+  ListTodo,
+  ScrollText,
+  Share2,
+  Users,
+  type LucideIcon,
+} from 'lucide-react'
 
 export interface SubMenuItem {
   nameKey: string
@@ -30,6 +40,7 @@ export const menuGroups: MenuGroup[] = [
       { nameKey: 'hardware', href: '/hardware', icon: CircuitBoard },
       { nameKey: 'jobs', href: '/jobs', icon: ListTodo },
       { nameKey: 'users', href: '/users', icon: Users },
+      { nameKey: 'logs', href: '/logs', icon: ScrollText },
     ],
   },
 ]

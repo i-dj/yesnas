@@ -156,9 +156,9 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
           {menuGroups.map((group) => (
             <div key={group.nameKey} className="mt-6">
               {!sidebarCollapsed && (
-                <div className="text-app-text-muted/50 px-4 text-xs uppercase">{group.nameKey}</div>
+                <div className="text-app-text-muted/50 px-4 text-[11px] uppercase">{group.nameKey}</div>
               )}
-              <ul className="mt-1.5 mr-3 ml-3 flex flex-col gap-1">
+              <ul className="mt-1.5 mr-3 ml-3 flex flex-col gap-0.5">
                 {group.sub.map((item) => {
                   const Icon = item.icon
                   const active = isActive(item.href)
@@ -169,7 +169,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                       <Link
                         href={item.href}
                         className={cn(
-                          'group relative flex cursor-pointer items-center rounded-lg py-2 text-xs font-medium transition-all',
+                          'group relative flex cursor-pointer items-center rounded-lg py-2 text-sm font-medium transition-all',
                           sidebarCollapsed ? 'justify-center px-2' : 'px-4',
                           active
                             ? 'bg-app-active/55 text-app-text'

@@ -1,4 +1,4 @@
-import { DataTableHeader, MoreButton, StatusPill } from '@/components/ui'
+import { DataTableHeader, MoreButton, StatusPill, Tooltip } from '@/components/ui'
 import { HardDrive, MemoryStick } from 'lucide-react'
 import { DiskModel } from '@/types/models/storage'
 import { bytesFormat } from '@/lib/utils'
@@ -26,7 +26,7 @@ export const getDiskColumns = (
     key: 'sizeBytes',
     label: 'SIZE',
     render: (value) => (
-      <span className="text-base font-semibold">{bytesFormat(value, { standard: 'm', decimalPlaces: 0 })}</span>
+      <span className="text-sm font-semibold">{bytesFormat(value, { standard: 'm', decimalPlaces: 0 })}</span>
     ),
   },
   {
@@ -56,7 +56,7 @@ export const getDiskColumns = (
     render: (value) => {
       const health = String(value || '-').toLowerCase()
       const passed = health === 'passed'
-      return <span className={passed ? 'text-emerald-500' : 'text-red-500'}>{String(value || '-').toUpperCase()}</span>
+      return <StatusPill color={passed ? 'success' : 'warning'} content={String(value || '-').toUpperCase()} />
     },
   },
   {
@@ -65,9 +65,10 @@ export const getDiskColumns = (
     width: '56px',
     align: 'right',
     render: (_, record) => (
-      <div className="flex justify-end">
+      <div className="flex justify-end opacity-60 transition-opacity group-hover:opacity-100">
         <MoreButton
           variant="rowAction"
+          className="visible! opacity-100!"
           aria-label={`More actions for ${record.path}`}
           onClick={(event) => {
             event.stopPropagation()

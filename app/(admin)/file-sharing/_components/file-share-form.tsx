@@ -140,6 +140,7 @@ export function FileShareForm({
       </Field>
 
       {/* client networks */}
+
       <Field label={t('form.clientNetworks')}>
         <textarea
           value={form.clientNetworks.join('\n')}

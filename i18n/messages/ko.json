@@ -36,11 +36,94 @@
       "fileSharing": "파일 공유",
       "hardware": "하드웨어",
       "jobs": "작업",
-      "users": "사용자"
+      "users": "사용자",
+      "logs": "로그"
     },
     "aria": {
       "expandSidebar": "사이드바 펼치기",
       "collapseSidebar": "사이드바 접기"
+    }
+  },
+  "Logs": {
+    "title": "로그",
+    "subtitle": "사용자 작업, 시스템 이벤트 및 보안 활동을 확인합니다",
+    "total": "개 로그",
+    "empty": "현재 조건과 일치하는 로그가 없습니다",
+    "activity": {
+      "title": "활동 히트맵",
+      "summary": "{count}개 로그를 {bucket} 단위로 집계",
+      "tooltip": "{time}: {count}개 로그"
+    },
+    "ranges": {
+      "24h": "24시간",
+      "7d": "7일",
+      "30d": "30일",
+      "90d": "90일",
+      "1y": "1년",
+      "custom": "사용자 지정"
+    },
+    "buckets": {
+      "hour": "시간",
+      "day": "일",
+      "month": "월"
+    },
+    "filters": {
+      "search": "로그, 이벤트 또는 메시지 검색",
+      "allCategories": "모든 카테고리",
+      "allSeverities": "모든 수준",
+      "allResults": "모든 결과",
+      "more": "추가 필터",
+      "reset": "필터 초기화",
+      "source": "소스(예: api)",
+      "event": "이벤트 유형",
+      "ipAddress": "IP 주소",
+      "from": "시작 시간",
+      "to": "종료 시간"
+    },
+    "columns": {
+      "time": "시간",
+      "actor": "작업 주체",
+      "event": "이벤트",
+      "source": "소스",
+      "ipAddress": "IP 주소",
+      "result": "결과"
+    },
+    "categories": {
+      "user": "사용자",
+      "system": "시스템"
+    },
+    "severities": {
+      "info": "정보",
+      "warn": "경고",
+      "error": "오류"
+    },
+    "values": {
+      "system": "시스템",
+      "success": "성공",
+      "failed": "실패"
+    },
+    "pagination": {
+      "pageSize": "페이지당 {count}개",
+      "summary": "{page} / {totalPages} 페이지"
+    },
+    "detail": {
+      "title": "로그 상세",
+      "time": "발생 시간",
+      "category": "카테고리",
+      "severity": "수준",
+      "source": "소스",
+      "event": "이벤트",
+      "action": "작업",
+      "actor": "작업 주체",
+      "ipAddress": "IP 주소",
+      "request": "요청",
+      "resource": "리소스",
+      "userAgent": "사용자 에이전트",
+      "details": "상세 데이터"
+    },
+    "messages": {
+      "loadFailed": "로그를 불러오지 못했습니다",
+      "heatmapFailed": "로그 히트맵을 불러오지 못했습니다"
     }
   },
   "Dashboard": {
@@ -101,6 +184,13 @@
       "kernel": "커널 버전",
       "uptime": "가동 시간"
     },
+    "overview": {
+      "totalIo": "총 I/O",
+      "onlineInterfaces": "온라인 인터페이스",
+      "healthyDisks": "정상 디스크",
+      "memoryModules": "메모리 {count}개",
+      "memoryModule": "메모리 {index}"
+    },
     "sections": {
       "cpu": "프로세서",
       "motherboard": "메인보드",
@@ -111,7 +201,6 @@
     },
     "counts": {
       "disks": "물리 디스크 {count}개",
-      "gpus": "그래픽 장치 {count}개",
       "network": "네트워크 인터페이스 {count}개"
     },
     "empty": {
@@ -120,7 +209,6 @@
       "network": "감지된 네트워크 인터페이스가 없습니다"
     },
     "fields": {
-      "cpuUsage": "CPU 사용률",
       "coresThreads": "코어 / 스레드",
       "frequency": "현재 주파수",
       "temperature": "온도",
@@ -131,10 +219,8 @@
       "version": "버전",
       "serial": "일련번호",
       "totalCapacity": "총 용량",
-      "memoryUsage": "메모리 사용률",
       "used": "사용 중",
       "available": "사용 가능",
-      "pressure": "메모리 압력",
       "typeSpeed": "유형 / 속도",
       "partNumber": "부품 번호",
       "devicePath": "장치 경로",
@@ -145,11 +231,10 @@
       "powerCycles": "시작 횟수",
       "realtimeIo": "실시간 I/O",
       "usageRate": "사용률",
-      "videoMemory": "비디오 메모리",
-      "macAddress": "MAC 주소",
+      "videoMemoryTemperature": "비디오 메모리 / 온도",
       "ipAddress": "IP 주소",
-      "connectionStatus": "연결 상태",
       "receiveSpeed": "수신 속도",
+      "receiveSendSpeed": "실시간 속도",
       "sendSpeed": "송신 속도"
     },
     "statuses": {
@@ -157,12 +242,10 @@
       "abnormal": "비정상",
       "unsupported": "지원되지 않음",
       "unknown": "알 수 없음",
-      "unknownVendor": "알 수 없는 공급업체",
       "inUse": "사용 중",
       "unused": "미사용",
       "online": "온라인",
-      "offline": "오프라인",
-      "noIp": "IP 주소 없음"
+      "offline": "오프라인"
     },
     "diskUsage": {
       "system": "시스템 디스크",
@@ -244,6 +327,18 @@
     "empty": "No users yet",
     "emptySearch": "No matching users",
     "searchPlaceholder": "Search users",
+    "overview": {
+      "total": "전체 사용자",
+      "enabled": "활성 계정",
+      "disabled": "비활성 계정",
+      "admins": "관리자"
+    },
+    "filters": {
+      "all": "전체",
+      "enabled": "활성",
+      "disabled": "비활성",
+      "admins": "관리자"
+    },
     "columns": {
       "user": "User",
       "status": "Status",
@@ -297,8 +392,10 @@
       "updated": "User updated",
       "deleted": "User deleted",
       "saveFailed": "Save user failed",
-      "deleteFailed": "Delete user failed",
-      "lastAdminDeleteBlocked": "At least one administrator must remain. You cannot delete the last administrator.",
+      "usernameExists": "이미 사용 중인 사용자 이름입니다. 다른 사용자 이름을 선택해 주세요.",
+      "requiredField": "이 필드를 입력해 주세요.",
+      "deleteFailed": "사용자 삭제에 실패했습니다",
+      "lastAdminDeleteBlocked": "관리자는 최소 한 명 이상 남아 있어야 하므로 마지막 관리자는 삭제할 수 없습니다.",
       "invalidAvatar": "Please choose an image file.",
       "enableSmbFailed": "Enable SMB user {username} failed. Make sure the user is synced to SMB and check system permissions.",
       "disableSmbFailed": "Disable SMB user {username} failed. Make sure the user is synced to SMB and check system permissions.",

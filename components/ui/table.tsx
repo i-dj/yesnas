@@ -44,7 +44,7 @@ export const Table = <T extends { id: string | number }>({
 
   return (
     <div className="w-full">
-      <table className="w-full border-separate border-spacing-0 text-sm">
+      <table className="app-body-text w-full border-separate border-spacing-0">
         <thead>
           <tr>
             {headers.map((h) => (

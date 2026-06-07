@@ -18,7 +18,7 @@ export function UserAvatar({ user }: { user: User }) {
 
   if (isImageAvatar(user.avatar)) {
     return (
-      <span className="border-app-border bg-app-bg inline-flex h-9 w-9 shrink-0 overflow-hidden rounded-full border">
+      <span className="border-app-border bg-app-bg inline-flex size-10 shrink-0 overflow-hidden rounded-full border">
         <img src={user.avatar} alt="" className="h-full w-full object-cover" />
       </span>
     )
@@ -27,7 +27,7 @@ export function UserAvatar({ user }: { user: User }) {
   return (
     <span
       className={cn(
-        'border-app-border inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bg-slate-500/15 text-xs font-semibold text-slate-600',
+        'border-app-border inline-flex size-10 shrink-0 items-center justify-center rounded-full border bg-sky-500/10 text-xs font-semibold text-sky-400',
       )}
     >
       {label || <UserRound className="h-4 w-4" />}

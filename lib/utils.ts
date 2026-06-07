@@ -178,9 +178,19 @@ export function formatOptionalNumber(value: number | undefined, suffix: string):
   return `${formatted}${suffix}`
 }
 
-export function formatUptime(seconds: number): string {
+export function formatUptime(
+  seconds: number,
+  formatter?: {
+    daysHours: (days: number, hours: number) => string
+    hours: (hours: number) => string
+  },
+): string {
   const days = Math.floor(seconds / 86400)
   const hours = Math.floor((seconds % 86400) / 3600)
+
+  if (formatter) {
+    return days > 0 ? formatter.daysHours(days, hours) : formatter.hours(hours)
+  }
 
   if (days > 0) return `${days} 天 ${hours.toString().padStart(2, '0')} 小时`
   return `${hours} 小时`

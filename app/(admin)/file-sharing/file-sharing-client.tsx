@@ -440,10 +440,14 @@ export function FileSharingClient({
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <SectionTitle title={t('sharesTitle')} subTitle={t('sharesSubtitle')} />
+          <SectionTitle level="section" title={t('sharesTitle')} subTitle={t('sharesSubtitle')} />
         </div>
-        <DataTable headers={columns} data={shares} variant="primary" />
-        {shares.length === 0 ? <EmptyState message={t('empty')} /> : null}
+
+        {shares.length === 0 ? (
+          <EmptyState message={t('empty')} />
+        ) : (
+          <DataTable headers={columns} data={shares} variant="primary" />
+        )}
       </section>
 
       <SideDrawer

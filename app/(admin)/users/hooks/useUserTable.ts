@@ -4,9 +4,12 @@ import { performSort } from '@/lib/utils'
 import { SORT_DIRECTIONS } from '@/types'
 import { useSort } from '@/hooks/use-sort'
 
+export type UserStatusFilter = 'all' | 'enabled' | 'disabled' | 'admin'
+
 export function useUserTable(users: User[]) {
   const [list, setList] = useState(users)
   const [keyword, setKeyword] = useState('')
+  const [statusFilter, setStatusFilter] = useState<UserStatusFilter>('all')
 
   const { sort, handleSort } = useSort<User>('updatedAt', SORT_DIRECTIONS.DESC)
 
@@ -16,10 +19,15 @@ export function useUserTable(users: User[]) {
 
   const filtered = useMemo(() => {
     const q = keyword.trim().toLowerCase()
-    if (!q) return list
+    const statusFiltered = list.filter((user) => {
+      if (statusFilter === 'admin') return user.isAdmin
+      if (statusFilter === 'enabled' || statusFilter === 'disabled') return user.status === statusFilter
+      return true
+    })
 
-    return list.filter((u) => [u.username, u.displayName].some((v) => v?.toLowerCase().includes(q)))
-  }, [keyword, list])
+    if (!q) return statusFiltered
+    return statusFiltered.filter((u) => [u.username, u.displayName].some((v) => v?.toLowerCase().includes(q)))
+  }, [keyword, list, statusFilter])
 
   const finalUsers = useMemo(() => {
     return sort.dir ? performSort(filtered, sort.key, sort.dir) : filtered
@@ -29,6 +37,8 @@ export function useUserTable(users: User[]) {
     list: finalUsers,
     keyword,
     setKeyword,
+    statusFilter,
+    setStatusFilter,
     sort,
     handleSort,
   }

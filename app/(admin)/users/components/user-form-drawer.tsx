@@ -23,11 +23,15 @@ export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, on
   const t = useTranslations('Users')
 
   const [form, setForm] = useState<UserFormState>(createEmptyUserForm)
+  const [errors, setErrors] = useState<Partial<Record<'username' | 'displayName' | 'password', string>>>({})
   const [avatarEditorImage, setAvatarEditorImage] = useState<string | File | null>(null)
   const avatarInputRef = useRef<HTMLInputElement | null>(null)
 
   const update = <K extends keyof UserFormState>(key: K, value: UserFormState[K]) => {
     setForm((f) => ({ ...f, [key]: value }))
+    if (key === 'username' || key === 'displayName' || key === 'password') {
+      setErrors((current) => ({ ...current, [key]: undefined }))
+    }
   }
 
   const resetForm = () => {
@@ -43,6 +47,7 @@ export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, on
           }
         : createEmptyUserForm,
     )
+    setErrors({})
     setAvatarEditorImage(null)
   }
 
@@ -53,6 +58,17 @@ export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, on
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const nextErrors: typeof errors = {}
+
+    if (!form.username.trim()) nextErrors.username = t('messages.requiredField')
+    if (!form.displayName.trim()) nextErrors.displayName = t('messages.requiredField')
+    if (!editingUser && !form.password) nextErrors.password = t('messages.requiredField')
+
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors)
+      return
+    }
+
     void onSubmit(form)
   }
 
@@ -79,18 +95,24 @@ export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, on
         onOpenChange={onOpenChange}
         title={editingUser ? t('form.editTitle') : t('form.createTitle')}
       >
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-4" noValidate onSubmit={handleSubmit}>
           <Field label={t('form.username')}>
             <Input
               value={form.username}
               disabled={Boolean(editingUser)}
               required
+              errorMessage={errors.username}
               onChange={(e) => update('username', e.target.value)}
             />
           </Field>
 
           <Field label={t('form.displayName')}>
-            <Input value={form.displayName} required onChange={(e) => update('displayName', e.target.value)} />
+            <Input
+              value={form.displayName}
+              required
+              errorMessage={errors.displayName}
+              onChange={(e) => update('displayName', e.target.value)}
+            />
           </Field>
 
           {/* avatar */}
@@ -140,6 +162,7 @@ export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, on
               type="password"
               value={form.password}
               required={!editingUser}
+              errorMessage={errors.password}
               onChange={(e) => update('password', e.target.value)}
             />
           </Field>

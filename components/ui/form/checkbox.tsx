@@ -24,7 +24,7 @@ export const Checkbox = ({
     return (
       <label
         className={cn(
-          'border-app-border bg-app-surface hover:border-app-text-muted/40 flex cursor-pointer items-center gap-2.5 rounded-lg border px-2.5 py-2 text-sm transition',
+          'app-body-text border-app-border bg-app-surface hover:border-app-text-muted/40 flex cursor-pointer items-center gap-2.5 rounded-lg border px-2.5 py-2 transition',
           checked
             ? 'text-app-text border-app-text-muted/40 bg-app-hover/60'
             : 'text-app-text-muted hover:bg-app-hover/60',
@@ -39,13 +39,11 @@ export const Checkbox = ({
         />
         {leading ? <span className="shrink-0">{leading}</span> : null}
         <span className="min-w-0 flex-1">
-          <span
-            className={(cn('text-app-text block truncate text-sm'), checked ? 'text-app-text' : 'text-app-text-muted')}
-          >
+          <span className={cn('app-body-text block truncate', checked ? 'text-app-text' : 'text-app-text-muted')}>
             {label}
           </span>
           {description ? (
-            <span className="text-app-text-muted mt-0.5 block truncate text-xs">{description}</span>
+            <span className="app-caption text-app-text-muted mt-0.5 block truncate">{description}</span>
           ) : null}
         </span>
         <CheckboxMark checked={checked} />
@@ -56,7 +54,7 @@ export const Checkbox = ({
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-sm transition',
+        'app-body-text flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 transition',
         checked ? 'text-app-text' : 'text-app-text-muted',
         className,
       )}

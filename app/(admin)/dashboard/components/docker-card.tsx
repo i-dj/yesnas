@@ -1,9 +1,9 @@
 'use client'
 
 import { Container, ExternalLink, RefreshCw, WifiOff } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 import { Card, StatusPill } from '@/components/ui'
+import { useSse, type SseStatus } from '@/hooks/use-sse'
 import { getDockerContainersStreamUrl } from '@/lib/file-api'
 import { cn, formatUptime } from '@/lib/utils'
 import { formatCheckedAt } from '../utils'
@@ -34,44 +34,14 @@ type DockerContainersSnapshot = {
   checkedAt: string
 }
 
-type StreamState = 'connecting' | 'ready' | 'error'
-
 export function DockerCard() {
-  const [snapshot, setSnapshot] = useState<DockerContainersSnapshot | null>(null)
-  const [streamState, setStreamState] = useState<StreamState>('connecting')
-  const [streamVersion, setStreamVersion] = useState(0)
-
-  useEffect(() => {
-    let disposed = false
-    setStreamState('connecting')
-
-    const source = new EventSource(getDockerContainersStreamUrl(1))
-
-    source.addEventListener('ready', () => {
-      if (!disposed) setStreamState('ready')
-    })
-
-    source.addEventListener('docker-containers', (event) => {
-      try {
-        const nextSnapshot = JSON.parse(event.data) as DockerContainersSnapshot
-        if (!disposed) {
-          setSnapshot(nextSnapshot)
-          setStreamState('ready')
-        }
-      } catch {
-        if (!disposed) setStreamState('error')
-      }
-    })
-
-    source.onerror = () => {
-      if (!disposed) setStreamState('error')
-    }
-
-    return () => {
-      disposed = true
-      source.close()
-    }
-  }, [streamVersion])
+  const {
+    data: snapshot,
+    status: streamState,
+    reconnect,
+  } = useSse<DockerContainersSnapshot>(getDockerContainersStreamUrl(1), {
+    events: ['docker-containers'],
+  })
 
   const containers = snapshot?.items ?? []
   const runningCount = containers.filter((container) => container.running).length
@@ -100,7 +70,7 @@ export function DockerCard() {
 
         <button
           type="button"
-          onClick={() => setStreamVersion((version) => version + 1)}
+          onClick={reconnect}
           className="border-app-border text-app-text-muted hover:bg-app-hover hover:text-app-text inline-flex h-8 w-fit items-center justify-center gap-1.5 rounded-md border px-2.5 text-xs transition"
         >
           <RefreshCw className="size-3.5" />
@@ -175,7 +145,8 @@ function ImageIcon({ image }: { image: string }) {
   )
 }
 
-function getStreamLabel(state: StreamState) {
+function getStreamLabel(state: SseStatus) {
+  if (state === 'idle') return '未连接'
   if (state === 'connecting') return '连接中'
   if (state === 'error') return '连接异常'
   return '实时'

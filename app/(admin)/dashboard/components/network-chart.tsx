@@ -4,7 +4,7 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 
 import { formatBytes } from '@/lib/utils'
 import type { NetworkRange } from '../types'
-import { formatChartTime, formatInterfaceLinkSpeed, formatInterfaceName, formatSpeed } from '../utils'
+import { formatChartTime, formatInterfaceName, formatSpeed } from '../utils'
 import { NetworkInterfaceSnapshot } from '@/types/models/dashboard'
 
 export function NetworkChart({ interfaces, range }: { interfaces: NetworkInterfaceSnapshot[]; range: NetworkRange }) {
@@ -12,9 +12,7 @@ export function NetworkChart({ interfaces, range }: { interfaces: NetworkInterfa
   const points = buildNetworkThroughputPoints(interfaces, range)
   const interfaceLabel = interfaces.length === 1 ? formatInterfaceName(interfaces[0]) : '全部网卡'
   const interfaceMeta =
-    interfaces.length === 1
-      ? `${formatInterfaceLinkSpeed(interfaces[0])} · ${interfaces[0].ips[0] ?? '无 IP'}`
-      : `聚合 ${interfaces.length} 个网卡`
+    interfaces.length === 1 ? `${interfaces[0].ips[0] ?? '无 IP'}` : `聚合 ${interfaces.length} 个网卡`
 
   return (
     <div className="border-app-border bg-app-bg mt-3 rounded-lg border px-1 py-2.5">
@@ -33,11 +31,10 @@ export function NetworkChart({ interfaces, range }: { interfaces: NetworkInterfa
                 minTickGap={20}
               />
               <YAxis
-                width={68}
-                tick={{ fill: '#a1a1aa', fontSize: 11 }}
+                width={86}
+                tick={<NetworkYAxisTick formatter={isRealtime ? formatSpeed : formatBytes} />}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={isRealtime ? formatSpeed : formatBytes}
                 domain={[0, 'auto']}
               />
               <Tooltip
@@ -81,6 +78,24 @@ export function NetworkChart({ interfaces, range }: { interfaces: NetworkInterfa
         )}
       </div>
     </div>
+  )
+}
+
+function NetworkYAxisTick({
+  x = 0,
+  y = 0,
+  payload,
+  formatter,
+}: {
+  x?: number
+  y?: number
+  payload?: { value?: number }
+  formatter: (value: number) => string
+}) {
+  return (
+    <text x={x - 8} y={y} dy="0.32em" fill="#a1a1aa" fontSize={11} textAnchor="end" style={{ whiteSpace: 'nowrap' }}>
+      {formatter(payload?.value ?? 0)}
+    </text>
   )
 }
 

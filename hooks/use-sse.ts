@@ -1,90 +1,104 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-type UseSseStatus = 'idle' | 'connecting' | 'open' | 'error'
+export type SseStatus = 'idle' | 'connecting' | 'ready' | 'error'
 
-interface UseSseOptions<T> {
-  event?: string
+type UseSseOptions<T> = {
   enabled?: boolean
+  event?: string
+  events?: string[]
+  readyEvents?: string[]
+  listenToMessage?: boolean
   parser?: (raw: string) => T
+  reducer?: (current: T | null, next: T) => T
   onMessage?: (data: T) => void
 }
 
-interface UseSseResult<T> {
+type UseSseResult<T> = {
   data: T | null
-  status: UseSseStatus
-  error: Event | null
+  status: SseStatus
+  error: Event | Error | null
+  reconnect: () => void
 }
 
-const defaultParser = <T>(raw: string) => raw as T
+const parseJson = <T>(raw: string) => JSON.parse(raw) as T
 
-export function useSse<T = string>(url: string | null, options: UseSseOptions<T> = {}): UseSseResult<T> {
-  const { event = 'message', enabled = true, parser = defaultParser, onMessage } = options
-
+export function useSse<T>(
+  url: string | null,
+  {
+    enabled = true,
+    event,
+    events = [],
+    readyEvents = ['ready'],
+    listenToMessage = false,
+    parser = parseJson,
+    reducer,
+    onMessage,
+  }: UseSseOptions<T> = {},
+): UseSseResult<T> {
   const [data, setData] = useState<T | null>(null)
-  const [status, setStatus] = useState<UseSseStatus>('idle')
-  const [error, setError] = useState<Event | null>(null)
-  const parserRef = useRef(parser)
-  const onMessageRef = useRef(onMessage)
-  const lastRawRef = useRef<string | null>(null)
+  const [status, setStatus] = useState<SseStatus>('idle')
+  const [error, setError] = useState<Event | Error | null>(null)
+  const [version, setVersion] = useState(0)
+  const callbacksRef = useRef({ parser, reducer, onMessage })
+  const eventsKey = (event ? [event, ...events] : events).join('\u0000')
+  const readyEventsKey = readyEvents.join('\u0000')
 
   useEffect(() => {
-    parserRef.current = parser
-  }, [parser])
+    callbacksRef.current = { parser, reducer, onMessage }
+  }, [parser, reducer, onMessage])
 
-  useEffect(() => {
-    onMessageRef.current = onMessage
-  }, [onMessage])
+  const reconnect = useCallback(() => {
+    setVersion((current) => current + 1)
+  }, [])
 
   useEffect(() => {
     if (!url || !enabled) {
       setStatus('idle')
+      setError(null)
       return
     }
 
-    const eventSource = new EventSource(url)
+    const source = new EventSource(url)
+    const dataEvents = eventsKey ? eventsKey.split('\u0000') : []
+    const connectionEvents = readyEventsKey ? readyEventsKey.split('\u0000') : []
     setStatus('connecting')
     setError(null)
 
-    const handleMessage = (messageEvent: MessageEvent<string>) => {
-      if (messageEvent.data === lastRawRef.current) return
-      lastRawRef.current = messageEvent.data
+    const handleReady = () => {
+      setStatus('ready')
+    }
+
+    const handleMessage = (event: MessageEvent<string>) => {
       try {
-        const nextData = parserRef.current(messageEvent.data)
-        setData(nextData)
-        setStatus('open')
-        onMessageRef.current?.(nextData)
-      } catch (parseError) {
-        console.error('Failed to parse SSE message', parseError)
+        const next = callbacksRef.current.parser(event.data)
+        setData((current) => callbacksRef.current.reducer?.(current, next) ?? next)
+        setStatus('ready')
+        setError(null)
+        callbacksRef.current.onMessage?.(next)
+      } catch (nextError) {
+        setStatus('error')
+        setError(nextError instanceof Error ? nextError : new Error('Failed to parse SSE message'))
       }
     }
 
-    eventSource.onopen = () => {
-      setStatus('open')
-    }
-
-    if (event === 'message') {
-      eventSource.onmessage = handleMessage
-    } else {
-      eventSource.addEventListener(event, handleMessage as EventListener)
-    }
-
-    eventSource.onerror = (nextError) => {
-      setError(nextError)
+    source.onopen = handleReady
+    source.onerror = (nextError) => {
       setStatus('error')
+      setError(nextError)
     }
+
+    connectionEvents.forEach((eventName) => source.addEventListener(eventName, handleReady))
+    dataEvents.forEach((eventName) => source.addEventListener(eventName, handleMessage as EventListener))
+    if (listenToMessage || dataEvents.length === 0) source.onmessage = handleMessage
 
     return () => {
-      if (event === 'message') {
-        eventSource.onmessage = null
-      } else {
-        eventSource.removeEventListener(event, handleMessage as EventListener)
-      }
-
-      eventSource.close()
+      connectionEvents.forEach((eventName) => source.removeEventListener(eventName, handleReady))
+      dataEvents.forEach((eventName) => source.removeEventListener(eventName, handleMessage as EventListener))
+      source.close()
     }
-  }, [url, event, enabled])
+  }, [enabled, eventsKey, listenToMessage, readyEventsKey, url, version])
 
-  return { data, status, error }
+  return { data, status, error, reconnect }
 }

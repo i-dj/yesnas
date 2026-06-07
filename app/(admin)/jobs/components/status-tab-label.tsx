@@ -4,10 +4,10 @@ interface StatusTabLabelProps {
 }
 
 export const StatusTabLabel = ({ label, count }: StatusTabLabelProps) => (
-  <div className="flex items-center gap-2 px-1">
-    <span className="text-[14px] font-medium">{label}</span>
+  <div className="flex items-center gap-2.5">
+    <span className="app-body-text font-medium">{label}</span>
     {count !== undefined && (
-      <span className="bg-app-item-bg text-app-text-muted min-w-5 rounded-full px-1.5 py-0.5 text-[10px] font-bold transition-colors">
+      <span className="app-micro-label bg-app-active text-app-text-muted grid h-5 min-w-5 place-items-center rounded-full px-1.5 font-medium transition-colors">
         {count}
       </span>
     )}

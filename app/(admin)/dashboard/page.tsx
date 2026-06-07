@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
 import { Card } from '@/components/ui'
+import { useSse } from '@/hooks/use-sse'
 import { getSystemNetworkStreamUrl, getSystemNetworkUrl, getSystemStatusStreamUrl } from '@/lib/file-api'
 import { cn, formatBytes, formatOptionalNumber, formatPercent, formatUptime } from '@/lib/utils'
 import { CompactResourceCard, DockerCard, FileSharingOverview, NetworkChart } from './components'
@@ -51,68 +52,41 @@ const toneClassMap = {
 }
 
 export default function DashboardPage() {
-  const [snapshot, setSnapshot] = useState<SystemStatusSnapshot | null>(null)
-  const [networkSnapshot, setNetworkSnapshot] = useState<NetworkInterfacesSnapshot | null>(null)
+  const { data: snapshot } = useSse<SystemStatusSnapshot>(getSystemStatusStreamUrl(1), {
+    events: ['system-status'],
+  })
+  const [historicalNetworkSnapshot, setHistoricalNetworkSnapshot] = useState<NetworkInterfacesSnapshot | null>(null)
   const [networkRange, setNetworkRange] = useState<NetworkRange>('realtime')
   const [selectedNetwork, setSelectedNetwork] = useState('all')
+  const { data: realtimeNetworkSnapshot } = useSse<NetworkInterfacesSnapshot>(getSystemNetworkStreamUrl(1), {
+    enabled: networkRange === 'realtime',
+    events: ['network-interfaces'],
+    reducer: mergeRealtimeNetworkSnapshot,
+  })
+  const networkSnapshot = networkRange === 'realtime' ? realtimeNetworkSnapshot : historicalNetworkSnapshot
 
   useEffect(() => {
     let disposed = false
 
-    const source = new EventSource(getSystemStatusStreamUrl(1))
-    source.addEventListener('system-status', (event) => {
-      try {
-        if (!disposed) setSnapshot(JSON.parse(event.data) as SystemStatusSnapshot)
-      } catch {
-        // Ignore malformed samples and wait for the next event.
-      }
-    })
+    if (networkRange === 'realtime') return
 
-    return () => {
-      disposed = true
-      source.close()
-    }
-  }, [])
-
-  useEffect(() => {
-    let disposed = false
-
-    if (networkRange !== 'realtime') {
-      fetch(getSystemNetworkUrl(networkRange))
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Failed to fetch network status: ${response.status}`)
-          }
-
-          return response.json() as Promise<NetworkInterfacesSnapshot>
-        })
-        .then((nextSnapshot) => {
-          if (!disposed) setNetworkSnapshot(nextSnapshot)
-        })
-        .catch(() => {
-          if (!disposed) setNetworkSnapshot(null)
-        })
-
-      return () => {
-        disposed = true
-      }
-    }
-
-    const source = new EventSource(getSystemNetworkStreamUrl(1))
-    source.addEventListener('network-interfaces', (event) => {
-      try {
-        const nextSnapshot = JSON.parse(event.data) as NetworkInterfacesSnapshot
-        if (!disposed) {
-          setNetworkSnapshot((currentSnapshot) => mergeRealtimeNetworkSnapshot(currentSnapshot, nextSnapshot))
+    fetch(getSystemNetworkUrl(networkRange))
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch network status: ${response.status}`)
         }
-      } catch {
-        // Ignore malformed samples and wait for the next event.
-      }
-    })
+
+        return response.json() as Promise<NetworkInterfacesSnapshot>
+      })
+      .then((nextSnapshot) => {
+        if (!disposed) setHistoricalNetworkSnapshot(nextSnapshot)
+      })
+      .catch(() => {
+        if (!disposed) setHistoricalNetworkSnapshot(null)
+      })
 
     return () => {
       disposed = true
-      source.close()
     }
   }, [networkRange])
 
@@ -192,7 +166,7 @@ export default function DashboardPage() {
     <PageWrapper className="-mx-8 gap-3 overflow-y-auto px-8 pb-8">
       <section className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex flex-row gap-3">
-          <h1 className="text-app-text mb-2 text-xl font-semibold tracking-normal">系统仪表台</h1>
+          <h1 className="app-page-title text-app-text mb-2">系统仪表台</h1>
           <div className="text-app-text-muted flex items-center gap-2 text-xs font-medium">
             <span
               className={cn(

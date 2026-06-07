@@ -12,6 +12,7 @@ const headerInnerVariants = cva('flex min-h-9 items-center gap-1 bg-clip-padding
     variant: {
       default: 'bg-app-item-bg',
       primary: 'bg-app-bg font-semibold',
+      plain: 'bg-transparent font-semibold',
     },
   },
   defaultVariants: { variant: 'default' },
@@ -28,7 +29,11 @@ const rowVariants = cva('group file-selectable relative cursor-default transitio
 
 const cellVariants = cva('relative px-4 py-2.5', {
   variants: {
-    variant: { default: '', primary: 'border-b border-app-border/50' },
+    variant: {
+      default: '',
+      primary: 'border-b border-app-border/50',
+      plain: 'border-b border-app-border/35',
+    },
   },
 })
 
@@ -64,7 +69,7 @@ interface DataTableProps<T extends { id: number | string }> {
   selectedIds?: Set<number | string>
   tdClassName?: string
   className?: string
-  variant?: 'default' | 'primary'
+  variant?: 'default' | 'primary' | 'plain'
   showHeader?: boolean
 }
 
@@ -88,7 +93,7 @@ export const DataTable = <T extends { id: number | string }>({
 
   return (
     <div className={cn('relative w-full overflow-x-auto', className)}>
-      <table className="w-full table-fixed border-separate border-spacing-0 text-xs">
+      <table className="app-body-text w-full table-fixed border-separate border-spacing-0">
         <thead className={cn(!showHeader && 'h-0')}>
           <tr className="select-none">
             {headers.map((h, i) => {
@@ -114,7 +119,9 @@ export const DataTable = <T extends { id: number | string }>({
                         isFirst && isRounded && 'rounded-l-lg',
                         isLast && isRounded && 'rounded-r-lg',
                         h.align === 'right' && 'justify-end',
-                        'bg-app-hover/50 text-xs',
+                        variant !== 'plain' && 'bg-app-hover/50',
+                        variant === 'plain' && 'text-app-text-muted',
+                        'app-body-text',
                       )}
                       onClick={() => h.sortable && onSortAction?.(h.key as keyof T)}
                     >
@@ -181,7 +188,7 @@ export const DataTable = <T extends { id: number | string }>({
                         cellVariants({ variant }),
                         radiusClass,
                         selected && 'bg-app-active/50',
-                        'px-2 py-2 text-xs',
+                        'app-body-text px-2 py-2',
                         h.align === 'right' && 'text-right',
                         h.align === 'center' && 'text-center',
                         tdClassName,

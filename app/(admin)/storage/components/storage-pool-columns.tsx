@@ -243,42 +243,44 @@ export const getStoragePoolColumns = (
       width: '56px',
       align: 'right',
       render: (_, record) => (
-        <ActionMenu
-          mode="left-click"
-          align="end"
-          onAction={(action) => {
-            if (action === 'open') {
-              onOpenDetails(record)
-              return
+        <div className="flex justify-end opacity-60 transition-opacity group-hover:opacity-100">
+          <ActionMenu
+            mode="left-click"
+            align="end"
+            onAction={(action) => {
+              if (action === 'open') {
+                onOpenDetails(record)
+                return
+              }
+              if (action === 'speed-test') {
+                onRequestBenchmark(record)
+                return
+              }
+              if (action === 'format') {
+                onRequestFormat(record)
+                return
+              }
+              if (action === 'snapshot') {
+                onRequestSnapshot(record)
+                return
+              }
+              if (action === 'delete') {
+                onRequestDelete(record)
+              }
+            }}
+            items={getActionMenuItems(record)}
+            trigger={
+              <MoreButton
+                variant="rowAction"
+                className="visible! opacity-100!"
+                aria-label={`More actions for ${record.name}`}
+                onClick={(event) => {
+                  event.stopPropagation()
+                }}
+              />
             }
-            if (action === 'speed-test') {
-              onRequestBenchmark(record)
-              return
-            }
-            if (action === 'format') {
-              onRequestFormat(record)
-              return
-            }
-            if (action === 'snapshot') {
-              onRequestSnapshot(record)
-              return
-            }
-            if (action === 'delete') {
-              onRequestDelete(record)
-            }
-          }}
-          items={getActionMenuItems(record)}
-          trigger={
-            <MoreButton
-              variant="rowAction"
-              className="visible! opacity-100!"
-              aria-label={`More actions for ${record.name}`}
-              onClick={(event) => {
-                event.stopPropagation()
-              }}
-            />
-          }
-        />
+          />
+        </div>
       ),
     },
   ]

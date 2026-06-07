@@ -16,14 +16,7 @@ interface SideDrawerProps {
   className?: string
 }
 
-export function SideDrawer({
-  open,
-  onOpenChange,
-  title,
-  children,
-  onAfterOpen,
-  className,
-}: SideDrawerProps) {
+export function SideDrawer({ open, onOpenChange, title, children, onAfterOpen, className }: SideDrawerProps) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -53,8 +46,7 @@ export function SideDrawer({
     const globalWithDrawerCount = window as Window & {
       [DRAWER_OPEN_COUNT_KEY]?: number
     }
-    globalWithDrawerCount[DRAWER_OPEN_COUNT_KEY] =
-      (globalWithDrawerCount[DRAWER_OPEN_COUNT_KEY] ?? 0) + 1
+    globalWithDrawerCount[DRAWER_OPEN_COUNT_KEY] = (globalWithDrawerCount[DRAWER_OPEN_COUNT_KEY] ?? 0) + 1
 
     const { body, documentElement } = document
     const prevBodyOverflow = body.style.overflow
@@ -79,16 +71,11 @@ export function SideDrawer({
     <div
       className={cn(
         'fixed inset-0 z-50 transition-opacity duration-200',
-        open
-          ? 'pointer-events-auto opacity-100'
-          : 'pointer-events-none opacity-0',
+        open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
       )}
       aria-hidden={!open}
     >
-      <div
-        className="absolute inset-0 bg-black/45"
-        onClick={() => onOpenChange(false)}
-      />
+      <div className="absolute inset-0 bg-black/45" onClick={() => onOpenChange(false)} />
 
       <aside
         className={cn(
@@ -100,7 +87,7 @@ export function SideDrawer({
         aria-label={title}
       >
         <div className="border-app-border flex h-12.5 shrink-0 items-center justify-between border-b px-4 text-center">
-          <h2 className="text-app-text text-base font-semibold">{title}</h2>
+          <h2 className="app-section-title text-app-text">{title}</h2>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
@@ -113,7 +100,7 @@ export function SideDrawer({
 
         <div
           className={cn(
-            'min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-4 [scrollbar-gutter:stable] [overscroll-behavior:contain]',
+            'min-h-0 flex-1 overflow-x-hidden overflow-y-auto [overscroll-behavior:contain] p-4 [scrollbar-gutter:stable]',
             className,
           )}
         >

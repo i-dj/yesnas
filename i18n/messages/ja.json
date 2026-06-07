@@ -36,11 +36,94 @@
       "fileSharing": "ファイル共有",
       "hardware": "ハードウェア",
       "jobs": "タスク",
-      "users": "ユーザー"
+      "users": "ユーザー",
+      "logs": "ログ"
     },
     "aria": {
       "expandSidebar": "サイドバーを展開",
       "collapseSidebar": "サイドバーを折りたたむ"
+    }
+  },
+  "Logs": {
+    "title": "ログ",
+    "subtitle": "ユーザー操作、システムイベント、セキュリティ活動を確認します",
+    "total": "件のログ",
+    "empty": "現在の条件に一致するログはありません",
+    "activity": {
+      "title": "アクティビティヒートマップ",
+      "summary": "{count} 件のログを{bucket}単位で集計",
+      "tooltip": "{time}: {count} 件"
+    },
+    "ranges": {
+      "24h": "24 時間",
+      "7d": "7 日",
+      "30d": "30 日",
+      "90d": "90 日",
+      "1y": "1 年",
+      "custom": "カスタム"
+    },
+    "buckets": {
+      "hour": "時間",
+      "day": "日",
+      "month": "月"
+    },
+    "filters": {
+      "search": "ログ、イベント、メッセージを検索",
+      "allCategories": "すべてのカテゴリ",
+      "allSeverities": "すべてのレベル",
+      "allResults": "すべての結果",
+      "more": "その他のフィルター",
+      "reset": "フィルターをリセット",
+      "source": "ソース（例: api）",
+      "event": "イベントタイプ",
+      "ipAddress": "IP アドレス",
+      "from": "開始時刻",
+      "to": "終了時刻"
+    },
+    "columns": {
+      "time": "時刻",
+      "actor": "実行主体",
+      "event": "イベント",
+      "source": "ソース",
+      "ipAddress": "IP アドレス",
+      "result": "結果"
+    },
+    "categories": {
+      "user": "ユーザー",
+      "system": "システム"
+    },
+    "severities": {
+      "info": "情報",
+      "warn": "警告",
+      "error": "エラー"
+    },
+    "values": {
+      "system": "システム",
+      "success": "成功",
+      "failed": "失敗"
+    },
+    "pagination": {
+      "pageSize": "1 ページ {count} 件",
+      "summary": "{page} / {totalPages} ページ"
+    },
+    "detail": {
+      "title": "ログ詳細",
+      "time": "発生時刻",
+      "category": "カテゴリ",
+      "severity": "レベル",
+      "source": "ソース",
+      "event": "イベント",
+      "action": "操作",
+      "actor": "実行主体",
+      "ipAddress": "IP アドレス",
+      "request": "リクエスト",
+      "resource": "リソース",
+      "userAgent": "ユーザーエージェント",
+      "details": "詳細データ"
+    },
+    "messages": {
+      "loadFailed": "ログの読み込みに失敗しました",
+      "heatmapFailed": "ログヒートマップの読み込みに失敗しました"
     }
   },
   "Dashboard": {
@@ -101,6 +184,13 @@
       "kernel": "カーネルバージョン",
       "uptime": "稼働時間"
     },
+    "overview": {
+      "totalIo": "合計 I/O",
+      "onlineInterfaces": "オンラインインターフェース",
+      "healthyDisks": "正常なディスク",
+      "memoryModules": "メモリ {count} 枚",
+      "memoryModule": "メモリ {index}"
+    },
     "sections": {
       "cpu": "プロセッサー",
       "motherboard": "マザーボード",
@@ -111,7 +201,6 @@
     },
     "counts": {
       "disks": "物理ディスク {count} 台",
-      "gpus": "グラフィックスデバイス {count} 台",
       "network": "ネットワークインターフェース {count} 個"
     },
     "empty": {
@@ -120,7 +209,6 @@
       "network": "ネットワークインターフェースが検出されませんでした"
     },
     "fields": {
-      "cpuUsage": "CPU 使用率",
       "coresThreads": "コア / スレッド",
       "frequency": "現在の周波数",
       "temperature": "温度",
@@ -131,10 +219,8 @@
       "version": "バージョン",
       "serial": "シリアル番号",
       "totalCapacity": "総容量",
-      "memoryUsage": "メモリ使用率",
       "used": "使用済み",
       "available": "利用可能",
-      "pressure": "メモリ負荷",
       "typeSpeed": "タイプ / 速度",
       "partNumber": "部品番号",
       "devicePath": "デバイスパス",
@@ -145,11 +231,10 @@
       "powerCycles": "起動回数",
       "realtimeIo": "リアルタイム I/O",
       "usageRate": "使用率",
-      "videoMemory": "ビデオメモリ",
-      "macAddress": "MAC アドレス",
+      "videoMemoryTemperature": "ビデオメモリ / 温度",
       "ipAddress": "IP アドレス",
-      "connectionStatus": "接続状態",
       "receiveSpeed": "受信速度",
+      "receiveSendSpeed": "リアルタイム速度",
       "sendSpeed": "送信速度"
     },
     "statuses": {
@@ -157,12 +242,10 @@
       "abnormal": "異常",
       "unsupported": "非対応",
       "unknown": "不明",
-      "unknownVendor": "不明なベンダー",
       "inUse": "使用中",
       "unused": "未使用",
       "online": "オンライン",
-      "offline": "オフライン",
-      "noIp": "IP アドレスなし"
+      "offline": "オフライン"
     },
     "diskUsage": {
       "system": "システムディスク",
@@ -244,6 +327,18 @@
     "empty": "No users yet",
     "emptySearch": "No matching users",
     "searchPlaceholder": "Search users",
+    "overview": {
+      "total": "全ユーザー",
+      "enabled": "有効なアカウント",
+      "disabled": "無効なアカウント",
+      "admins": "管理者"
+    },
+    "filters": {
+      "all": "すべて",
+      "enabled": "有効",
+      "disabled": "無効",
+      "admins": "管理者"
+    },
     "columns": {
       "user": "User",
       "status": "Status",
@@ -297,8 +392,10 @@
       "updated": "User updated",
       "deleted": "User deleted",
       "saveFailed": "Save user failed",
-      "deleteFailed": "Delete user failed",
-      "lastAdminDeleteBlocked": "At least one administrator must remain. You cannot delete the last administrator.",
+      "usernameExists": "このユーザー名は既に使用されています。別のユーザー名を選択してください。",
+      "requiredField": "この項目を入力してください。",
+      "deleteFailed": "ユーザーの削除に失敗しました",
+      "lastAdminDeleteBlocked": "管理者を少なくとも1人残す必要があるため、最後の管理者は削除できません。",
       "invalidAvatar": "Please choose an image file.",
       "enableSmbFailed": "Enable SMB user {username} failed. Make sure the user is synced to SMB and check system permissions.",
       "disableSmbFailed": "Disable SMB user {username} failed. Make sure the user is synced to SMB and check system permissions.",

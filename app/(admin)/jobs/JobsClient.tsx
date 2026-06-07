@@ -1,7 +1,7 @@
 'use client'
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
-import { Button, EmptyState, Input, Progress } from '@/components/ui'
+import { Button, EmptyState, Input, Progress, ToggleButton } from '@/components/ui'
 import { jobApi } from '@/lib/api/job.api'
 import { cn, formatDateTime, formatSmartTimeInfo } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
@@ -23,6 +23,7 @@ import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { getJobIcon, getJobStatusMeta, type JobStatusMetaKey } from './constants'
+import { StatusTabLabel } from './components'
 
 interface JobsClientProps {
   initialJobsResult: JobListResponse
@@ -140,12 +141,20 @@ export function JobsClient({ initialJobsResult, initialScheduledJobs, timeZone }
       })),
     [counts, t],
   )
+  const statusTabs = useMemo(
+    () =>
+      statusItems.map((item) => ({
+        value: item.key,
+        label: <StatusTabLabel label={item.label} count={item.count} />,
+      })),
+    [statusItems],
+  )
 
   return (
     <PageWrapper className="-mx-8 h-full gap-0 overflow-hidden py-0">
       <section className="border-app-border/60 flex shrink-0 items-center justify-between border-b px-6 py-4">
         <div>
-          <div className="text-app-text flex items-center gap-2 text-lg font-semibold">
+          <div className="app-page-title text-app-text flex items-center gap-2">
             <History className="size-5 text-sky-400" />
             任务中心
           </div>
@@ -187,27 +196,19 @@ export function JobsClient({ initialJobsResult, initialScheduledJobs, timeZone }
         </aside>
 
         <main className="flex min-h-0 min-w-0 flex-col">
-          <div className="border-app-border/60 flex shrink-0 items-center gap-1 overflow-x-auto border-b px-4 py-3">
-            {statusItems.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => {
-                  setFilterStatus(item.key)
-                  setPage(1)
-                }}
-                className={cn(
-                  'relative flex h-8 shrink-0 items-center gap-2 px-3 text-xs font-medium transition-colors',
-                  filterStatus === item.key ? 'text-app-text' : 'text-app-text-muted hover:text-app-text',
-                )}
-              >
-                {item.label}
-                <span className="bg-app-hover/70 rounded-full px-1.5 py-0.5 text-[10px]">{item.count}</span>
-                {filterStatus === item.key ? (
-                  <span className="absolute inset-x-3 bottom-[-13px] h-0.5 bg-sky-400" />
-                ) : null}
-              </button>
-            ))}
+          <div className="border-app-border/60 shrink-0 overflow-x-auto border-b px-4">
+            <ToggleButton
+              items={statusTabs}
+              value={filterStatus}
+              onChange={(status) => {
+                setFilterStatus(status)
+                setPage(1)
+              }}
+              variant="segmented"
+              showSeparator={false}
+              className="h-14 min-w-max border-none"
+              itemClassName="px-3"
+            />
           </div>
 
           <div
@@ -367,28 +368,28 @@ function JobRow({
   const updated = formatSmartTimeInfo(job.updatedAt || job.createdAt, timeZone)
 
   return (
-    <article className="border-app-border/45 group grid min-w-0 grid-cols-[minmax(0,1fr)_5rem] items-center gap-3 border-b px-2 py-3 last:border-none md:grid-cols-[minmax(0,1fr)_8rem_6rem_6rem] md:gap-4">
+    <article className="border-app-border/45 group grid min-w-0 grid-cols-[minmax(0,1fr)_5rem] items-center gap-3 border-b px-2 py-2.5 last:border-none md:grid-cols-[minmax(0,1fr)_8rem_6rem_6rem] md:gap-4">
       <div className="flex min-w-0 items-center gap-3">
         <span className="bg-app-hover grid size-9 shrink-0 place-items-center rounded-md">
           <Icon className="text-app-text-muted size-4" />
         </span>
         <div className="min-w-0">
-          <h3 className="text-app-text truncate text-sm font-semibold">{title}</h3>
-          <p className="text-app-text-muted mt-0.5 truncate text-xs">
+          <h3 className="app-body-text text-app-text truncate font-medium">{title}</h3>
+          <p className="app-body-text text-app-text-muted mt-0.5 truncate">
             {[job.storagePoolName, job.message].filter(Boolean).join(' · ') || '-'}
           </p>
         </div>
       </div>
       <div className="hidden min-w-0 md:block">
         <Progress value={Math.max(0, Math.min(100, job.progress || 0))} showLabel={false} className="bg-sky-400" />
-        <span className="text-app-text-muted mt-1 block text-[11px]">{Math.round(job.progress || 0)}%</span>
+        <span className="app-caption text-app-text-muted mt-1 block">{Math.round(job.progress || 0)}%</span>
       </div>
-      <span className={cn('hidden items-center gap-1.5 text-xs font-medium md:inline-flex', statusTone[statusKey])}>
+      <span className={cn('app-caption hidden items-center gap-1.5 font-medium md:inline-flex', statusTone[statusKey])}>
         {statusKey === 'success' ? <CheckCircle2 className="size-3.5" /> : <CircleDot className="size-3.5" />}
         {statusLabel}
       </span>
       <div className="relative flex min-w-0 items-center justify-end">
-        <span className="text-app-text-muted truncate text-[11px] group-hover:opacity-0">{updated.text}</span>
+        <span className="app-body-text text-app-text-muted truncate group-hover:opacity-0">{updated.text}</span>
         <div className="absolute right-0 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
           {!terminal ? (
             <Button

@@ -57,9 +57,9 @@ export const Button = ({
   }
 
   const sizes = {
-    xs: 'h-6 px-1.5 text-sm gap-1.5 rounded',
+    xs: 'h-6 px-1.5 text-xs gap-1.5 rounded',
     sm: 'h-8 px-2 text-[12px]   gap-1.5 rounded-lg',
-    md: 'h-9 px-4 text-sm gap-2 rounded-lg',
+    md: 'h-9 px-4 text-xs gap-2 rounded-lg',
     lg: 'h-11 px-6 text-base gap-2.5 rounded-lg',
   }
 

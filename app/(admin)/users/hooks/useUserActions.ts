@@ -12,6 +12,9 @@ type Params = {
   router: any
 }
 
+const LAST_ADMIN_DELETE_ERROR = 'Cannot delete the last administrator'
+const USERNAME_UNIQUE_ERROR = 'UNIQUE constraint failed: users.username'
+
 export function useUserActions({ modal, onSuccess, onClose, t, router }: Params) {
   const [loading, setLoading] = useState<'submit' | 'delete' | null>(null)
 
@@ -31,7 +34,13 @@ export function useUserActions({ modal, onSuccess, onClose, t, router }: Params)
       onSuccess()
       onClose()
     } catch (error) {
-      toast.error(`${t('messages.saveFailed')}: ${error instanceof Error ? error.message : String(error)}`, 20000)
+      const message = error instanceof Error ? error.message : String(error)
+      toast.error(
+        message.includes(USERNAME_UNIQUE_ERROR)
+          ? t('messages.usernameExists')
+          : `${t('messages.saveFailed')}: ${message}`,
+        20000,
+      )
     } finally {
       setLoading(null)
     }
@@ -50,6 +59,14 @@ export function useUserActions({ modal, onSuccess, onClose, t, router }: Params)
 
       onSuccess()
       onClose()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      toast.error(
+        message.includes(LAST_ADMIN_DELETE_ERROR)
+          ? t('messages.lastAdminDeleteBlocked')
+          : `${t('messages.deleteFailed')}: ${message}`,
+        20000,
+      )
     } finally {
       setLoading(null)
     }

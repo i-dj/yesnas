@@ -36,11 +36,94 @@
       "fileSharing": "文件共享",
       "hardware": "硬件信息",
       "jobs": "任务",
-      "users": "用户"
+      "users": "用户",
+      "logs": "日志"
     },
     "aria": {
       "expandSidebar": "展开侧边栏",
       "collapseSidebar": "收起侧边栏"
+    }
+  },
+  "Logs": {
+    "title": "日志",
+    "subtitle": "查看用户操作、系统事件与安全活动",
+    "total": "条日志",
+    "empty": "没有匹配当前条件的日志",
+    "activity": {
+      "title": "活动热力图",
+      "summary": "共 {count} 条日志，按{bucket}聚合",
+      "tooltip": "{time}：{count} 条日志"
+    },
+    "ranges": {
+      "24h": "24 小时",
+      "7d": "7 天",
+      "30d": "30 天",
+      "90d": "90 天",
+      "1y": "1 年",
+      "custom": "自定义"
+    },
+    "buckets": {
+      "hour": "小时",
+      "day": "天",
+      "month": "月"
+    },
+    "filters": {
+      "search": "搜索日志、事件或消息",
+      "allCategories": "全部类别",
+      "allSeverities": "全部级别",
+      "allResults": "全部结果",
+      "more": "更多筛选",
+      "reset": "重置筛选",
+      "source": "来源，例如 api",
+      "event": "事件类型",
+      "ipAddress": "IP 地址",
+      "from": "开始时间",
+      "to": "结束时间"
+    },
+    "columns": {
+      "time": "时间",
+      "actor": "操作主体",
+      "event": "事件",
+      "source": "来源",
+      "ipAddress": "IP 地址",
+      "result": "结果"
+    },
+    "categories": {
+      "user": "用户",
+      "system": "系统"
+    },
+    "severities": {
+      "info": "信息",
+      "warn": "警告",
+      "error": "错误"
+    },
+    "values": {
+      "system": "系统",
+      "success": "成功",
+      "failed": "失败"
+    },
+    "pagination": {
+      "pageSize": "每页 {count} 条",
+      "summary": "第 {page} / {totalPages} 页"
+    },
+    "detail": {
+      "title": "日志详情",
+      "time": "发生时间",
+      "category": "类别",
+      "severity": "级别",
+      "source": "来源",
+      "event": "事件",
+      "action": "操作",
+      "actor": "操作主体",
+      "ipAddress": "IP 地址",
+      "request": "请求",
+      "resource": "资源",
+      "userAgent": "用户代理",
+      "details": "详细数据"
+    },
+    "messages": {
+      "loadFailed": "加载日志失败",
+      "heatmapFailed": "加载日志热力图失败"
     }
   },
   "Dashboard": {
@@ -101,6 +184,13 @@
       "kernel": "内核版本",
       "uptime": "运行时间"
     },
+    "overview": {
+      "totalIo": "总 IO",
+      "onlineInterfaces": "在线接口",
+      "healthyDisks": "健康磁盘",
+      "memoryModules": "{count} 条内存",
+      "memoryModule": "内存 {index}"
+    },
     "sections": {
       "cpu": "处理器",
       "motherboard": "主板",
@@ -111,7 +201,6 @@
     },
     "counts": {
       "disks": "{count} 块物理磁盘",
-      "gpus": "{count} 个图形设备",
       "network": "{count} 个网络接口"
     },
     "empty": {
@@ -120,7 +209,6 @@
       "network": "未检测到网络接口"
     },
     "fields": {
-      "cpuUsage": "CPU 使用率",
       "coresThreads": "核心 / 线程",
       "frequency": "当前频率",
       "temperature": "温度",
@@ -131,10 +219,8 @@
       "version": "版本",
       "serial": "序列号",
       "totalCapacity": "总容量",
-      "memoryUsage": "内存使用率",
       "used": "已用",
       "available": "可用",
-      "pressure": "压力",
       "typeSpeed": "类型 / 速度",
       "partNumber": "部件编号",
       "devicePath": "设备路径",
@@ -145,11 +231,10 @@
       "powerCycles": "启动次数",
       "realtimeIo": "实时 IO",
       "usageRate": "使用率",
-      "videoMemory": "显存",
-      "macAddress": "MAC 地址",
+      "videoMemoryTemperature": "显存 / 温度",
       "ipAddress": "IP 地址",
-      "connectionStatus": "连接状态",
       "receiveSpeed": "接收速度",
+      "receiveSendSpeed": "实时速率",
       "sendSpeed": "发送速度"
     },
     "statuses": {
@@ -157,12 +242,10 @@
       "abnormal": "异常",
       "unsupported": "不支持",
       "unknown": "未知",
-      "unknownVendor": "未知厂商",
       "inUse": "使用中",
       "unused": "未使用",
       "online": "在线",
-      "offline": "离线",
-      "noIp": "无 IP 地址"
+      "offline": "离线"
     },
     "diskUsage": {
       "system": "系统盘",
@@ -244,6 +327,18 @@
     "empty": "暂无用户",
     "emptySearch": "没有匹配的用户",
     "searchPlaceholder": "搜索用户",
+    "overview": {
+      "total": "全部用户",
+      "enabled": "启用账号",
+      "disabled": "禁用账号",
+      "admins": "管理员"
+    },
+    "filters": {
+      "all": "全部",
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "admins": "管理员"
+    },
     "columns": {
       "user": "用户",
       "status": "状态",
@@ -297,6 +392,8 @@
       "updated": "用户已更新",
       "deleted": "用户已删除",
       "saveFailed": "保存用户失败",
+      "usernameExists": "该用户名已存在，请使用其他用户名。",
+      "requiredField": "请填写此字段。",
       "deleteFailed": "删除用户失败",
       "lastAdminDeleteBlocked": "至少需要保留一个管理员，不能删除最后一个管理员。",
       "invalidAvatar": "请选择图片文件。",

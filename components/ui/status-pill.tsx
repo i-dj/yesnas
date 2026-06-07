@@ -20,7 +20,7 @@ export function StatusPill({ color, content, className }: StatusPillProps) {
   return (
     <span
       className={cn(
-        'inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
+        'app-micro-label inline-flex w-fit items-center rounded-full px-2 py-0.5 font-medium',
         colorClassMap[color],
         className,
       )}

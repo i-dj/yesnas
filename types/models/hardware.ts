@@ -22,21 +22,36 @@ export interface HardwareSnapshot {
     version: string
     serial: string
   }
-  memory: {
-    totalBytes: number
-    usedBytes: number
-    availableBytes: number
-    usagePercent: number
-    pressurePercent: number
-    type: string
-    speedMHz: number
-    manufacturer: string
-    partNumber: string
-  }
+  memory: HardwareMemory
   disks: HardwareDisk[]
   gpus: HardwareGpu[]
   networkInterfaces: HardwareNetworkInterface[]
   checkedAt: string
+}
+
+export interface HardwareMemoryModule {
+  slot?: string
+  locator?: string
+  bankLocator?: string
+  sizeBytes: number
+  type: string
+  speedMHz: number
+  manufacturer: string
+  partNumber: string
+  serial?: string
+}
+
+export interface HardwareMemory {
+  totalBytes: number
+  usedBytes: number
+  availableBytes: number
+  usagePercent: number
+  pressurePercent: number
+  type: string
+  speedMHz: number
+  manufacturer: string
+  partNumber: string
+  modules?: HardwareMemoryModule[]
 }
 
 export interface HardwareDisk {

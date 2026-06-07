@@ -34,23 +34,6 @@ function formatInterfaceIps(networkInterface: NetworkInterfaceSnapshot) {
   return networkInterface.operState === 'up' ? '无 IP' : 'DOWN'
 }
 
-export function formatInterfaceLinkSpeed(networkInterface: NetworkInterfaceSnapshot) {
-  const speedMbps =
-    networkInterface.linkSpeedMbps ??
-    networkInterface.linkSpeedMbit ??
-    networkInterface.speedMbps ??
-    networkInterface.speedMbit ??
-    networkInterface.speedMb
-  const speedBitsPerSec = networkInterface.linkSpeedBitsPerSec ?? networkInterface.speedBitsPerSec
-
-  if (typeof speedMbps === 'number' && Number.isFinite(speedMbps)) return `${formatLinkSpeedNumber(speedMbps)}MB`
-  if (typeof speedBitsPerSec === 'number' && Number.isFinite(speedBitsPerSec)) {
-    return `${formatLinkSpeedNumber(speedBitsPerSec / 1_000_000)}MB`
-  }
-
-  return networkInterface.operState === 'up' ? '速率未知' : 'DOWN'
-}
-
 export function formatChartTime(timestamp?: string) {
   if (!timestamp) return ''
 
@@ -62,6 +45,7 @@ export function formatChartTime(timestamp?: string) {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit',
     hour12: false,
   })
 }

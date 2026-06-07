@@ -3,7 +3,7 @@
 import { FolderOpen } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
-import { Card } from '@/components/ui'
+import { Card, MetricStat } from '@/components/ui'
 import { storageApi } from '@/lib/api/storage.api'
 import { clampPercent, cn, formatBytes, formatPercent } from '@/lib/utils'
 import type { StoragePoolModel } from '@/types/models/storage'
@@ -97,8 +97,8 @@ export function FileSharingOverview() {
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            <ShareStat label="存储池" value={String(storagePools.length)} />
-            <ShareStat label="健康" value={`${storagePoolSummary.healthyCount}/${storagePools.length}`} />
+            <MetricStat label="存储池" value={String(storagePools.length)} />
+            <MetricStat label="健康" value={`${storagePoolSummary.healthyCount}/${storagePools.length}`} />
           </div>
         </div>
 
@@ -147,7 +147,7 @@ export function FileSharingOverview() {
             <p className="text-app-text-muted mt-1 text-xs">协议服务运行状态与共享目录访问概览</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <ShareStat label="共享目录" value={String(fileShareResources.length)} />
+            <MetricStat label="共享目录" value={String(fileShareResources.length)} />
           </div>
         </div>
 
@@ -173,15 +173,6 @@ export function FileSharingOverview() {
         </div>
       </Card>
     </section>
-  )
-}
-
-function ShareStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-app-bg min-w-14 rounded-md px-2 py-1.5 text-center">
-      <div className="text-app-text text-xs font-semibold">{value}</div>
-      <div className="text-app-text-muted text-[10px]">{label}</div>
-    </div>
   )
 }
 

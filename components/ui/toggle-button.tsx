@@ -21,6 +21,7 @@ interface ToggleButtonProps<T extends string> {
   itemClassName?: string
   showSeparator?: boolean
   variant?: 'tabs' | 'segmented'
+  shape?: 'pill' | 'rounded'
 }
 
 export const ToggleButton = <T extends string>({
@@ -32,6 +33,7 @@ export const ToggleButton = <T extends string>({
   itemClassName,
   variant = 'tabs',
   showSeparator = true,
+  shape = 'pill',
 }: ToggleButtonProps<T>) => {
   const isTabs = variant === 'tabs'
   const instanceId = useId()
@@ -47,7 +49,7 @@ export const ToggleButton = <T extends string>({
       className={cn(
         'relative inline-flex h-9 items-stretch transition-all',
         isTabs
-          ? 'border-app-border bg-app-surface rounded-full border'
+          ? cn('border-app-border bg-app-surface border', shape === 'pill' ? 'rounded-full' : 'rounded-lg')
           : 'border-app-border w-full border-b-2 bg-transparent',
         className,
       )}
@@ -60,10 +62,13 @@ export const ToggleButton = <T extends string>({
             <ToggleGroup.Item
               value={item.value}
               className={cn(
-                'relative flex items-center justify-center px-3 text-sm transition-all outline-none',
+                'app-body-text relative flex items-center justify-center px-3 transition-all outline-none',
                 isTabs ? 'flex-1' : 'flex-none',
                 isTabs
-                  ? 'text-app-text-muted hover:bg-app-hover hover:text-app-text data-[state=on]:text-app-text rounded-full'
+                  ? cn(
+                      'text-app-text-muted hover:bg-app-hover hover:text-app-text data-[state=on]:text-app-text',
+                      shape === 'pill' ? 'rounded-full' : 'rounded-md',
+                    )
                   : 'text-app-text-muted hover:text-app-text data-[state=on]:text-app-text rounded-none',
                 itemClassName,
               )}
@@ -71,17 +76,13 @@ export const ToggleButton = <T extends string>({
               {isTabs && isSelected && (
                 <motion.div
                   layoutId={activePillLayoutId}
-                  className="bg-app-active absolute inset-0 z-0 rounded-full"
+                  className={cn('bg-app-active absolute inset-0 z-0', shape === 'pill' ? 'rounded-full' : 'rounded-md')}
                   transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
                 />
               )}
               <div className="relative z-10 flex items-center gap-1.5">
                 {item.icon && <item.icon size={16} strokeWidth={2} />}
-                {item.label && (
-                  <div className="font-medium whitespace-nowrap">
-                    {item.label}
-                  </div>
-                )}
+                {item.label && <div className="font-medium whitespace-nowrap">{item.label}</div>}
               </div>
 
               {!isTabs && isSelected && (

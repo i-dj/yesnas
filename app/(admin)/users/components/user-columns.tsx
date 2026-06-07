@@ -23,17 +23,17 @@ export function getUserColumns({ t, timeZone, onEdit, onDelete }: GetUserColumns
     {
       key: 'username',
       label: t('columns.user'),
-      width: '220px',
+      width: '280px',
       sortable: true,
 
       render: (_, record) => (
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3 py-1">
           <UserAvatar user={record} />
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-2">
               <div className="text-app-text truncate font-medium">{record.displayName || record.username}</div>
             </div>
-            <div className="text-app-text-muted truncate text-xs">{record.username}</div>
+            <div className="text-app-text-muted mt-0.5 truncate text-xs">@{record.username}</div>
           </div>
         </div>
       ),
@@ -91,7 +91,7 @@ export function getUserColumns({ t, timeZone, onEdit, onDelete }: GetUserColumns
       width: '88px',
       align: 'right',
       render: (_, record) => (
-        <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="flex items-center justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100">
           <Button
             variant="ghost"
             size="sm"
