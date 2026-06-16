@@ -25,6 +25,10 @@ export const DRIVE_STATUSES = {
 } as const
 export type DriveStatus = (typeof DRIVE_STATUSES)[keyof typeof DRIVE_STATUSES]
 
+export type EnableStatus = 'enabled' | 'disabled'
+
+
+
 // 存储引擎类型
 export const STORAGE_TYPES = {
   LOCAL: 'local',

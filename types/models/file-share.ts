@@ -1,5 +1,5 @@
-import { EnableStatus } from '..'
-import { User } from './user'
+import type { EnableStatus } from './_constants'
+import type { User } from './user'
 
 export type ProtocolKey = 'smb' | 'ftp' | 'webdav' | 'nfs'
 

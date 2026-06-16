@@ -4,13 +4,20 @@ import { cn } from '@/lib/utils'
 import { ArrowDown, ArrowUp, ChevronsUpDown } from 'lucide-react'
 import React, { useMemo, useState } from 'react'
 
+const renderCellValue = (value: unknown): React.ReactNode => {
+  if (React.isValidElement(value)) return value
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
+  return String(value)
+}
+
 export interface TableHeader<T> {
-  key: string
+  key: keyof T & string
   label: string
   width?: string
   sortable?: boolean
   align?: 'left' | 'center' | 'right'
-  render?: (value: any, record: T) => React.ReactNode
+  render?: (value: T[keyof T], record: T) => React.ReactNode
 }
 
 interface TableProps<T extends { id: string | number }> {
@@ -34,8 +41,8 @@ export const Table = <T extends { id: string | number }>({
   const sortedData = useMemo(() => {
     if (!sort.key || !sort.dir) return data
     return [...data].sort((a, b) => {
-      const valA = (a as any)[sort.key]
-      const valB = (b as any)[sort.key]
+      const valA = a[sort.key as keyof T]
+      const valB = b[sort.key as keyof T]
       if (valA === valB) return 0
       const result = valA > valB ? 1 : -1
       return sort.dir === 'asc' ? result : -result
@@ -121,7 +128,7 @@ export const Table = <T extends { id: string | number }>({
                       )}
                     />
                     <div className="relative z-10 select-none">
-                      {h.render ? h.render((row as any)[h.key], row) : (row as any)[h.key]}
+                      {h.render ? h.render(row[h.key], row) : renderCellValue(row[h.key])}
                     </div>
                   </td>
                 ))}

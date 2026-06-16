@@ -4,12 +4,12 @@ import React, { useEffect, useState, useId } from 'react'
 import * as ContextMenu from '@radix-ui/react-context-menu'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { cn } from '@/lib/utils'
-import { Check } from 'lucide-react'
+import { Check, type LucideIcon } from 'lucide-react'
 import { motion, AnimatePresence, Variants } from 'framer-motion' // Used for menu enter/exit transitions
 export interface ActionMenuConfig {
   label?: React.ReactNode
   action?: string
-  icon?: any
+  icon?: React.ReactElement | LucideIcon
   className?: string
   disabled?: boolean
   separator?: boolean
@@ -86,7 +86,7 @@ export const ActionMenu = ({
           item.icon
         ) : (
           (() => {
-            const Icon = item.icon as any
+            const Icon = item.icon as LucideIcon
             return <Icon size={16} />
           })()
         )
@@ -94,7 +94,14 @@ export const ActionMenu = ({
     </div>
   )
 
-  const renderItems = (MenuItem: any) => (
+  const renderItems = (
+    MenuItem: React.ComponentType<{
+      disabled?: boolean
+      onSelect?: () => void
+      className?: string
+      children?: React.ReactNode
+    }>,
+  ) => (
     <div className="flex flex-col gap-0.5">
       {title && (
         <div className="border-app-border mb-1 border-b px-3 py-2 select-none">

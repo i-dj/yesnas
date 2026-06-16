@@ -4,12 +4,21 @@ import { toast } from '@/store/use-toast-store'
 import type { UserFormState } from '../types'
 import type { UserModalState } from './useUserModal'
 
+type UserActionMessageKey =
+  | 'messages.updated'
+  | 'messages.created'
+  | 'messages.usernameExists'
+  | 'messages.saveFailed'
+  | 'messages.deleted'
+  | 'messages.lastAdminDeleteBlocked'
+  | 'messages.deleteFailed'
+
 type Params = {
   modal: UserModalState
   onSuccess: () => void
   onClose: () => void
-  t: any
-  router: any
+  t: (key: UserActionMessageKey) => string
+  router: { refresh: () => void }
 }
 
 const LAST_ADMIN_DELETE_ERROR = 'Cannot delete the last administrator'

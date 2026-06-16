@@ -1,4 +1,4 @@
-import { TaskStatus } from './_constants'
+export type TaskStatus = 'all' | 'running' | 'paused' | 'success' | 'failed' | 'canceled'
 
 export interface Task {
   id: number

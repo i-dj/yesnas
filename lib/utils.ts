@@ -26,7 +26,7 @@ export function performSort<T>(data: T[], key: keyof T, direction: SortDirection
     return [...data]
   }
 
-  const getPriority = (value: any): number => {
+  const getPriority = (value: unknown): number => {
     const str = String(value || '').trim()
     if (!str) return 99
 

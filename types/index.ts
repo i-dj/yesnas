@@ -15,7 +15,7 @@ export type SortDirection = (typeof SORT_DIRECTIONS)[keyof typeof SORT_DIRECTION
  * @description 排序配置项
  * @template T - 目标数据模型类型
  */
-export interface SortConfig<T = any> {
+export interface SortConfig<T = unknown> {
   key: keyof T
   dir: SortDirection
 }
@@ -35,7 +35,7 @@ export const VIEW_MODES = {
  * @derived 从 {@link VIEW_MODE} 自动提取，保证单一事实来源
  */
 export type ViewMode = (typeof VIEW_MODES)[keyof typeof VIEW_MODES]
-export type EnableStatus = 'enabled' | 'disabled'
+export type { EnableStatus } from './models/_constants'
 
 export * from './models/task'
 export * from './models/file-share'

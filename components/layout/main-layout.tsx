@@ -2,7 +2,7 @@
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { ReactNode, useEffect, useRef, useState } from 'react'
+import { ReactNode, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { FiSearch, FiUser } from 'react-icons/fi'
 import { menuGroups } from './menu'
@@ -26,21 +26,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const toasts = useToastStore((state) => state.toasts)
   const removeToast = useToastStore((state) => state.remove)
   const uploadFileList = Object.values(uploadFiles)
-  const lastRefreshedBatchRef = useRef<string>('')
-
   const hasUploadingFiles = uploadFileList.some((file) => file.status === 'uploading')
-  const allUploadsCompleted = uploadFileList.length > 0 && uploadFileList.every((file) => file.status === 'complete')
-
-  useEffect(() => {
-    if (!allUploadsCompleted) return
-    const batchKey = uploadFileList
-      .map((file) => file.id)
-      .sort()
-      .join('|')
-    if (!batchKey || lastRefreshedBatchRef.current === batchKey) return
-    lastRefreshedBatchRef.current = batchKey
-    router.refresh()
-  }, [allUploadsCompleted, router, uploadFileList])
   const pageTitle =
     menuGroups
       .flatMap((group) => group.sub)
@@ -169,11 +155,11 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                       <Link
                         href={item.href}
                         className={cn(
-                          'group relative flex cursor-pointer items-center rounded-lg py-2 text-sm font-medium transition-all',
+                          'group relative flex cursor-pointer items-center rounded-lg py-2 text-sm transition-all',
                           sidebarCollapsed ? 'justify-center px-2' : 'px-4',
                           active
-                            ? 'bg-app-active/55 text-app-text'
-                            : 'text-app-text-muted hover:bg-app-hover/55 hover:text-app-text',
+                            ? 'bg-app-active text-app-text hover:bg-app-hover font-medium'
+                            : 'text-app-text hover:bg-app-active',
                         )}
                         title={sidebarCollapsed ? itemLabel : undefined}
                       >
@@ -181,8 +167,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                           size={18}
                           className={cn(
                             'shrink-0 transition-colors',
-                            sidebarCollapsed ? 'mr-0' : 'mr-4',
-                            active ? 'text-app-text/90' : 'text-app-text-muted group-hover:text-app-text',
+                            sidebarCollapsed ? 'mr-0' : 'mr-5',
+                            active ? 'text-app-text' : 'text-app-text group-hover:text-app-text',
                           )}
                         />
                         {!sidebarCollapsed && <span>{itemLabel}</span>}
@@ -262,7 +248,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             if (allCompleted) {
               clearCompletedUploads()
             }
-            router.refresh()
           }
           setUploadDrawer(open)
         }}

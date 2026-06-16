@@ -6,7 +6,7 @@ const BASE_URL = 'http://yesnas:8080/api/v1'
 
 export interface ApiOptions {
   method?: HttpMethod
-  body?: any
+  body?: unknown
   headers?: Record<string, string>
   cache?: RequestCache
   silentNetworkLoading?: boolean
@@ -19,11 +19,14 @@ export interface ApiOptions {
 export interface YesNasRequestInit extends RequestInit {
   yesnasSilentNetworkLoading?: boolean
 }
-function unwrapList<T>(json: any): T[] {
+function unwrapList<T>(json: unknown): T[] {
   if (Array.isArray(json)) return json
-  if (Array.isArray(json?.items)) return json.items
-  if (Array.isArray(json?.data)) return json.data
-  if (Array.isArray(json?.users)) return json.users
+  if (!json || typeof json !== 'object') return []
+
+  const record = json as Record<string, unknown>
+  if (Array.isArray(record.items)) return record.items as T[]
+  if (Array.isArray(record.data)) return record.data as T[]
+  if (Array.isArray(record.users)) return record.users as T[]
   return []
 }
 /**
@@ -32,7 +35,7 @@ function unwrapList<T>(json: any): T[] {
 function parseErrorMessage(raw: string, fallback: string) {
   if (!raw) return fallback
   try {
-    const parsed = JSON.parse(raw)
+    const parsed = JSON.parse(raw) as { message?: string; error?: string; code?: string }
     return parsed.message || parsed.error || parsed.code || raw
   } catch {
     return raw

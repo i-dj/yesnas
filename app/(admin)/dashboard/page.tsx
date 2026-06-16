@@ -24,7 +24,7 @@ import { Card } from '@/components/ui'
 import { useSse } from '@/hooks/use-sse'
 import { getSystemNetworkStreamUrl, getSystemNetworkUrl, getSystemStatusStreamUrl } from '@/lib/file-api'
 import { cn, formatBytes, formatOptionalNumber, formatPercent, formatUptime } from '@/lib/utils'
-import { CompactResourceCard, DockerCard, FileSharingOverview, NetworkChart } from './components'
+import { CompactResourceCard, FileSharingOverview, NetworkChart } from './components'
 import type { NetworkRange } from './types'
 import {
   formatCheckedAt,
@@ -166,7 +166,7 @@ export default function DashboardPage() {
     <PageWrapper className="-mx-8 gap-3 overflow-y-auto px-8 pb-8">
       <section className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex flex-row gap-3">
-          <h1 className="app-page-title text-app-text mb-2">系统仪表台</h1>
+          <h1 className="app-page-title text-app-text mb-2">信息中心</h1>
           <div className="text-app-text-muted flex items-center gap-2 text-xs font-medium">
             <span
               className={cn(
@@ -326,9 +326,7 @@ export default function DashboardPage() {
           />
         </section>
       </section>
-      <FileSharingOverview />
-
-      <DockerCard />
+      <FileSharingOverview fileSharing={snapshot?.fileSharing} />
     </PageWrapper>
   )
 }
@@ -358,11 +356,11 @@ function NetworkTrafficStat({
 }) {
   return (
     <div className="bg-app-bg/70 flex min-w-35 items-center gap-2 rounded-md px-2 py-1">
-      <span className="bg-app-hover grid size-7 shrink-0 place-items-center rounded-md">
+      <span className="bg-app-hover grid size-8 shrink-0 place-items-center rounded-md">
         <Icon className={cn('size-3.5 opacity-50', className)} />
       </span>
       <span className="min-w-0">
-        <span className="text-app-text-muted block text-[10px]">{label}</span>
+        <span className="text-app-text-muted block text-[12px]">{label}</span>
         <span className="text-app-text block truncate text-xs font-semibold tracking-normal">{value}</span>
       </span>
     </div>

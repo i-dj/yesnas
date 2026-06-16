@@ -1,6 +1,10 @@
 import { request } from '@/lib/api/request'
 import { createCrudApi } from './crud'
-import { StoragePoolModel, type AutoSnapshotSchedule } from '@/types/models/storage'
+import {
+  CreateStoragePoolSnapshotPayload,
+  RestoreStoragePoolSnapshotPayload,
+  StoragePoolModel,
+} from '@/types/models/storage'
 import type { RaidLevel } from '@/types/models/_constants'
 
 export interface CreateStoragePoolPayload {
@@ -8,12 +12,12 @@ export interface CreateStoragePoolPayload {
   raidLevel: RaidLevel
   paths: string[]
   autoSnapshotEnabled?: boolean
-  autoSnapshotSchedule?: AutoSnapshotSchedule | ''
+  autoSnapshotSchedule?: string
 }
 
 export interface UpdateStoragePoolSnapshotPolicyPayload {
   autoSnapshotEnabled: boolean
-  autoSnapshotSchedule?: AutoSnapshotSchedule | ''
+  autoSnapshotSchedule?: string
 }
 
 export const storageApi = {
@@ -41,7 +45,7 @@ export const storageApi = {
   snapshots: (poolId: string) => request(`/system/storage-pools/${poolId}/snapshots`),
 
   // create snapshot
-  createSnapshot: (poolId: string, payload: any) =>
+  createSnapshot: (poolId: string, payload: CreateStoragePoolSnapshotPayload) =>
     request(`/system/storage-pools/${poolId}/snapshots`, {
       method: 'POST',
       body: payload,
@@ -62,7 +66,7 @@ export const storageApi = {
     }),
 
   // restore snapshot
-  restoreSnapshot: (poolId: string, snapshotId: string, payload: any) =>
+  restoreSnapshot: (poolId: string, snapshotId: string, payload: RestoreStoragePoolSnapshotPayload) =>
     request<{ name?: string }>(`/system/storage-pools/${poolId}/snapshots/${snapshotId}/restore`, {
       method: 'POST',
       body: {

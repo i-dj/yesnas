@@ -10,17 +10,9 @@ import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 
 type Props = {
-  form: {
-    name: string
-    storagePoolId: string
-    path: string
-    protocols: ProtocolKey[]
-    userIds: string[]
-    clientNetworks: string[]
-    status: ShareStatus
-  }
+  form: FileShareFormState
 
-  setForm: React.Dispatch<React.SetStateAction<any>>
+  setForm: React.Dispatch<React.SetStateAction<FileShareFormState>>
 
   storagePools: StoragePoolModel[]
   users: User[]
@@ -33,6 +25,16 @@ type Props = {
   onSubmit: () => void
 
   onLocationChange: (v: StorageLocationValue) => void
+}
+
+type FileShareFormState = {
+  name: string
+  storagePoolId: string
+  path: string
+  protocols: ProtocolKey[]
+  userIds: string[]
+  clientNetworks: string[]
+  status: ShareStatus
 }
 
 const parseClientNetworks = (value: string) =>
@@ -72,7 +74,7 @@ export function FileShareForm({
           required
           placeholder="Public"
           onChange={(e) =>
-            setForm((c: any) => ({
+            setForm((c) => ({
               ...c,
               name: e.target.value,
             }))
@@ -89,11 +91,11 @@ export function FileShareForm({
               label={t(`protocols.${p.protocol}.name`)}
               checked={form.protocols.includes(p.protocol)}
               onChange={(checked) =>
-                setForm((c: any) => ({
+                setForm((c) => ({
                   ...c,
                   protocols: checked
                     ? [...c.protocols, p.protocol]
-                    : c.protocols.filter((x: string) => x !== p.protocol),
+                    : c.protocols.filter((x) => x !== p.protocol),
                 }))
               }
             />
@@ -122,9 +124,9 @@ export function FileShareForm({
                 user={u}
                 checkedIds={form.userIds}
                 onChange={(id, checked) =>
-                  setForm((c: any) => ({
+                  setForm((c) => ({
                     ...c,
-                    userIds: checked ? [...c.userIds, id] : c.userIds.filter((x: string) => x !== id),
+                    userIds: checked ? [...c.userIds, id] : c.userIds.filter((x) => x !== id),
                   }))
                 }
               />
@@ -145,7 +147,7 @@ export function FileShareForm({
         <textarea
           value={form.clientNetworks.join('\n')}
           onChange={(e) =>
-            setForm((c: any) => ({
+            setForm((c) => ({
               ...c,
               clientNetworks: parseClientNetworks(e.target.value),
             }))
@@ -179,7 +181,7 @@ export function FileShareForm({
         <Select
           value={form.status}
           onChange={(e) =>
-            setForm((c: any) => ({
+            setForm((c) => ({
               ...c,
               status: e.target.value,
             }))

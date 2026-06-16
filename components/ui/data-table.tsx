@@ -47,6 +47,13 @@ const getRadiusClass = (isFirst: boolean, isLast: boolean, hasTop: boolean, hasB
   )
 }
 
+const renderCellValue = (value: unknown): React.ReactNode => {
+  if (React.isValidElement(value)) return value
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
+  return String(value)
+}
+
 /* ===== Types ===== */
 export interface DataTableHeader<T> {
   key: keyof T | '__selection__' | '__actions__'
@@ -54,7 +61,7 @@ export interface DataTableHeader<T> {
   width?: string
   sortable?: boolean
   align?: 'left' | 'center' | 'right'
-  render?: (value: any, record: T) => React.ReactNode
+  render?: (value: T[keyof T] | undefined, record: T) => React.ReactNode
 }
 
 interface DataTableProps<T extends { id: number | string }> {
@@ -90,6 +97,10 @@ export const DataTable = <T extends { id: number | string }>({
   className,
 }: DataTableProps<T>) => {
   const isRounded = variant !== 'primary'
+  const getCellValue = (row: T, key: DataTableHeader<T>['key']) => {
+    if (key === '__selection__' || key === '__actions__') return undefined
+    return row[key]
+  }
 
   return (
     <div className={cn('relative w-full overflow-x-auto', className)}>
@@ -203,7 +214,9 @@ export const DataTable = <T extends { id: number | string }>({
                         )}
                       />
                       <div className={cn('relative z-10 select-text', h.key !== '__selection__' && 'truncate')}>
-                        {h.render ? h.render((row as any)[h.key], row) : (row as any)[h.key]}
+                        {h.render
+                          ? h.render(getCellValue(row, h.key), row)
+                          : renderCellValue(getCellValue(row, h.key))}
                       </div>
                     </td>
                   )

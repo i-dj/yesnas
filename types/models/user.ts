@@ -1,4 +1,4 @@
-import { EnableStatus } from '..'
+import type { EnableStatus } from './_constants'
 
 export interface User {
   id: string

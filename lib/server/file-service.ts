@@ -11,7 +11,7 @@ import {
   getTrashFilesUrl,
   getUsersUrl,
 } from '@/lib/file-api'
-import { CreateUserPayload, Job, StorageDrive, UpdateUserPayload, User } from ''
+import type { CreateUserPayload, Job, StorageDrive, UpdateUserPayload, User } from '@/types'
 import {
   CreateStoragePoolPayload,
   CreateStoragePoolSnapshotPayload,
