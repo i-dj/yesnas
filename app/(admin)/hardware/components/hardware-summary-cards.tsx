@@ -39,7 +39,7 @@ export function HardwareSummaryCards({ snapshot }: { snapshot: HardwareSnapshot 
             </span>
             <div className="min-w-0">
               <p className="app-body-text text-app-text-muted">{item.label}</p>
-              <p className="text-app-text mt-0.5 text-xs font-semibold break-words" title={item.value}>
+              <p className="text-app-text mt-0.5 text-xs font-semibold wrap-break-word" title={item.value}>
                 {item.value}
               </p>
             </div>

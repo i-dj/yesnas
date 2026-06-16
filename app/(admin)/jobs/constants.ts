@@ -1,7 +1,6 @@
-import type { JobStatus, JobType } from '@/types'
+import type { JobStatus, JobType, TaskStatus } from '@/types'
 import { ArrowRightLeft, Camera, Cloud, CloudUpload, Joystick, type LucideIcon } from 'lucide-react'
 
-export type JobStatusFilter = 'all' | 'running' | 'paused' | 'success' | 'failed' | 'canceled'
 
 interface JobStatusMeta {
   statuses: readonly JobStatus[] | null
@@ -33,7 +32,7 @@ export const JOB_STATUS_META = {
     statuses: ['cancelled'],
     color: 'gray',
   },
-} as const satisfies Record<JobStatusFilter, JobStatusMeta>
+} as const satisfies Record<TaskStatus, JobStatusMeta>
 
 export type JobStatusMetaKey = keyof typeof JOB_STATUS_META
 
@@ -42,7 +41,7 @@ export const getJobStatusMeta = (status: JobStatus) => {
     (Object.entries(JOB_STATUS_META).find(([, meta]) => {
       const statuses = meta.statuses as readonly JobStatus[] | null
       return statuses?.includes(status)
-    })?.[0] as JobStatusFilter | undefined) ?? 'failed'
+    })?.[0] as TaskStatus | undefined) ?? 'failed'
 
   return { key, ...JOB_STATUS_META[key] }
 }

@@ -52,7 +52,7 @@
     "activity": {
       "title": "Activity heatmap",
       "summary": "{count} logs grouped by {bucket}",
-      "tooltip": "{time}: {count} logs"
+      "tooltip": "{time}: {count} logs, {failed} failed"
     },
     "ranges": {
       "24h": "24 hours",
@@ -189,7 +189,8 @@
       "onlineInterfaces": "Online interfaces",
       "healthyDisks": "Healthy disks",
       "memoryModules": "{count} memory modules",
-      "memoryModule": "Memory {index}"
+      "memoryModule": "Memory {index}",
+      "processor": "Processor {index}"
     },
     "sections": {
       "cpu": "Processor",

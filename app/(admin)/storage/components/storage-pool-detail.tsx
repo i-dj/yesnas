@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, EmptyState, Input, Progress, SideDrawer, StatusPill } from '@/components/ui'
+import { Button, EmptyState, Input, MetricStat, Progress, SideDrawer, StatusPill } from '@/components/ui'
 import {
   bytesFormat,
   calculateUsedPercent,
@@ -9,19 +9,11 @@ import {
   formatUsagePercent,
   getProgressColorClass,
 } from '@/lib/utils'
-import type { AutoSnapshotSchedule, StoragePoolModel, StoragePoolSnapshotModel } from '@/types/models/storage'
-import {
-  AlertTriangle,
-  ArrowDown,
-  ArrowUp,
-  Camera,
-  HardDrive,
-  HeartPulse,
-  RotateCcw,
-  Save,
-  ShieldAlert,
-} from 'lucide-react'
+import type { StoragePoolModel, StoragePoolSnapshotModel } from '@/types/models/storage'
+import { AlertTriangle, ArrowDown, ArrowUp, Camera, HardDrive, HeartPulse, RotateCcw, ShieldAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { SnapshotPolicyControl } from './snapshot-policy-control'
+import { StorageDetailList, StorageDetailSection } from './storage-detail-section'
 
 interface StoragePoolDetailProps {
   open: boolean
@@ -42,7 +34,7 @@ interface StoragePoolDetailProps {
     pool: StoragePoolModel,
     payload: {
       autoSnapshotEnabled: boolean
-      autoSnapshotSchedule: AutoSnapshotSchedule
+      autoSnapshotWeekdays: number[]
     },
   ) => Promise<boolean | void>
   onReplaceDisk?: (
@@ -89,20 +81,21 @@ const groupSnapshots = (items: StoragePoolSnapshotModel[]) => {
   return groups
 }
 
-const snapshotScheduleLabelMap: Record<AutoSnapshotSchedule, string> = {
-  hourly: 'Every hour',
-  daily: 'Every day',
-  monthly: 'Every month',
+function parseSnapshotWeekdays(schedule?: string) {
+  return [
+    ...new Set(
+      (schedule ?? '')
+        .split('')
+        .map(Number)
+        .filter((day) => day >= 1 && day <= 7),
+    ),
+  ].sort()
 }
 
-const snapshotScheduleOptions = [
-  { value: 'hourly', label: 'Every hour' },
-  { value: 'daily', label: 'Every day' },
-  { value: 'monthly', label: 'Every month' },
-] as const
-
-function getSnapshotSchedule(schedule: StoragePoolModel['autoSnapshotSchedule']): AutoSnapshotSchedule {
-  return schedule === 'hourly' || schedule === 'daily' || schedule === 'monthly' ? schedule : 'daily'
+function sameNumbers(left: number[], right: number[]) {
+  const sortedLeft = [...left].sort()
+  const sortedRight = [...right].sort()
+  return sortedLeft.length === sortedRight.length && sortedLeft.every((value, index) => value === sortedRight[index])
 }
 
 export function StoragePoolDetail({
@@ -123,7 +116,7 @@ export function StoragePoolDetail({
   const [replacePassword, setReplacePassword] = useState('')
   const [replaceSubmitting, setReplaceSubmitting] = useState(false)
   const [autoSnapshotEnabled, setAutoSnapshotEnabled] = useState(false)
-  const [autoSnapshotSchedule, setAutoSnapshotSchedule] = useState<AutoSnapshotSchedule>('daily')
+  const [autoSnapshotWeekdays, setAutoSnapshotWeekdays] = useState<number[]>([])
   const [snapshotPolicySubmitting, setSnapshotPolicySubmitting] = useState(false)
 
   useEffect(() => {
@@ -150,7 +143,7 @@ export function StoragePoolDetail({
     setReplaceSubmitting(false)
     setSnapshotPolicySubmitting(false)
     setAutoSnapshotEnabled(Boolean(activePool?.autoSnapshotEnabled))
-    setAutoSnapshotSchedule(getSnapshotSchedule(activePool?.autoSnapshotSchedule))
+    setAutoSnapshotWeekdays(parseSnapshotWeekdays(activePool?.autoSnapshotSchedule))
   }, [activePool?.autoSnapshotEnabled, activePool?.autoSnapshotSchedule, activePool?.id])
 
   const snapshots = (activePool?.snapshots ?? [])
@@ -236,7 +229,7 @@ export function StoragePoolDetail({
       setSnapshotPolicySubmitting(true)
       await onUpdateSnapshotPolicy(activePool, {
         autoSnapshotEnabled,
-        autoSnapshotSchedule,
+        autoSnapshotWeekdays,
       })
     } finally {
       setSnapshotPolicySubmitting(false)
@@ -245,7 +238,7 @@ export function StoragePoolDetail({
 
   const snapshotPolicyDirty =
     Boolean(activePool?.autoSnapshotEnabled) !== autoSnapshotEnabled ||
-    getSnapshotSchedule(activePool?.autoSnapshotSchedule) !== autoSnapshotSchedule
+    !sameNumbers(parseSnapshotWeekdays(activePool?.autoSnapshotSchedule), autoSnapshotWeekdays)
   const usedPercent = calculateUsedPercent(activePool?.usedBytes ?? 0, activePool?.totalBytes ?? 0)
   const warnings = [...(activePool?.warnings ?? [])]
   const cloudUnmountedWarning = '云盘账号可访问，但本地挂载未激活，SMB 或本地路径访问可能不可用。'
@@ -267,38 +260,50 @@ export function StoragePoolDetail({
         <div className="text-app-text-muted text-sm">No pool selected.</div>
       ) : (
         <div className="space-y-5">
-          <section className="bg-app-bg space-y-3 rounded-lg">
+          <section className=" ">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-app-text truncate text-2xl leading-tight font-semibold">{activePool.name}</div>
-                <div className="text-app-text-muted mt-1 text-sm uppercase">
+                <div className="text-app-text truncate text-xl leading-tight font-semibold">{activePool.name}</div>
+                <div className="text-app-text-muted app-body-text mt-1 uppercase">
                   {activePool.kind === 'local' && activePool.raidLevel + ' · '}
                   {activePool.filesystem}
                 </div>
               </div>
-              <div className="border-app-border text-app-text flex shrink-0 flex-col items-center rounded-lg border px-3 py-2 text-center">
-                <div className="text-sm leading-none font-semibold">
-                  {bytesFormat(activePool.totalBytes ?? 0, {
-                    standard: 's',
-                    decimalPlaces: 0,
+              <div className="flex gap-2">
+                <MetricStat
+                  label="Members"
+                  className="bg-app-surface"
+                  value={activePool.kind === 'local' ? String(activePool.devices.length) : '-'}
+                />
+                <MetricStat
+                  label="Snapshots"
+                  className="bg-app-surface"
+                  value={activePool.kind === 'local' ? String(activePool.snapshotCount) : '-'}
+                />
+
+                <MetricStat
+                  label="Free space"
+                  className="bg-app-surface"
+                  value={bytesFormat(activePool.freeBytes, {
+                    standard: 'm',
+                    decimalPlaces: 2,
                   })}
-                </div>
-                <div className="text-app-text-muted mt-1 text-xs uppercase">Capacity</div>
+                />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <Progress value={usedPercent} showLabel={false} className={getProgressColorClass(usedPercent)} />
-              <div className="text-app-text-muted flex items-center justify-between text-[11px] uppercase">
+              <div className="text-app-text-muted flex items-center justify-between text-[11px]">
                 <span>
                   {bytesFormat(activePool.usedBytes ?? 0, {
-                    standard: 's',
+                    standard: 'm',
                     decimalPlaces: 2,
                   })}{' '}
-                  /{' '}
+                  of{' '}
                   {bytesFormat(activePool.totalBytes ?? 0, {
-                    standard: 's',
-                    decimalPlaces: 0,
+                    standard: 'm',
+                    decimalPlaces: 2,
                   })}{' '}
                   ({activePool.dataPath})
                 </span>
@@ -309,49 +314,52 @@ export function StoragePoolDetail({
             </div>
           </section>
 
-          <section className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            {[
-              ['Status', activePool.status],
-              [
-                'Health',
-                <span key="health" className="inline-flex items-center gap-1.5">
-                  <HeartPulse className={`h-3.5 w-3.5 ${healthIconClassName}`} />
-                  {healthValue.toUpperCase()}
-                </span>,
-              ],
-              [
-                'Read Speed',
-                <span key="read" className="inline-flex items-center gap-1.5">
-                  <ArrowDown className="h-3.5 w-3.5 text-sky-400" />
-                  {activePool.readSpeedBytesPerSec
-                    ? `${bytesFormat(activePool.readSpeedBytesPerSec, {
-                        standard: 'm',
-                        decimalPlaces: 2,
-                      })}/s`
-                    : '-'}
-                </span>,
-              ],
-              [
-                'Write Speed',
-                <span key="write" className="inline-flex items-center gap-1.5">
-                  <ArrowUp className="h-3.5 w-3.5 text-violet-400" />
-                  {activePool.writeSpeedBytesPerSec
-                    ? `${bytesFormat(activePool.writeSpeedBytesPerSec, {
-                        standard: 'm',
-                        decimalPlaces: 2,
-                      })}/s`
-                    : '-'}
-                </span>,
-              ],
-              ['Created At', formatDateTime(activePool.createdAt)],
-              ['Last Checked', formatDateTime(activePool.lastCheckedAt)],
-            ].map(([label, value]) => (
-              <div key={String(label)} className="bg-app-bg border-app-border rounded-lg border p-2.5">
-                <div className="text-app-text-muted text-[11px] font-semibold uppercase">{label}</div>
-                <div className="text-app-text mt-1 text-sm">{value}</div>
-              </div>
-            ))}
-          </section>
+          <StorageDetailSection icon={HardDrive} title="Pool Information">
+            <StorageDetailList
+              items={[
+                { label: 'Status', value: activePool.status },
+                {
+                  label: 'Health',
+                  value: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <HeartPulse className={`h-3.5 w-3.5 ${healthIconClassName}`} />
+                      {healthValue.toUpperCase()}
+                    </span>
+                  ),
+                },
+                {
+                  label: 'Read Speed',
+                  value: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <ArrowDown className="h-3.5 w-3.5 text-sky-400" />
+                      {activePool.readSpeedBytesPerSec
+                        ? `${bytesFormat(activePool.readSpeedBytesPerSec, {
+                            standard: 'm',
+                            decimalPlaces: 2,
+                          })}/s`
+                        : '-'}
+                    </span>
+                  ),
+                },
+                {
+                  label: 'Write Speed',
+                  value: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <ArrowUp className="h-3.5 w-3.5 text-violet-400" />
+                      {activePool.writeSpeedBytesPerSec
+                        ? `${bytesFormat(activePool.writeSpeedBytesPerSec, {
+                            standard: 'm',
+                            decimalPlaces: 2,
+                          })}/s`
+                        : '-'}
+                    </span>
+                  ),
+                },
+                { label: 'Created At', value: formatDateTime(activePool.createdAt) },
+                { label: 'Last Checked', value: formatDateTime(activePool.lastCheckedAt) },
+              ]}
+            />
+          </StorageDetailSection>
 
           {warnings.length > 0 && (
             <section className="space-y-2 rounded-lg border border-amber-500/35 bg-amber-500/8 p-3">
@@ -371,95 +379,14 @@ export function StoragePoolDetail({
 
           {activePool.kind === 'local' && (
             <>
-              <section className="space-y-2">
-                <div className="border-app-border flex items-center justify-between gap-3 border-b pb-1">
-                  <div className="flex items-center gap-1.5">
-                    <Camera className="text-app-text-muted h-3.5 w-3.5" />
-                    <span className="text-app-text text-xs font-semibold uppercase">Snapshot Policy</span>
-                  </div>
-                  <StatusPill
-                    color={autoSnapshotEnabled ? 'success' : 'neutral'}
-                    content={autoSnapshotEnabled ? 'AUTO' : 'MANUAL'}
-                  />
-                </div>
-
-                <div className="bg-app-bg border-app-border rounded-lg border p-3">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="text-app-text text-sm font-semibold">Auto snapshot backup</div>
-                      <div className="text-app-text-muted mt-0.5 text-xs">
-                        {autoSnapshotEnabled
-                          ? `Runs ${snapshotScheduleLabelMap[autoSnapshotSchedule].toLowerCase()}.`
-                          : 'Automatic snapshots are disabled.'}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={autoSnapshotEnabled}
-                      onClick={() => setAutoSnapshotEnabled((current) => !current)}
-                      className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors ${
-                        autoSnapshotEnabled
-                          ? 'border-emerald-400/40 bg-emerald-400/30'
-                          : 'border-app-border bg-app-surface'
-                      }`}
-                    >
-                      <span
-                        className={`bg-app-text absolute top-1/2 size-4 -translate-y-1/2 rounded-full transition-transform ${
-                          autoSnapshotEnabled ? 'left-1 translate-x-5' : 'left-1 translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div className="mt-3 flex flex-col gap-3">
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {snapshotScheduleOptions.map((option) => {
-                        const active = autoSnapshotSchedule === option.value
-
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            disabled={!autoSnapshotEnabled || snapshotPolicySubmitting}
-                            onClick={() => setAutoSnapshotSchedule(option.value)}
-                            className={cn(
-                              'border-app-border bg-app-surface text-app-text-muted flex h-8 items-center justify-center gap-1.5 rounded-md border px-2 text-xs transition-colors',
-                              'enabled:hover:border-app-text-muted/40 enabled:hover:bg-app-hover enabled:hover:text-app-text',
-                              active && autoSnapshotEnabled && 'border-app-text-muted/40 bg-app-hover text-app-text',
-                              (!autoSnapshotEnabled || snapshotPolicySubmitting) && 'cursor-not-allowed opacity-45',
-                            )}
-                          >
-                            <span
-                              className={cn(
-                                'border-app-border grid size-3.5 shrink-0 place-items-center rounded-full border',
-                                active && autoSnapshotEnabled && 'border-app-text',
-                              )}
-                            >
-                              {active && autoSnapshotEnabled ? (
-                                <span className="bg-app-text size-1.5 rounded-full" />
-                              ) : null}
-                            </span>
-                            <span className="truncate">{option.label}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-
-                    <Button
-                      size="sm"
-                      icon={Save}
-                      className="self-end"
-                      variant={snapshotPolicyDirty ? 'primary' : 'secondary'}
-                      disabled={!snapshotPolicyDirty || snapshotPolicySubmitting}
-                      loading={snapshotPolicySubmitting}
-                      onClick={handleSaveSnapshotPolicy}
-                    >
-                      Save
-                    </Button>
-                  </div>
-                </div>
-              </section>
+              <SnapshotPolicyControl
+                enabled={autoSnapshotEnabled}
+                weekdays={autoSnapshotWeekdays}
+                directSelection
+                disabled={snapshotPolicySubmitting}
+                saving={snapshotPolicySubmitting}
+                onWeekdaysChange={() => {}}
+              />
               <section className="space-y-2">
                 <div className="border-app-border flex items-center gap-1.5 border-b pb-1">
                   <HardDrive className="text-app-text-muted h-3.5 w-3.5" />

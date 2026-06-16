@@ -53,6 +53,7 @@ export type LogHeatmapBucketType = 'hour' | 'day' | 'month'
 export interface LogHeatmapBucket {
   time: string
   count: number
+  failedCount?: number
 }
 
 export interface LogHeatmapResponse {

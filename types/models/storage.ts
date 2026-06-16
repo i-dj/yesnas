@@ -106,13 +106,11 @@ export interface StoragePoolModel {
   systemProfile: string
   snapshotCount: number
   autoSnapshotEnabled?: boolean
-  autoSnapshotSchedule?: AutoSnapshotSchedule | ''
+  autoSnapshotSchedule?: string
   snapshots: StoragePoolSnapshotModel[]
   warnings: string[]
   lastCheckedAt: string
 }
-
-export type AutoSnapshotSchedule = 'hourly' | 'daily' | 'monthly'
 
 export interface StoragePoolSnapshotModel {
   id: string
@@ -137,7 +135,7 @@ export interface CreateStoragePoolPayload {
   paths: string[]
   cacheDiskPaths?: string[]
   autoSnapshotEnabled?: boolean
-  autoSnapshotSchedule?: AutoSnapshotSchedule | ''
+  autoSnapshotSchedule?: string
 }
 
 export interface CreateStoragePoolSnapshotPayload {

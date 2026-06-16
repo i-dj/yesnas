@@ -3,14 +3,26 @@ import { getServerTimeZone } from '@/lib/server/file-service'
 
 import { LogsClient } from './LogsClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function LogsPage() {
   const to = new Date()
   const from = new Date(to)
   from.setHours(from.getHours() - 24)
-  const [logs, heatmap] = await Promise.all([
-    logApi.list({ page: 1, pageSize: 20, from: from.toISOString(), to: to.toISOString() }),
+  const period = { from: from.toISOString(), to: to.toISOString() }
+  const [logs, heatmap, failedLogs] = await Promise.all([
+    logApi.list({ page: 1, pageSize: 20, ...period }),
     logApi.heatmap('24h'),
+    logApi.list({ page: 1, pageSize: 200, success: false, ...period }),
   ])
 
-  return <LogsClient initialLogs={logs} initialHeatmap={heatmap} timeZone={getServerTimeZone()} />
+  return (
+    <LogsClient
+      initialLogs={logs}
+      initialHeatmap={heatmap}
+      initialFailedLogs={failedLogs.items}
+      initialPeriod={period}
+      timeZone={getServerTimeZone()}
+    />
+  )
 }

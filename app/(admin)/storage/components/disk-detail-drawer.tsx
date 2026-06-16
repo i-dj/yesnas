@@ -3,7 +3,8 @@
 import { SideDrawer, StatusPill } from '@/components/ui'
 import { bytesFormat, hoursFormat } from '@/lib/utils'
 import type { DiskModel, StoragePoolModel } from '@/types/models/storage'
-import { Activity, ShieldCheck } from 'lucide-react'
+import { Activity, HardDrive, Layers3 } from 'lucide-react'
+import { StorageDetailList, StorageDetailSection } from './storage-detail-section'
 
 interface DiskDetailDrawerProps {
   disk: DiskModel | null
@@ -13,7 +14,7 @@ interface DiskDetailDrawerProps {
 }
 
 const prettyValue = (value: unknown): string => {
-  if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE'
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
   if (value === null || value === undefined || value === '') return '-'
   return String(value)
 }
@@ -25,22 +26,7 @@ const prettyNumber = (value: unknown): string => {
 
 const getBytes = (value?: number): number => (typeof value === 'number' && Number.isFinite(value) ? value : 0)
 
-const partitionColors = ['bg-cyan-400', 'bg-emerald-400', 'bg-amber-400', 'bg-violet-400', 'bg-pink-400', 'bg-sky-400']
-
-const usageTypeColor = (type?: string) => {
-  const normalized = String(type || '').toLowerCase()
-  if (normalized === 'system') return 'bg-cyan-400'
-  if (normalized === 'storage_pool') return 'bg-emerald-400'
-  if (normalized === 'unused') return 'bg-amber-400'
-  return 'bg-sky-400'
-}
-
-const Field = ({ label, value }: { label: string; value: unknown }) => (
-  <div className="bg-app-bg border-app-border rounded-lg border p-2">
-    <div className="text-app-text-muted text-[11px] font-semibold uppercase">{label}</div>
-    <div className="text-app-text mt-1 text-xs break-all">{prettyValue(value)}</div>
-  </div>
-)
+const partitionColors = ['bg-cyan-400', 'bg-amber-400', 'bg-violet-400', 'bg-rose-400', 'bg-lime-400', 'bg-blue-500']
 
 const toPoolMemberSet = (pool: StoragePoolModel): Set<string> =>
   new Set(
@@ -51,6 +37,7 @@ const toPoolMemberSet = (pool: StoragePoolModel): Set<string> =>
 
 export function DiskDetailDrawer({ disk, storagePools = [], open, onOpenChange }: DiskDetailDrawerProps) {
   const partitions = disk?.partitions ?? []
+
   const diskIdentitySet = new Set(
     [disk?.path, disk?.name, disk?.kernelName, ...partitions.flatMap((p) => [p.path, p.name, p.kernelName])].filter(
       Boolean,
@@ -61,10 +48,10 @@ export function DiskDetailDrawer({ disk, storagePools = [], open, onOpenChange }
     ? partitions.length > 0
       ? partitions.map((partition, index) => {
           const firstUsage = partition.usages?.[0]
-          const usageType = firstUsage?.type || partition.usage
           const mountPoint = firstUsage?.mountpoint || partition.mountpoints?.[0] || ''
           const fsType = partition.fsType ? ` · ${partition.fsType}` : ''
           const mount = mountPoint ? ` (${mountPoint})` : ''
+
           return {
             key: partition.path,
             name: `${partition.name}${fsType}${mount}`,
@@ -73,176 +60,156 @@ export function DiskDetailDrawer({ disk, storagePools = [], open, onOpenChange }
                 decimalPlaces: 0,
               }) || '-',
             bytes: getBytes(partition.sizeBytes),
-            colorClass: usageTypeColor(usageType) || partitionColors[index % partitionColors.length],
+            colorClass: partitionColors[index % partitionColors.length],
           }
         })
       : [
           {
             key: disk.path,
-            name: `${disk.name} · ${disk.fsType}  ${disk.mountpoints?.[0] ? ` (${disk.mountpoints[0]})` : ''}`,
+            name: `${disk.name}${disk.fsType ? ` · ${disk.fsType}` : ''}${
+              disk.mountpoints?.[0] ? ` (${disk.mountpoints[0]})` : ''
+            }`,
             sizeText: disk.sizeBytes
               ? bytesFormat(disk.sizeBytes, {
                   decimalPlaces: 0,
                 })
               : disk.size || '-',
             bytes: getBytes(disk.sizeBytes),
-            colorClass: usageTypeColor(disk.usage),
+            colorClass: partitionColors[0],
           },
         ]
     : []
+
   const layoutTotalBytes = Math.max(
     layoutSegments.reduce((sum, item) => sum + item.bytes, 0),
     1,
   )
+
   const relatedStoragePools = disk
     ? (() => {
         const names = new Set<string>()
+
         for (const usage of [...(disk.usages ?? []), ...partitions.flatMap((p) => p.usages ?? [])]) {
           if (usage.type !== 'storage_pool') continue
           const name = usage.storagePoolName || usage.label
           if (name) names.add(name)
         }
+
         for (const pool of storagePools) {
           const memberSet = toPoolMemberSet(pool)
           if ([...diskIdentitySet].some((key) => memberSet.has(key))) {
             names.add(pool.name || pool.id)
           }
         }
+
         return Array.from(names)
       })()
     : []
 
   return (
-    <SideDrawer open={open} onOpenChange={onOpenChange} title={'Disk Details'}>
+    <SideDrawer open={open} onOpenChange={onOpenChange} title="Disk Details">
       {!disk ? (
-        <div className="text-app-text-muted text-sm">No disk selected.</div>
+        <div className="app-body-text text-app-text-muted">No disk selected.</div>
       ) : (
-        <div className="space-y-4">
-          <section className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <span className="text-lg font-semibold">{disk.model} </span>
-                <span className="text-app-text-muted mb-3 text-sm">SN:{disk.serial}</span>
+        <div className="space-y-5">
+          <section className="bg-app-surface rounded-lg p-3">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  <div className="bg-app-hover flex size-10 shrink-0 items-center justify-center rounded-md">
+                    <HardDrive className="text-app-text-muted size-5" />
+                  </div>
+
+                  <div className="min-w-0">
+                    <h2 className="text-app-text truncate text-base font-semibold">{disk.model || disk.name}</h2>
+                    <div className="app-body-text text-app-text-muted mt-0.5 truncate">SN: {disk.serial || '-'}</div>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                  <StatusPill color="success" content={prettyValue(disk.health).toUpperCase()} />
+                  <StatusPill color="neutral" content={disk.temperatureC ? `${disk.temperatureC}°C` : '-'} />
+                  <StatusPill color="neutral" content={disk.inUse ? 'In Use' : 'Unused'} />
+                </div>
               </div>
-              <div className="border-app-border flex flex-col gap-0.5 rounded-lg border p-2 text-center">
-                <span className="text-sm font-semibold">
+
+              <div className="shrink-0 text-right">
+                <div className="text-app-text text-base font-semibold">
                   {bytesFormat(disk.sizeBytes, {
                     decimalPlaces: 0,
-                  })}
-                </span>
-                <span className="text-xs">{disk.inUse ? 'IN USE' : 'UNUSED'}</span>
-              </div>
-            </div>
-            {layoutSegments.length > 0 && (
-              <div className="bg-app-bg border-app-border space-y-2 rounded-lg border p-3">
-                <div className="text-app-text text-xs font-semibold uppercase">Partition Layout</div>
-
-                <div className="bg-app-surface flex h-2.5 w-full overflow-hidden rounded-full">
-                  {layoutSegments.map((segment, index) => {
-                    const bytes = segment.bytes
-                    const widthPct = Math.max((bytes / layoutTotalBytes) * 100, 0.8)
-                    return (
-                      <span
-                        key={segment.key}
-                        className={`${segment.colorClass || partitionColors[index % partitionColors.length]} h-full min-w-0.5`}
-                        style={{ width: `${widthPct}%` }}
-                        title={`${segment.name} · ${segment.sizeText}`}
-                      />
-                    )
-                  })}
+                    standard: 'm',
+                  }) || '-'}
                 </div>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                  {layoutSegments.map((segment, index) => (
-                    <div key={segment.key} className="flex min-w-55 items-center gap-2 text-xs">
-                      <span
-                        className={`${segment.colorClass || partitionColors[index % partitionColors.length]} h-2.5 w-2.5 rounded-full`}
-                      />
-                      <span className="text-app-text-muted truncate">{segment.name}</span>
-                      <span className="text-app-text ml-auto font-medium">{segment.sizeText}</span>
-                    </div>
-                  ))}
+                <div className="app-caption text-app-text-muted mt-0.5">{disk.transport?.toUpperCase?.() || '-'}</div>
+              </div>
+            </div>
+          </section>
+
+          <StorageDetailSection icon={Layers3} title="Partition Layout">
+            <div className="bg-app-hover flex h-2 w-full overflow-hidden rounded-full">
+              {layoutSegments.map((segment) => {
+                const widthPct = Math.max((segment.bytes / layoutTotalBytes) * 100, 0.8)
+
+                return (
+                  <span
+                    key={segment.key}
+                    className={`${segment.colorClass} h-full min-w-0.5`}
+                    style={{ width: `${widthPct}%` }}
+                    title={`${segment.name} · ${segment.sizeText}`}
+                  />
+                )
+              })}
+            </div>
+
+            <div className="divide-app-border/50 mt-1 divide-y">
+              {layoutSegments.map((segment) => (
+                <div key={segment.key} className="flex min-w-0 items-center gap-2.5 py-1.5">
+                  <span className={`${segment.colorClass} size-2.5 shrink-0 rounded-full`} />
+                  <span className="app-body-text text-app-text-muted min-w-0 flex-1 truncate">{segment.name}</span>
+                  <span className="app-body-text text-app-text shrink-0 font-semibold">{segment.sizeText}</span>
                 </div>
-              </div>
-            )}
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              <Field label="Path" value={disk.path} />
-              <Field label="Vendor" value={disk.vendor} />
+              ))}
             </div>
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              <Field label="Transport" value={disk.transport.toUpperCase()} />
-              <div className="bg-app-bg border-app-border rounded-lg border p-2">
-                <div className="text-app-text-muted text-[11px] font-semibold uppercase">Storage Pools</div>
-                {relatedStoragePools.length > 0 ? (
-                  <div className="mt-1 flex flex-wrap gap-1.5">
-                    {relatedStoragePools.map((item, index) => (
-                      <StatusPill key={index} content={item} color={'neutral'} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-app-text mt-1 text-sm">None</div>
-                )}
-              </div>
-            </div>
-          </section>
+          </StorageDetailSection>
 
-          <section className="space-y-2">
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="text-app-text-muted h-3.5 w-3.5" />
-              <div className="text-app-text text-xs font-semibold uppercase">Health & SMART</div>
-            </div>
+          <StorageDetailSection icon={HardDrive} title="Disk Information">
+            <StorageDetailList
+              items={[
+                { label: 'Path', value: prettyValue(disk.path) },
+                {
+                  label: 'Storage Pool',
+                  value:
+                    relatedStoragePools.length > 0 ? (
+                      <span className="flex flex-wrap gap-1">
+                        {relatedStoragePools.map((item) => (
+                          <StatusPill key={item} content={item} color="neutral" />
+                        ))}
+                      </span>
+                    ) : (
+                      'None'
+                    ),
+                },
+                { label: 'Health', value: prettyValue(disk.health).toUpperCase() },
+                { label: 'Power On', value: hoursFormat(disk.powerOnHours) },
+                { label: 'Power Cycles', value: prettyNumber(disk.powerCycleCount) },
+                { label: 'Serial Number', value: prettyValue(disk.serial), fullWidth: true },
+              ]}
+            />
+          </StorageDetailSection>
 
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              <Field label="Health" value={disk.health.toUpperCase()} />
-              <Field label="Temperature" value={`${disk.temperatureC}°C`} />
-              <Field label="SMART Available" value={disk.smartAvailable} />
-              <Field label="SMART Passed" value={disk.smartPassed} />
-              <Field label="Read Only" value={disk.readOnly} />
-              <Field label="Power On Hours" value={hoursFormat(disk.powerOnHours)} />
-              <Field label="Power Cycle Count" value={disk.powerCycleCount} />
-            </div>
-          </section>
-
-          <section className="space-y-2">
-            <div className="flex items-center gap-1.5">
-              <Activity className="text-app-text-muted h-3.5 w-3.5" />
-              <div className="text-app-text text-xs font-semibold uppercase">I/O Statistics</div>
-            </div>
-
-            <div className="border-app-border overflow-hidden rounded-lg border">
-              <table className="w-full text-sm">
-                <thead className="bg-app-bg">
-                  <tr className="text-app-text-muted text-xs">
-                    <th className="px-3 py-2 text-left font-semibold">Metric</th>
-                    <th className="px-3 py-2 text-left font-semibold">Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    [
-                      'Read Bytes Total',
-                      bytesFormat(disk.readBytesTotal, {
-                        decimalPlaces: 0,
-                      }),
-                    ],
-                    [
-                      'Write Bytes Total',
-                      bytesFormat(disk.writeBytesTotal, {
-                        decimalPlaces: 0,
-                      }),
-                    ],
-                    ['Read Ops Total', prettyNumber(disk.readOpsTotal)],
-                    ['Write Ops Total', prettyNumber(disk.writeOpsTotal)],
-                  ].map(([metric, value]) => (
-                    <tr key={String(metric)} className="border-app-border border-t">
-                      <td className="text-app-text-muted px-3 py-2 text-[11px]">{metric}</td>
-                      <td className="text-app-text px-3 py-2 text-xs">{prettyValue(value)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+          <StorageDetailSection icon={Activity} title="SMART & Lifetime Activity">
+            <StorageDetailList
+              items={[
+                { label: 'SMART Available', value: prettyValue(disk.smartAvailable) },
+                { label: 'SMART Passed', value: prettyValue(disk.smartPassed) },
+                { label: 'Read Total', value: bytesFormat(disk.readBytesTotal, { decimalPlaces: 0 }) },
+                { label: 'Write Total', value: bytesFormat(disk.writeBytesTotal, { decimalPlaces: 0 }) },
+                { label: 'Read Ops', value: prettyNumber(disk.readOpsTotal) },
+                { label: 'Write Ops', value: prettyNumber(disk.writeOpsTotal) },
+              ]}
+            />
+          </StorageDetailSection>
         </div>
       )}
     </SideDrawer>

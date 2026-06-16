@@ -24,7 +24,7 @@ export const Input = ({
     <input
       className={cn(
         'app-body-text bg-app-bg border-app-border-strong/30 text-app-text placeholder:text-app-text-muted/70 h-8 w-full rounded-md border px-2.5 transition-[border-color,box-shadow,background-color] outline-none',
-        'hover:border-app-border-strong/60 focus:border-app-border-strong',
+        'hover:border-app-border-strong focus:border-app-border-strong',
         'disabled:cursor-not-allowed disabled:opacity-50',
         invalid && 'border-red-500/80 pr-9 focus:border-red-500 focus:ring-red-500/25',
         className,

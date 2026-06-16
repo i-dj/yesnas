@@ -6,16 +6,8 @@ export interface HardwareSnapshot {
     kernelVersion: string
     uptimeSeconds: number
   }
-  cpu: {
-    model: string
-    usagePercent: number
-    frequencyGhz: number
-    temperatureC: number | null
-    cores: number
-    threads: number
-    fanRpm?: number | null
-    powerW?: number | null
-  }
+  cpu: HardwareCpu
+  cpus?: HardwareCpu[]
   motherboard: {
     manufacturer: string
     product: string
@@ -27,6 +19,17 @@ export interface HardwareSnapshot {
   gpus: HardwareGpu[]
   networkInterfaces: HardwareNetworkInterface[]
   checkedAt: string
+}
+
+export interface HardwareCpu {
+  model: string
+  usagePercent: number
+  frequencyGhz: number
+  temperatureC: number | null
+  cores: number
+  threads: number
+  fanRpm?: number | null
+  powerW?: number | null
 }
 
 export interface HardwareMemoryModule {
@@ -87,12 +90,12 @@ export interface HardwareGpu {
 
 export interface HardwareNetworkInterface {
   name: string
-  mac: string
-  operState: string
-  mtu: number
-  ips: string[]
-  speed: {
-    rxBytesPerSec: number
-    txBytesPerSec: number
+  mac?: string
+  operState?: string
+  mtu?: number
+  ips?: string[]
+  speed?: {
+    rxBytesPerSec?: number
+    txBytesPerSec?: number
   }
 }

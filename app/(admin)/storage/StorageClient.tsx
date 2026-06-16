@@ -103,6 +103,9 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
   const handleOpenPoolDetail = (pool: StoragePoolModel) => {
     drawers.open('poolDetail', pool.id)
   }
+  const handleOpenPoolDetailPage = (pool: StoragePoolModel) => {
+    router.push(`/storage/pools/${encodeURIComponent(pool.id)}`)
+  }
   const handleOpenCreator = () => drawers.open('creator')
   const handleOpenQuickDelete = storageModal.openDelete
   const handleOpenBenchmark = (pool: StoragePoolModel) => {
@@ -162,6 +165,7 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
     () =>
       getStoragePoolColumns(
         handleOpenPoolDetail,
+        handleOpenPoolDetailPage,
         handleOpenQuickDelete,
         handleOpenBenchmark,
         handleOpenSnapshot,

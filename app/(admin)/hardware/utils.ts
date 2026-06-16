@@ -6,8 +6,9 @@ export function formatOptional(value: number | null | undefined, suffix: string)
   return `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}${suffix}`
 }
 
-export function formatSpeed(bytesPerSecond: number) {
-  return `${formatBytes(bytesPerSecond)}/s`
+export function formatSpeed(bytesPerSecond?: number) {
+  const value = typeof bytesPerSecond === 'number' && Number.isFinite(bytesPerSecond) ? bytesPerSecond : 0
+  return `${formatBytes(value)}/s`
 }
 
 export function isHealthyDisk(disk: HardwareDisk) {

@@ -5,7 +5,7 @@ import { storageApi } from '@/lib/api/storage.api'
 import { runWithToast } from '@/lib/run-with-toast'
 import { toast } from '@/store/use-toast-store'
 import type { RaidLevel } from '@/types/models/_constants'
-import type { AutoSnapshotSchedule, StoragePoolModel } from '@/types/models/storage'
+import type { StoragePoolModel } from '@/types/models/storage'
 
 interface StorageActionsOptions {
   onPoolDeleted?: (poolId: string) => void
@@ -18,7 +18,7 @@ export interface CreatePoolPayload {
   raidLevel: RaidLevel
   diskIds: string[]
   autoSnapshotEnabled: boolean
-  autoSnapshotSchedule: AutoSnapshotSchedule
+  autoSnapshotWeekdays: number[]
 }
 
 export interface SnapshotPayload {
@@ -41,7 +41,7 @@ export interface ReplaceDiskPayload {
 
 export interface SnapshotPolicyPayload {
   autoSnapshotEnabled: boolean
-  autoSnapshotSchedule: AutoSnapshotSchedule
+  autoSnapshotWeekdays: number[]
 }
 
 const reject = (message: string) => {
@@ -65,7 +65,7 @@ export function useStorageActions({ onPoolDeleted, onPoolFormatted, onPoolUpdate
           raidLevel: payload.raidLevel,
           paths: payload.diskIds,
           autoSnapshotEnabled: payload.autoSnapshotEnabled,
-          autoSnapshotSchedule: payload.autoSnapshotEnabled ? payload.autoSnapshotSchedule : '',
+          autoSnapshotSchedule: payload.autoSnapshotEnabled ? payload.autoSnapshotWeekdays.join('') : '',
         }),
       success: `Storage pool created: ${payload.name}`,
       fail: 'Create pool failed',
@@ -137,7 +137,7 @@ export function useStorageActions({ onPoolDeleted, onPoolFormatted, onPoolUpdate
       task: () =>
         storageApi.updateSnapshotPolicy(pool.id, {
           autoSnapshotEnabled: payload.autoSnapshotEnabled,
-          autoSnapshotSchedule: payload.autoSnapshotEnabled ? payload.autoSnapshotSchedule : '',
+          autoSnapshotSchedule: payload.autoSnapshotEnabled ? payload.autoSnapshotWeekdays.join('') : '',
         }),
       success: `Snapshot policy updated: ${pool.name}`,
       fail: 'Update snapshot policy failed',

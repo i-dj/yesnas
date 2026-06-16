@@ -36,11 +36,10 @@ export function MemoryDetailCard({ memory }: { memory: HardwareMemory }) {
   return (
     <HardwareSection
       icon={MemoryStick}
-      accentClassName="bg-emerald-500/10 text-emerald-400"
+      accentClassName="text-emerald-400"
       title={t('sections.memory')}
-      subtitle={`${t('overview.memoryModules', { count: modules.length })} · ${formatBytes(memory.totalBytes)}`}
       summary={
-        <div className="bg-app-hover/35 flex max-w-full gap-0.5 overflow-x-auto rounded-md p-0.5">
+        <div className="border-app-border/70 flex max-w-full gap-0.5 overflow-x-auto rounded-md border p-0.5">
           {modules.map((module, index) => (
             <button
               key={`${module.slot || module.locator || module.bankLocator || index}`}
@@ -56,7 +55,7 @@ export function MemoryDetailCard({ memory }: { memory: HardwareMemory }) {
         </div>
       }
     >
-      <div className="grid min-w-0 gap-5 sm:grid-cols-[4rem_minmax(0,1fr)] sm:items-center lg:gap-8">
+      <div className="grid min-w-0 gap-5 sm:grid-cols-[4rem_minmax(0,1fr)] sm:items-start lg:gap-8">
         <UsageDonut value={formatPercent(memory.usagePercent)} percent={memory.usagePercent} color="#34d399" />
         <DetailList details={details} />
       </div>

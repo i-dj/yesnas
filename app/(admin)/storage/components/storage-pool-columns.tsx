@@ -10,10 +10,23 @@ import {
 import { ColumnIcon } from '@/components/ui/column-icon'
 import { bytesFormat, formatBytes, formatUsagePercent, getProgressColorClass } from '@/lib/utils'
 import { StoragePoolModel } from '@/types/models/storage'
-import { AlertCircle, ArrowDown, ArrowUp, Camera, Check, Eye, Gauge, Layers, Trash2, Wrench } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  Camera,
+  Check,
+  Eye,
+  Gauge,
+  Layers,
+  PanelTopOpen,
+  Trash2,
+  Wrench,
+} from 'lucide-react'
 
 export const getStoragePoolColumns = (
   onOpenDetails: (pool: StoragePoolModel) => void,
+  onOpenDetailsPage: (pool: StoragePoolModel) => void,
   onRequestDelete: (pool: StoragePoolModel) => void,
   onRequestBenchmark: (pool: StoragePoolModel) => void,
   onRequestSnapshot: (pool: StoragePoolModel) => void,
@@ -96,6 +109,11 @@ export const getStoragePoolColumns = (
         icon: Eye,
       },
       {
+        label: makeLabel('View detail 2', 'Open the full details page'),
+        action: 'open-page',
+        icon: PanelTopOpen,
+      },
+      {
         label: makeLabel('Run Speed Test', 'Measure read/write performance'),
         action: 'speed-test',
         icon: Gauge,
@@ -160,7 +178,15 @@ export const getStoragePoolColumns = (
             <Progress value={barPercent} showLabel={false} className={getProgressColorClass(barPercent)} />
             <div className="text-app-text-muted flex justify-between text-[10px] font-semibold tracking-tighter">
               <span>
-                {formatBytes(record.usedBytes)} of {formatBytes(record.totalBytes)}
+                {bytesFormat(record.usedBytes, {
+                  standard: 'm',
+                  decimalPlaces: 2,
+                })}{' '}
+                of{' '}
+                {bytesFormat(record.totalBytes, {
+                  standard: 'm',
+                  decimalPlaces: 2,
+                })}
               </span>
               <span>{showPercent} </span>
             </div>
@@ -250,6 +276,10 @@ export const getStoragePoolColumns = (
             onAction={(action) => {
               if (action === 'open') {
                 onOpenDetails(record)
+                return
+              }
+              if (action === 'open-page') {
+                onOpenDetailsPage(record)
                 return
               }
               if (action === 'speed-test') {

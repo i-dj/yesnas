@@ -52,7 +52,7 @@
     "activity": {
       "title": "活动热力图",
       "summary": "共 {count} 条日志，按{bucket}聚合",
-      "tooltip": "{time}：{count} 条日志"
+      "tooltip": "{time}：{count} 条日志，{failed} 条失败"
     },
     "ranges": {
       "24h": "24 小时",
@@ -189,7 +189,8 @@
       "onlineInterfaces": "在线接口",
       "healthyDisks": "健康磁盘",
       "memoryModules": "{count} 条内存",
-      "memoryModule": "内存 {index}"
+      "memoryModule": "内存 {index}",
+      "processor": "处理器 {index}"
     },
     "sections": {
       "cpu": "处理器",

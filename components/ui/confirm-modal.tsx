@@ -54,18 +54,13 @@ export const ConfirmModal = ({
           if (!focusFirstInput) return
           event.preventDefault()
           requestAnimationFrame(() => {
-            const firstInput =
-              contentRef.current?.querySelector<HTMLInputElement>(
-                'input, textarea',
-              )
+            const firstInput = contentRef.current?.querySelector<HTMLInputElement>('input, textarea')
             firstInput?.focus()
           })
         }}
       >
         <AlertDialog.Title>{title}</AlertDialog.Title>
-        <AlertDialog.Description size="2">
-          {description}
-        </AlertDialog.Description>
+        <AlertDialog.Description size="2">{description}</AlertDialog.Description>
 
         {children && (
           <Inset side="x" my="5">

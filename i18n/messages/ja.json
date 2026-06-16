@@ -52,7 +52,7 @@
     "activity": {
       "title": "アクティビティヒートマップ",
       "summary": "{count} 件のログを{bucket}単位で集計",
-      "tooltip": "{time}: {count} 件"
+      "tooltip": "{time}: {count} 件、失敗 {failed} 件"
     },
     "ranges": {
       "24h": "24 時間",
@@ -189,7 +189,8 @@
       "onlineInterfaces": "オンラインインターフェース",
       "healthyDisks": "正常なディスク",
       "memoryModules": "メモリ {count} 枚",
-      "memoryModule": "メモリ {index}"
+      "memoryModule": "メモリ {index}",
+      "processor": "プロセッサー {index}"
     },
     "sections": {
       "cpu": "プロセッサー",

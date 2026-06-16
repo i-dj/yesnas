@@ -14,8 +14,9 @@ import type {
   LogsQuery,
   LogsResponse,
 } from '@/types'
-import { ChevronLeft, ChevronRight, Search, ScrollText } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { ChevronLeft, ChevronRight, Clock3, Search, ScrollText } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { getLogColumns, LogDetailDrawer, LogHeatmap, type LogTimeRange } from './components'
@@ -46,33 +47,62 @@ const initialFilters: Filters = {
 }
 
 const pageSizeOptions = [20, 50, 100, 200] as const
+const heatmapRanges = ['24h', '7d', '30d', '90d', '1y'] as const
 
 export function LogsClient({
   initialLogs,
   initialHeatmap,
+  initialFailedLogs,
+  initialPeriod,
   timeZone,
 }: {
   initialLogs: LogsResponse
   initialHeatmap: LogHeatmapResponse
+  initialFailedLogs: Log[]
+  initialPeriod: { from: string; to: string }
   timeZone: string
 }) {
   const t = useTranslations('Logs')
+  const locale = useLocale()
+  const pathname = usePathname()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const searchKey = searchParams.toString()
   const [logsResult, setLogsResult] = useState(initialLogs)
-  const [heatmap, setHeatmap] = useState(initialHeatmap)
+  const [heatmap, setHeatmap] = useState(() => addFailureCounts(initialHeatmap, initialFailedLogs))
   const [range, setRange] = useState<LogTimeRange>(initialHeatmap.range)
+  const [heatmapPeriod, setHeatmapPeriod] = useState(() => ({
+    from: toDateTimeLocalInZone(new Date(initialPeriod.from), timeZone),
+    to: toDateTimeLocalInZone(new Date(initialPeriod.to), timeZone),
+  }))
   const [filters, setFilters] = useState<Filters>(() => ({
     ...initialFilters,
-    ...getRangePeriod(initialHeatmap.range, timeZone),
+    ...heatmapPeriod,
   }))
   const [page, setPage] = useState(initialLogs.pagination.page)
   const [pageSize, setPageSize] = useState(initialLogs.pagination.pageSize)
   const [loading, setLoading] = useState(false)
   const [heatmapLoading, setHeatmapLoading] = useState(false)
   const [selectedLog, setSelectedLog] = useState<Log | null>(null)
-  const [selectedBucket, setSelectedBucket] = useState<string>()
-  const firstLoad = useRef(true)
+  const [selectedBucket, setSelectedBucket] = useState<string | undefined>(
+    () => searchParams.get('bucket') ?? undefined,
+  )
+  const lastSearchKey = useRef(searchKey ? '' : searchKey)
+  const currentRange = useRef<LogTimeRange>(initialHeatmap.range)
 
   const columns = useMemo(() => getLogColumns({ t, timeZone }), [t, timeZone])
+  const activePeriod = useMemo(
+    () => formatActivePeriod(filters.from, filters.to, locale, timeZone),
+    [filters.from, filters.to, locale, timeZone],
+  )
+  const heatmapTotal = useMemo(
+    () => heatmap.buckets.reduce((total, bucket) => total + bucket.count, 0),
+    [heatmap.buckets],
+  )
+  const heatmapRangeEnd = useMemo(
+    () => zonedWallTimeToDate(heatmapPeriod.to, timeZone).toISOString(),
+    [heatmapPeriod.to, timeZone],
+  )
 
   const fetchLogs = useCallback(
     async (nextPage: number, nextPageSize: number, nextFilters: Filters) => {
@@ -103,43 +133,94 @@ export function LogsClient({
     [t, timeZone],
   )
 
+  const fetchHeatmap = useCallback(
+    async (nextRange: LogHeatmapRange, period: Pick<Filters, 'from' | 'to'>) => {
+      setHeatmapLoading(true)
+      try {
+        const queryPeriod = {
+          from: toRFC3339(period.from, timeZone),
+          to: toRFC3339(period.to, timeZone),
+        }
+        const [nextHeatmap, failedLogs] = await Promise.all([
+          logApi.heatmap(nextRange),
+          logApi.list({ page: 1, pageSize: 200, success: false, ...queryPeriod }),
+        ])
+        setHeatmap(addFailureCounts(nextHeatmap, failedLogs.items))
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : t('messages.heatmapFailed'))
+      } finally {
+        setHeatmapLoading(false)
+      }
+    },
+    [t, timeZone],
+  )
+
   useEffect(() => {
-    if (firstLoad.current) {
-      firstLoad.current = false
-      return
+    if (lastSearchKey.current === searchKey) return
+    lastSearchKey.current = searchKey
+
+    const nextRange = parseRange(searchParams.get('range'))
+    const nextPage = parsePositiveInteger(searchParams.get('page'), 1)
+    const nextPageSize = parsePageSize(searchParams.get('pageSize'))
+    const nextPeriod = getRangePeriod(nextRange, timeZone)
+    const from = parseUrlDate(searchParams.get('from'), timeZone) ?? nextPeriod.from
+    const to = parseUrlDate(searchParams.get('to'), timeZone) ?? nextPeriod.to
+    const nextFilters: Filters = {
+      ...initialFilters,
+      q: searchParams.get('q') ?? '',
+      category: parseCategory(searchParams.get('category')),
+      severity: parseSeverity(searchParams.get('severity')),
+      success: parseSuccess(searchParams.get('success')),
+      source: searchParams.get('source') ?? 'all',
+      event: searchParams.get('event') ?? '',
+      ipAddress: searchParams.get('ipAddress') ?? '',
+      from,
+      to,
     }
-    const timer = window.setTimeout(() => void fetchLogs(1, pageSize, filters), 300)
-    return () => window.clearTimeout(timer)
-  }, [fetchLogs, filters, pageSize])
+
+    setRange(nextRange)
+    setFilters(nextFilters)
+    setPage(nextPage)
+    setPageSize(nextPageSize)
+    setSelectedBucket(searchParams.get('bucket') ?? undefined)
+    void fetchLogs(nextPage, nextPageSize, nextFilters)
+
+    if (currentRange.current !== nextRange) {
+      currentRange.current = nextRange
+      setHeatmapPeriod(nextPeriod)
+      void fetchHeatmap(nextRange, nextPeriod)
+    }
+  }, [fetchHeatmap, fetchLogs, searchKey, searchParams, timeZone])
 
   const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     setFilters((current) => ({ ...current, [key]: value }))
     setPage(1)
+    updateUrl({ [key]: value === 'all' ? null : String(value), page: null })
   }
 
-  const changeRange = async (nextRange: LogTimeRange) => {
-    setRange(nextRange)
-    setSelectedBucket(undefined)
+  const changeRange = (nextRange: LogTimeRange) => {
     if (nextRange === 'custom') return
-
-    const period = getRangePeriod(nextRange, timeZone)
-    setFilters((current) => ({ ...current, ...period }))
-    setPage(1)
-    setHeatmapLoading(true)
-    try {
-      setHeatmap(await logApi.heatmap(nextRange))
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('messages.heatmapFailed'))
-    } finally {
-      setHeatmapLoading(false)
-    }
+    updateUrl({
+      range: nextRange === '24h' ? null : nextRange,
+      from: null,
+      to: null,
+      bucket: null,
+      page: null,
+    })
   }
 
   const selectBucket = (time: string, bucket: LogHeatmapResponse['bucket']) => {
-    const period = getBucketPeriod(time, bucket, timeZone)
-    setSelectedBucket(time)
-    setFilters((current) => ({ ...current, ...period }))
-    setPage(1)
+    const period = getBucketUtcPeriod(time, bucket)
+    updateUrl({ from: period.from, to: period.to, bucket: time, page: null })
+  }
+
+  const updateUrl = (updates: Record<string, string | null>) => {
+    const next = new URLSearchParams(searchParams.toString())
+    Object.entries(updates).forEach(([key, value]) => {
+      if (!value) next.delete(key)
+      else next.set(key, value)
+    })
+    router.replace(`${pathname}${next.size ? `?${next}` : ''}`, { scroll: false })
   }
 
   const { items, pagination } = logsResult
@@ -160,15 +241,23 @@ export function LogsClient({
         data={heatmap}
         range={range}
         loading={heatmapLoading}
-        total={pagination.total}
+        total={heatmapTotal}
         selectedBucket={selectedBucket}
+        rangeEnd={heatmapRangeEnd}
         timeZone={timeZone}
         onRangeChange={changeRange}
         onBucketClick={selectBucket}
       />
 
       <section className="min-h-0">
-        <div className="border-app-border/60 flex flex-wrap items-center justify-end gap-2 border-b pb-3">
+        <div className="border-app-border/60 flex flex-wrap items-center gap-2 border-b pb-3">
+          <div
+            className="app-caption text-app-text-muted mr-auto flex min-w-0 items-center gap-1.5"
+            title={activePeriod}
+          >
+            <Clock3 className="size-4 shrink-0" />
+            <span className="truncate">{activePeriod}</span>
+          </div>
           <div className="relative w-80 max-w-full">
             <Search className="text-app-text-muted pointer-events-none absolute top-1/2 left-2.5 z-10 size-4 -translate-y-1/2" />
             <Input
@@ -232,8 +321,7 @@ export function LogsClient({
             className="h-8 bg-transparent"
             onChange={(event) => {
               const nextPageSize = Number(event.target.value)
-              setPageSize(nextPageSize)
-              setPage(1)
+              updateUrl({ pageSize: nextPageSize === 20 ? null : String(nextPageSize), page: null })
             }}
           >
             {pageSizeOptions.map((option) => (
@@ -249,11 +337,7 @@ export function LogsClient({
               variant="ghost"
               icon={ChevronLeft}
               disabled={page <= 1 || loading}
-              onClick={() => {
-                const nextPage = Math.max(1, page - 1)
-                setPage(nextPage)
-                void fetchLogs(nextPage, pageSize, filters)
-              }}
+              onClick={() => updateUrl({ page: page - 1 <= 1 ? null : String(page - 1) })}
             />
             <span className="app-caption text-app-text-muted min-w-20 text-center">
               {t('pagination.summary', { page, totalPages: Math.max(1, pagination.totalPages) })}
@@ -263,11 +347,7 @@ export function LogsClient({
               variant="ghost"
               icon={ChevronRight}
               disabled={page >= pagination.totalPages || loading}
-              onClick={() => {
-                const nextPage = Math.min(pagination.totalPages, page + 1)
-                setPage(nextPage)
-                void fetchLogs(nextPage, pageSize, filters)
-              }}
+              onClick={() => updateUrl({ page: String(Math.min(pagination.totalPages, page + 1)) })}
             />
           </div>
         </div>
@@ -302,13 +382,46 @@ function getRangePeriod(range: LogHeatmapRange, timeZone: string) {
   return { from: toDateTimeLocalInZone(from, timeZone), to: toDateTimeLocalInZone(to, timeZone) }
 }
 
-function getBucketPeriod(time: string, bucket: LogHeatmapResponse['bucket'], timeZone: string) {
+function getBucketUtcPeriod(time: string, bucket: LogHeatmapResponse['bucket']) {
   const from = parseUtcBucketDate(time, bucket)
   const to = new Date(from)
   if (bucket === 'hour') to.setUTCHours(to.getUTCHours() + 1)
   if (bucket === 'day') to.setUTCDate(to.getUTCDate() + 1)
   if (bucket === 'month') to.setUTCMonth(to.getUTCMonth() + 1)
-  return { from: toDateTimeLocalInZone(from, timeZone), to: toDateTimeLocalInZone(to, timeZone) }
+  return { from: from.toISOString(), to: to.toISOString() }
+}
+
+function parseUrlDate(value: string | null, timeZone: string) {
+  if (!value) return undefined
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return undefined
+  return toDateTimeLocalInZone(date, timeZone)
+}
+
+function parseRange(value: string | null): LogHeatmapRange {
+  return heatmapRanges.includes(value as LogHeatmapRange) ? (value as LogHeatmapRange) : '24h'
+}
+
+function parseCategory(value: string | null): Filters['category'] {
+  return value === 'user' || value === 'system' ? value : 'all'
+}
+
+function parseSeverity(value: string | null): Filters['severity'] {
+  return value === 'info' || value === 'warn' || value === 'error' ? value : 'all'
+}
+
+function parseSuccess(value: string | null): SuccessFilter {
+  return value === 'true' || value === 'false' ? value : 'all'
+}
+
+function parsePositiveInteger(value: string | null, fallback: number) {
+  const parsed = Number(value)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback
+}
+
+function parsePageSize(value: string | null) {
+  const parsed = Number(value)
+  return pageSizeOptions.includes(parsed as (typeof pageSizeOptions)[number]) ? parsed : 20
 }
 
 function parseUtcBucketDate(value: string, bucket: LogHeatmapResponse['bucket']) {
@@ -359,4 +472,46 @@ function getTimeZoneOffset(date: Date, timeZone: string) {
   const part = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((item) => item.type === type)?.value || 0)
   const zonedTime = Date.UTC(part('year'), part('month') - 1, part('day'), part('hour'), part('minute'), part('second'))
   return zonedTime - date.getTime()
+}
+
+function addFailureCounts(heatmap: LogHeatmapResponse, failedLogs: Log[]): LogHeatmapResponse {
+  const failedCounts = new Map<string, number>()
+  failedLogs.forEach((log) => {
+    const time = getLogBucketTime(log.occurredAt, heatmap.bucket)
+    failedCounts.set(time, (failedCounts.get(time) ?? 0) + 1)
+  })
+
+  return {
+    ...heatmap,
+    buckets: heatmap.buckets.map((bucket) => ({
+      ...bucket,
+      failedCount: failedCounts.get(bucket.time) ?? 0,
+    })),
+  }
+}
+
+function getLogBucketTime(occurredAt: string, bucket: LogHeatmapResponse['bucket']) {
+  const date = new Date(occurredAt)
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+  if (bucket === 'month') return `${year}-${month}`
+  const day = String(date.getUTCDate()).padStart(2, '0')
+  if (bucket === 'day') return `${year}-${month}-${day}`
+  const hour = String(date.getUTCHours()).padStart(2, '0')
+  return `${year}-${month}-${day}T${hour}:00:00`
+}
+
+function formatActivePeriod(from: string, to: string, locale: string, timeZone: string) {
+  const format = (value: string) => {
+    const date = zonedWallTimeToDate(value, timeZone)
+    return new Intl.DateTimeFormat(locale, {
+      timeZone,
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).format(date)
+  }
+  return `${format(from)} - ${format(to)}`
 }

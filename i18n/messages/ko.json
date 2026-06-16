@@ -52,7 +52,7 @@
     "activity": {
       "title": "활동 히트맵",
       "summary": "{count}개 로그를 {bucket} 단위로 집계",
-      "tooltip": "{time}: {count}개 로그"
+      "tooltip": "{time}: 로그 {count}개, 실패 {failed}개"
     },
     "ranges": {
       "24h": "24시간",
@@ -189,7 +189,8 @@
       "onlineInterfaces": "온라인 인터페이스",
       "healthyDisks": "정상 디스크",
       "memoryModules": "메모리 {count}개",
-      "memoryModule": "메모리 {index}"
+      "memoryModule": "메모리 {index}",
+      "processor": "프로세서 {index}"
     },
     "sections": {
       "cpu": "프로세서",

@@ -16,6 +16,13 @@ const intensityClasses = [
   'bg-sky-500/50',
   'bg-sky-400/75',
 ] as const
+const failedIntensityClasses = [
+  'bg-app-hover/45',
+  'bg-red-500/20',
+  'bg-red-500/35',
+  'bg-red-500/55',
+  'bg-red-400/80',
+] as const
 
 export function LogHeatmap({
   data,
@@ -23,6 +30,7 @@ export function LogHeatmap({
   loading,
   total,
   selectedBucket,
+  rangeEnd,
   timeZone,
   onRangeChange,
   onBucketClick,
@@ -32,13 +40,14 @@ export function LogHeatmap({
   loading: boolean
   total: number
   selectedBucket?: string
+  rangeEnd: string
   timeZone: string
   onRangeChange: (range: LogTimeRange) => void
   onBucketClick: (time: string, bucket: LogHeatmapResponse['bucket']) => void
 }) {
   const t = useTranslations('Logs')
   const locale = useLocale()
-  const buckets = fillHeatmapBuckets(data)
+  const buckets = fillHeatmapBuckets(data, rangeEnd)
   const max = Math.max(...buckets.map((bucket) => bucket.count), 1)
   const columns = getHeatmapColumns(data.range)
   const items: Array<{ value: LogTimeRange; label: string }> = rangeOptions.map((value) => ({
@@ -68,6 +77,7 @@ export function LogHeatmap({
         <div className="grid w-full gap-1" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
           {buckets.map((bucket) => {
             const intensity = bucket.count === 0 ? 0 : Math.max(1, Math.ceil((bucket.count / max) * 4))
+            const colors = bucket.failedCount ? failedIntensityClasses : intensityClasses
             return (
               <button
                 type="button"
@@ -75,11 +85,12 @@ export function LogHeatmap({
                 title={t('activity.tooltip', {
                   time: formatHeatmapTime(bucket.time, data.bucket, locale, timeZone),
                   count: bucket.count,
+                  failed: bucket.failedCount ?? 0,
                 })}
                 onClick={() => onBucketClick(bucket.time, data.bucket)}
                 className={cn(
                   'h-5 min-w-0 rounded-[3px] transition-all outline-none',
-                  intensityClasses[intensity],
+                  colors[intensity],
                   selectedBucket === bucket.time && 'ring-app-text ring-offset-app-bg ring-1 ring-offset-1',
                 )}
               />
@@ -95,11 +106,11 @@ export function LogHeatmap({
   )
 }
 
-function fillHeatmapBuckets(data: LogHeatmapResponse) {
+function fillHeatmapBuckets(data: LogHeatmapResponse, rangeEnd: string) {
   const bucketCount: Record<LogHeatmapRange, number> = { '24h': 24, '7d': 7, '30d': 30, '90d': 90, '1y': 12 }
   const sourceBuckets = data.buckets ?? []
-  const counts = new Map(sourceBuckets.map((bucket) => [bucket.time, bucket.count]))
-  const cursor = parseBucketTime(sourceBuckets.at(-1)?.time, data.bucket)
+  const bucketsByTime = new Map(sourceBuckets.map((bucket) => [bucket.time, bucket]))
+  const cursor = parseBucketTime(rangeEnd || sourceBuckets.at(-1)?.time, data.bucket)
   const buckets = []
 
   for (let offset = bucketCount[data.range] - 1; offset >= 0; offset -= 1) {
@@ -109,7 +120,8 @@ function fillHeatmapBuckets(data: LogHeatmapResponse) {
     if (data.bucket === 'month') date.setUTCMonth(cursor.getUTCMonth() - offset, 1)
 
     const time = formatBucketTime(date, data.bucket)
-    buckets.push({ time, count: counts.get(time) ?? 0 })
+    const source = bucketsByTime.get(time)
+    buckets.push({ time, count: source?.count ?? 0, failedCount: source?.failedCount ?? 0 })
   }
 
   return buckets
@@ -125,9 +137,9 @@ function getHeatmapColumns(range: LogHeatmapRange) {
 
 function parseBucketTime(value: string | undefined, bucket: LogHeatmapResponse['bucket']) {
   if (!value) return new Date()
-  if (bucket === 'month') return new Date(`${value}-01T00:00:00Z`)
-  if (bucket === 'day') return new Date(`${value}T00:00:00Z`)
-  return new Date(`${value}Z`)
+  if (bucket === 'month') return new Date(`${value.slice(0, 7)}-01T00:00:00Z`)
+  if (bucket === 'day') return new Date(`${value.slice(0, 10)}T00:00:00Z`)
+  return new Date(`${value.slice(0, 13)}:00:00Z`)
 }
 
 function formatBucketTime(date: Date, bucket: LogHeatmapResponse['bucket']) {

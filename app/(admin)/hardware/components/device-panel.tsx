@@ -35,20 +35,14 @@ export function DevicePanel({
   children: ReactNode
 }) {
   return (
-    <article className="bg-app-item-bg/55 min-w-0 rounded-md p-3">
+    <article className="border-app-border min-w-0 rounded-md border p-3">
       <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-2.5">
-          <span className="bg-app-hover grid size-8 shrink-0 place-items-center rounded-md">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="grid shrink-0 place-items-center">
             <Icon className="text-app-text-muted size-3.5" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-app-text text-xs font-semibold break-words">{title || '-'}</p>
-            <p
-              className="app-body-text text-app-text-muted mt-0.5 [overflow-wrap:anywhere] break-words"
-              title={subtitle}
-            >
-              {subtitle}
-            </p>
+            <p className="text-app-text text-xs font-semibold wrap-break-word">{title || '-'}</p>
           </div>
         </div>
         {status}

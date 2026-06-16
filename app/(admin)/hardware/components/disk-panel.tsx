@@ -4,7 +4,7 @@ import { Database } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 import { StatusPill } from '@/components/ui'
-import { formatBytes } from '@/lib/utils'
+import { bytesFormat, formatBytes } from '@/lib/utils'
 import type { HardwareDisk } from '@/types'
 import { formatDiskUsage, formatOptional, formatSpeed, isHealthyDisk } from '../utils'
 import { DetailValue, DevicePanel } from './device-panel'
@@ -36,7 +36,10 @@ export function DiskPanel({ disk }: { disk: HardwareDisk }) {
         <DetailValue label={t('fields.devicePath')} value={disk.path || '-'} />
         <DetailValue label={t('fields.serial')} value={disk.serial || '-'} />
         <DetailValue label={t('fields.vendor')} value={disk.vendor || '-'} />
-        <DetailValue label={t('fields.capacity')} value={formatBytes(disk.sizeBytes)} />
+        <DetailValue
+          label={t('fields.capacity')}
+          value={bytesFormat(disk.sizeBytes, { standard: 'm', decimalPlaces: 0 })}
+        />
         <DetailValue label={t('fields.usage')} value={formatDiskUsage(disk.usage, t)} />
         <DetailValue label={t('fields.temperature')} value={formatOptional(disk.temperatureC, ' °C')} />
         <DetailValue

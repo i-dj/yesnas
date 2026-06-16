@@ -11,8 +11,9 @@ import { SummaryMetrics } from './hardware-section'
 
 export function NetworkPanel({ networkInterface }: { networkInterface: HardwareNetworkInterface }) {
   const t = useTranslations('Hardware')
-  const online = networkInterface.operState.toLowerCase() === 'up'
-  const ipAddresses = networkInterface.ips.join(' · ') || '-'
+  const online = networkInterface.operState?.toLowerCase() === 'up'
+  const ips = networkInterface.ips ?? []
+  const ipAddresses = ips.join(' · ') || '-'
 
   return (
     <DevicePanel
@@ -29,8 +30,8 @@ export function NetworkPanel({ networkInterface }: { networkInterface: HardwareN
       <div className="grid min-w-0 gap-x-6 gap-y-2 sm:grid-cols-[minmax(0,2fr)_minmax(7rem,0.75fr)]">
         <DetailContent label={t('fields.ipAddress')}>
           <span className="grid min-h-9 min-w-0 flex-1 content-start leading-[1.125rem]" title={ipAddresses}>
-            {networkInterface.ips.length ? (
-              networkInterface.ips.slice(0, 2).map((ip) => (
+            {ips.length ? (
+              ips.slice(0, 2).map((ip) => (
                 <span key={ip} className="block min-w-0 truncate">
                   {ip}
                 </span>
@@ -44,11 +45,11 @@ export function NetworkPanel({ networkInterface }: { networkInterface: HardwareN
         <DetailContent label={t('fields.receiveSendSpeed')}>
           <span className="inline-flex items-center gap-1 whitespace-nowrap">
             <ArrowDownToLine className="size-3 text-sky-400" />
-            {formatSpeed(networkInterface.speed.rxBytesPerSec)}
+            {formatSpeed(networkInterface.speed?.rxBytesPerSec)}
           </span>
           <span className="inline-flex items-center gap-1 whitespace-nowrap">
             <ArrowUpFromLine className="size-3 text-violet-400" />
-            {formatSpeed(networkInterface.speed.txBytesPerSec)}
+            {formatSpeed(networkInterface.speed?.txBytesPerSec)}
           </span>
         </DetailContent>
       </div>
@@ -58,11 +59,9 @@ export function NetworkPanel({ networkInterface }: { networkInterface: HardwareN
 
 export function NetworkSummary({ networkInterfaces }: { networkInterfaces: HardwareNetworkInterface[] }) {
   const t = useTranslations('Hardware')
-  const onlineCount = networkInterfaces.filter(
-    (networkInterface) => networkInterface.operState.toLowerCase() === 'up',
-  ).length
-  const totalRx = networkInterfaces.reduce((total, item) => total + item.speed.rxBytesPerSec, 0)
-  const totalTx = networkInterfaces.reduce((total, item) => total + item.speed.txBytesPerSec, 0)
+  const onlineCount = networkInterfaces.filter((item) => item.operState?.toLowerCase() === 'up').length
+  const totalRx = networkInterfaces.reduce((total, item) => total + (item.speed?.rxBytesPerSec ?? 0), 0)
+  const totalTx = networkInterfaces.reduce((total, item) => total + (item.speed?.txBytesPerSec ?? 0), 0)
 
   return (
     <SummaryMetrics

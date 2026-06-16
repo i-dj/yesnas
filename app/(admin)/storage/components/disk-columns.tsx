@@ -43,12 +43,12 @@ export const getDiskColumns = (
   {
     key: 'path',
     label: 'SIZE',
-    render: (value) => <span className="">{value}</span>,
+    render: (value) => <span className="text-xs">{value}</span>,
   },
   {
     key: 'temperatureC',
     label: 'SIZE',
-    render: (value) => <span className="">{value}°C</span>,
+    render: (value) => <span className="text-xs">{value}°C</span>,
   },
   {
     key: 'health',
