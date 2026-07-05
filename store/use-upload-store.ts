@@ -45,6 +45,9 @@ const getUploadErrorMessage = (error: Error) => {
   return parseUploadErrorMessage(responseBody || error.message, error.message)
 }
 
+const isTargetAlreadyExistsError = (message: string) =>
+  message.toLowerCase().includes('target file already exists')
+
 export const useUploadStore = create<UploadState>((set) => {
   uppy.on('file-added', (file) => {
     const fileData = file.data as File | Blob | undefined
@@ -112,18 +115,41 @@ export const useUploadStore = create<UploadState>((set) => {
 
   uppy.on('upload-error', (file, error) => {
     if (!file) return
-    set((state) => ({
-      files: {
-        ...state.files,
-        [file.id]: {
-          ...state.files[file.id],
-          status: 'error',
-          stalled: false,
-          errorMessage: getUploadErrorMessage(error),
+    const errorMessage = getUploadErrorMessage(error)
+    let finalizedBeforeResponse = false
+
+    set((state) => {
+      const current = state.files[file.id]
+      const size = file.size ?? current?.size ?? 0
+      const progressBytes =
+        typeof file.progress?.bytesUploaded === 'number' ? file.progress.bytesUploaded : 0
+      const uploaded = Math.max(current?.bytesUploaded ?? 0, progressBytes)
+      finalizedBeforeResponse =
+        size > 0 && uploaded >= size && isTargetAlreadyExistsError(errorMessage)
+
+      return {
+        files: {
+          ...state.files,
+          [file.id]: {
+            ...current,
+            status: finalizedBeforeResponse ? 'complete' : 'error',
+            stalled: false,
+            errorMessage: finalizedBeforeResponse ? undefined : errorMessage,
+            bytesUploaded: finalizedBeforeResponse ? size : uploaded,
+            progress: finalizedBeforeResponse ? 100 : current?.progress ?? 0,
+          },
         },
-      },
-    }))
-    console.error('上传失败:', error)
+      }
+    })
+
+    if (finalizedBeforeResponse) {
+      toast.success(`${file.name} uploaded successfully.`, 3300)
+      console.warn('Upload finalize response was not successful, but the target file already exists:', file.name)
+      return
+    }
+
+    toast.error(errorMessage, 5000)
+    console.warn('Upload failed:', error)
   })
 
   uppy.on('upload-stalled', (error, files) => {

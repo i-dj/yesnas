@@ -15,17 +15,17 @@ export function NetworkChart({ interfaces, range }: { interfaces: NetworkInterfa
     interfaces.length === 1 ? `${interfaces[0].ips[0] ?? '无 IP'}` : `聚合 ${interfaces.length} 个网卡`
 
   return (
-    <div className="border-app-border bg-app-bg mt-3 rounded-lg border px-1 py-2.5">
-      <div className="h-56 select-none">
+    <div className="mt-3 py-2.5">
+      <div className="h-56 select-none [&_.recharts-surface:focus]:outline-none">
         {points.length === 0 ? (
-          <div className="text-app-text-muted grid h-full place-items-center text-xs">等待网络监控接口数据</div>
+          <div className="text-app-text-muted grid h-full place-items-center text-sm">等待网络监控接口数据</div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={points} margin={{ top: 14, right: 5, left: 0, bottom: 0 }}>
               <CartesianGrid stroke="rgba(148, 163, 184, 0.22)" strokeDasharray="4 8" vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{ fill: '#a1a1aa', fontSize: 11 }}
+                tick={{ fill: '#a1a1aa', fontSize: 13 }}
                 tickLine={false}
                 axisLine={{ stroke: 'rgba(148, 163, 184, 0.3)' }}
                 minTickGap={20}
@@ -93,7 +93,7 @@ function NetworkYAxisTick({
   formatter: (value: number) => string
 }) {
   return (
-    <text x={x - 8} y={y} dy="0.32em" fill="#a1a1aa" fontSize={11} textAnchor="end" style={{ whiteSpace: 'nowrap' }}>
+    <text x={x - 8} y={y} dy="0.32em" fill="#a1a1aa" fontSize={13} textAnchor="end" style={{ whiteSpace: 'nowrap' }}>
       {formatter(payload?.value ?? 0)}
     </text>
   )
@@ -126,7 +126,7 @@ function NetworkChartTooltip({
   const point = payload[0]?.payload
 
   return (
-    <div className="border-app-border bg-app-surface/95 min-w-44 rounded-lg border px-3 py-2 text-xs shadow-xl">
+    <div className="border-app-border bg-app-surface/95 min-w-44 rounded-lg border px-3 py-2 text-sm shadow-xl">
       <div className="text-app-text font-semibold">{interfaceLabel}</div>
       <div className="text-app-text-muted mt-1">{interfaceMeta}</div>
       <div className="text-app-text-muted mt-1">{formatNetworkPointTime(point)}</div>

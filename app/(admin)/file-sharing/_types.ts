@@ -4,15 +4,10 @@ export type ProtocolKey = 'smb' | 'ftp' | 'webdav' | 'nfs'
 export type ShareStatus = 'enabled' | 'disabled'
 
 export interface ProtocolItem {
-  protocol: ProtocolKey
   key: ProtocolKey
   icon: LucideIcon
   shareUrl: string
-  port: number
   active: boolean
-  serviceName?: string
-  status: string
-  shareCount: number
 }
 
 export interface SharedFolder {
@@ -38,10 +33,6 @@ export interface SharedFolder {
 
 export interface FileShareProtocolItem {
   protocol: ProtocolKey
-  serviceName: string
   active: boolean
-  status: string
   shareUrl: string
-  port: number
-  shareCount: number
 }

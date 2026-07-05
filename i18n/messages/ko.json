@@ -9,6 +9,7 @@
       "open": "열기",
       "copy": "복사",
       "move": "이동",
+      "clearInput": "입력 내용 지우기",
       "logout": "로그아웃",
       "feedback": "피드백",
       "changeAvatar": "아바타 변경",
@@ -37,7 +38,8 @@
       "hardware": "하드웨어",
       "jobs": "작업",
       "users": "사용자",
-      "logs": "로그"
+      "logs": "로그",
+      "docker": "Docker 관리"
     },
     "aria": {
       "expandSidebar": "사이드바 펼치기",
@@ -100,7 +102,9 @@
     "values": {
       "system": "시스템",
       "success": "성공",
-      "failed": "실패"
+      "failed": "실패",
+      "privateNetwork": "로컬 네트워크",
+      "localMachine": "이 장치"
     },
     "pagination": {
       "pageSize": "페이지당 {count}개",
@@ -260,40 +264,70 @@
     }
   },
   "Jobs": {
-    "loading": "Loading tasks...",
-    "empty": "No tasks yet",
-    "selectJob": "Select {name}",
+    "title": "실행 예정 작업",
+    "subtitle": "실행 기록 {total}개 · 예약 작업 {scheduled}개",
+    "loading": "작업을 불러오는 중...",
+    "empty": "작업이 없습니다",
+    "emptySearch": "현재 조건과 일치하는 작업이 없습니다",
+    "searchPlaceholder": "작업, 메시지 또는 상태 검색",
+    "selectJob": "{name} 선택",
+    "overview": {
+      "running": "실행 중",
+      "success": "완료",
+      "paused": "일시 중지",
+      "failed": "확인 필요"
+    },
+    "scheduled": {
+      "title": "예약 작업",
+      "target": "대상: {target}",
+      "systemTarget": "시스템",
+      "schedule": "실행 주기: {schedule}",
+      "nextRun": "다음 실행: {time}",
+      "waiting": "예약 대기 중",
+      "enabled": "활성화",
+      "disabled": "비활성화"
+    },
     "statuses": {
-      "all": "All",
-      "running": "Running",
-      "paused": "Paused",
-      "success": "Success",
-      "failed": "Failed",
-      "canceled": "Canceled"
+      "all": "전체",
+      "running": "실행 중",
+      "paused": "일시 중지",
+      "success": "성공",
+      "failed": "실패",
+      "canceled": "취소됨"
     },
     "types": {
-      "cloud_sync": "Cloud sync",
-      "data_transfer": "Data transfer",
-      "back_to_cloud": "Back up to cloud",
+      "cloud_sync": "클라우드 동기화",
+      "data_transfer": "데이터 전송",
+      "back_to_cloud": "클라우드 백업",
       "auto_snapshot": "자동 스냅샷"
     },
     "actions": {
-      "more": "More task actions",
-      "pause": "Pause",
-      "resume": "Resume",
-      "cancel": "Cancel",
-      "delete": "Delete"
+      "more": "추가 작업 메뉴",
+      "pause": "일시 중지",
+      "resume": "재개",
+      "cancel": "취소",
+      "delete": "삭제"
+    },
+    "pagination": {
+      "pageSize": "페이지당 {count}개",
+      "summary": "{page} / {totalPages} 페이지"
+    },
+    "messages": {
+      "loadFailed": "작업을 불러오지 못했습니다",
+      "scheduledLoadFailed": "예약 작업을 불러오지 못했습니다",
+      "actionCompleted": "작업 처리가 완료되었습니다",
+      "actionFailed": "작업 처리에 실패했습니다"
     },
     "columns": {
-      "name": "Name",
-      "job": "Task",
-      "progress": "Progress",
-      "status": "Status",
-      "updatedAt": "Last Updated",
-      "speed": "Speed",
-      "remaining": "Remaining: {duration}",
-      "updatedAgo": "{value} ago",
-      "updatedSample": "10 minutes"
+      "name": "이름",
+      "job": "작업",
+      "progress": "진행률",
+      "status": "상태",
+      "updatedAt": "최근 업데이트",
+      "speed": "속도",
+      "remaining": "남은 시간: {duration}",
+      "updatedAgo": "{value} 전",
+      "updatedSample": "10분"
     },
     "mockTasks": {
       "1": {
@@ -374,10 +408,12 @@
       "username": "Username",
       "displayName": "Display name",
       "isAdmin": "Administrator",
+      "role": "계정 역할",
       "avatar": "Avatar",
       "avatarCustom": "Custom avatar URL, data URI, or preset name",
       "avatarPreset": "Choose {preset} avatar",
       "avatarUpload": "Upload custom avatar",
+      "avatarHint": "기본 아바타를 선택하거나 이미지를 업로드하세요.",
       "avatarZoom": "Zoom",
       "avatarZoomIn": "Zoom in",
       "avatarZoomOut": "Zoom out",
@@ -386,7 +422,14 @@
       "setAvatar": "Set Avatar",
       "password": "Password",
       "newPassword": "New password",
-      "status": "Status"
+      "passwordCreateHint": "새 사용자의 안전한 로그인 비밀번호를 설정하세요.",
+      "passwordEditHint": "비워 두면 현재 비밀번호가 유지됩니다.",
+      "status": "Status",
+      "sections": {
+        "profile": "기본 정보",
+        "access": "권한 및 상태",
+        "security": "계정 보안"
+      }
     },
     "messages": {
       "created": "User created",
@@ -413,26 +456,26 @@
     "sharesTitle": "Shared Folders",
     "sharesSubtitle": "See which protocols are exposed for each shared folder.",
     "empty": "No shared folders yet",
-    "linkInfo": "Connection",
-    "disabledHint": "Enable this protocol to show its access link and port.",
-    "port": "Port {port}",
-    "shareCount": "{count} shares",
     "protocols": {
       "smb": {
         "name": "SMB",
-        "description": "LAN file access"
+        "description": "LAN file access",
+        "connectionHint": "Open this address in Windows File Explorer or macOS Finder."
       },
       "ftp": {
         "name": "FTP",
-        "description": "Legacy client access"
+        "description": "Legacy client access",
+        "connectionHint": "Open this address in an FTP client and sign in with a NAS user."
       },
       "webdav": {
         "name": "WebDAV",
-        "description": "HTTP remote mount"
+        "description": "HTTP remote mount",
+        "connectionHint": "Open the address in a browser or add it as a network location."
       },
       "nfs": {
         "name": "NFS",
-        "description": "Linux / server mount"
+        "description": "Linux / server mount",
+        "connectionHint": "Mount this address to a local directory on Linux or a server."
       }
     },
     "columns": {
@@ -474,8 +517,6 @@
       "status": "Status"
     },
     "messages": {
-      "loadOptionsFailed": "Load sharing options failed",
-      "loadProtocolsFailed": "Load protocol status failed",
       "saveFailed": "Save file share failed",
       "deleteFailed": "Delete file share failed",
       "protocolActionFailed": "Protocol action failed",

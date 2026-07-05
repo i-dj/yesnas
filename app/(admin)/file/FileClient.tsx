@@ -1,23 +1,12 @@
 'use client'
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
-import {
-  ActionMenu,
-  Button,
-  ConfirmModal,
-  MoreButton,
-  ToggleButton,
-} from '@/components/ui'
+import { ActionMenu, Button, ConfirmModal, MoreButton, ToggleButton } from '@/components/ui'
 import type { ActionMenuConfig } from '@/components/ui'
 import { useSse } from '@/hooks/use-sse'
 import { useEffect, useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
-import {
-  FileExplorer,
-  type CategoryColor,
-  type FileListColumn,
-  type FileNode,
-} from '@nextdj/file-explorer'
+import { FileExplorer, type CategoryColor, type FileListColumn, type FileNode } from '@nextdj/file-explorer'
 import { Copy, FolderInput, Eye, Trash2 } from 'lucide-react'
 
 import type { QuickFilterType, StorageLocation } from './_types'
@@ -83,30 +72,26 @@ export function FileClient({ files, storages }: FileClientProps) {
     [tFile],
   )
 
-  const { data: storagesIoStats } = useSse<StoragesIoStatsPayload>(
-    getStoragesIoStatsStreamUrl(1),
-    {
-      event: 'io-stats',
-      parser: (raw) => JSON.parse(raw) as StoragesIoStatsPayload,
-    },
-  )
+  const { data: storagesIoStats } = useSse<StoragesIoStatsPayload>(getStoragesIoStatsStreamUrl(1), {
+    event: 'io-stats',
+    parser: (raw) => JSON.parse(raw) as StoragesIoStatsPayload,
+  })
 
   const storageIoStatsById = useMemo(
     () =>
-      Object.fromEntries(
-        (storagesIoStats?.items ?? []).map((item) => [item.storageId, item]),
-      ) as Record<string, StorageIoStats>,
+      Object.fromEntries((storagesIoStats?.items ?? []).map((item) => [item.storageId, item])) as Record<
+        string,
+        StorageIoStats
+      >,
     [storagesIoStats],
   )
 
   const storageIoErrorsById = useMemo(
     () =>
-      Object.fromEntries(
-        (storagesIoStats?.errors ?? []).map((item) => [
-          item.storageId,
-          item.message,
-        ]),
-      ) as Record<string, string>,
+      Object.fromEntries((storagesIoStats?.errors ?? []).map((item) => [item.storageId, item.message])) as Record<
+        string,
+        string
+      >,
     [storagesIoStats],
   )
 
@@ -117,12 +102,9 @@ export function FileClient({ files, storages }: FileClientProps) {
   }, [activeFilter, fileGroups])
 
   const filteredFiles = useMemo(() => {
-    if (activeFilter !== 'tags' || selectedColors.length === 0)
-      return activeFiles
+    if (activeFilter !== 'tags' || selectedColors.length === 0) return activeFiles
 
-    return activeFiles.filter((file) =>
-      file.tagColors?.some((color) => selectedColors.includes(color)),
-    )
+    return activeFiles.filter((file) => file.tagColors?.some((color) => selectedColors.includes(color)))
   }, [activeFiles, activeFilter, selectedColors])
 
   const fileExplorerFeatures = useMemo(
@@ -212,13 +194,7 @@ export function FileClient({ files, storages }: FileClientProps) {
             confirmText={tFile('actions.permanentDelete')}
             onConfirm={() => handlePermanentDelete(entry)}
             trigger={
-              <Button
-                variant="ghost"
-                size="sm"
-                isDelete
-                icon={Trash2}
-                onClick={(event) => event.stopPropagation()}
-              />
+              <Button variant="ghost" size="sm" isDelete icon={Trash2} onClick={(event) => event.stopPropagation()} />
             }
           />
         </div>
@@ -247,9 +223,7 @@ export function FileClient({ files, storages }: FileClientProps) {
     const nameColumn = defaultColumns.find((column) => column.key === 'name')
     const typeColumn = defaultColumns.find((column) => column.key === 'type')
     const sizeColumn = defaultColumns.find((column) => column.key === 'size')
-    const updatedAtColumn = defaultColumns.find(
-      (column) => column.key === 'updatedAt',
-    )
+    const updatedAtColumn = defaultColumns.find((column) => column.key === 'updatedAt')
 
     const actionColumn: FileListColumn = {
       key: '__actions__',
@@ -260,13 +234,7 @@ export function FileClient({ files, storages }: FileClientProps) {
     }
 
     if (!isTrashMode) {
-      return [
-        nameColumn,
-        typeColumn,
-        sizeColumn,
-        updatedAtColumn,
-        actionColumn,
-      ].filter(Boolean) as FileListColumn[]
+      return [nameColumn, typeColumn, sizeColumn, updatedAtColumn, actionColumn].filter(Boolean) as FileListColumn[]
     }
 
     const deletedAtColumn: FileListColumn = {
@@ -275,41 +243,22 @@ export function FileClient({ files, storages }: FileClientProps) {
       width: '180px',
       sortable: true,
       render: (_, record) => (
-        <span className="text-(--_fe-text-muted)">
-          {formatDateTime(record.metadata?.deletedAt)}
-        </span>
+        <span className="text-(--_fe-text-muted)">{formatDateTime(record.metadata?.deletedAt)}</span>
       ),
-      sortValue: (record) =>
-        record.metadata?.deletedAt
-          ? new Date(record.metadata.deletedAt).getTime()
-          : 0,
+      sortValue: (record) => (record.metadata?.deletedAt ? new Date(record.metadata.deletedAt).getTime() : 0),
     }
 
-    return [
-      nameColumn,
-      typeColumn,
-      sizeColumn,
-      deletedAtColumn,
-      actionColumn,
-    ].filter(Boolean) as FileListColumn[]
+    return [nameColumn, typeColumn, sizeColumn, deletedAtColumn, actionColumn].filter(Boolean) as FileListColumn[]
   }
 
-  const handleTagColorsChange = (
-    targetFile: FileNode,
-    colors: CategoryColor[],
-  ) => {
+  const handleTagColorsChange = (targetFile: FileNode, colors: CategoryColor[]) => {
     setFileGroups((current) => {
       const nextEntries = Object.entries(current).map(([key, list]) => [
         key,
-        list.map((file) =>
-          file.id === targetFile.id ? { ...file, tagColors: colors } : file,
-        ),
+        list.map((file) => (file.id === targetFile.id ? { ...file, tagColors: colors } : file)),
       ])
 
-      return Object.fromEntries(nextEntries) as Record<
-        QuickFilterType,
-        FileNode[]
-      >
+      return Object.fromEntries(nextEntries) as Record<QuickFilterType, FileNode[]>
     })
   }
 
@@ -317,7 +266,6 @@ export function FileClient({ files, storages }: FileClientProps) {
     <PageWrapper className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden py-6">
       <ToggleButton
         className="mb-3 gap-6 rounded-none"
-        itemClassName="text-sm "
         variant="segmented"
         items={storageLocationItems}
         value={activeTab}
@@ -405,9 +353,7 @@ export function FileClient({ files, storages }: FileClientProps) {
           gridSize="sm"
           allowMultiSelect={false}
           features={fileExplorerFeatures}
-          renderDetail={(file) =>
-            isTrashMode ? <TrashFileDetail file={file} /> : undefined
-          }
+          renderDetail={(file) => (isTrashMode ? <TrashFileDetail file={file} /> : undefined)}
           onOpen={handleOpenEntry}
           onOpenFolder={handleOpenEntry}
           onNavigateBreadcrumb={(item) => {

@@ -4,7 +4,7 @@ import { Button, EmptyState, Input, StatusPill } from '@/components/ui'
 import { bytesFormat, cn } from '@/lib/utils'
 import { RAID_LEVELS, type RaidLevel } from '@/types/models/_constants'
 import type { DiskModel } from '@/types/models/storage'
-import { CheckSquare, Loader2, Square } from 'lucide-react'
+import { CheckSquare, Database, HardDrive, Layers3, Loader2, Square } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { SnapshotPolicyControl } from './snapshot-policy-control'
 
@@ -71,8 +71,8 @@ const estimateBtrfsRaid10Usable = (sizes: number[]): number => {
 
 const formatEstimatedCapacity = (bytes: number) =>
   `≈ ${bytesFormat(bytes, {
-    standard: 'm',
-    decimalPlaces: 0,
+    standard: 's',
+    decimalPlaces: 2,
   })}`
 
 const toDiskCandidate = (disk: DiskModel): PoolCandidateItem => ({
@@ -200,8 +200,8 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
   const [poolName, setPoolName] = useState('')
   const [selectedDiskIds, setSelectedDiskIds] = useState<string[]>([])
   const [raidLevel, setRaidLevel] = useState<RaidLevel>(RAID_LEVELS.SINGLE)
-  const [autoSnapshotEnabled, setAutoSnapshotEnabled] = useState(false)
-  const [autoSnapshotWeekdays, setAutoSnapshotWeekdays] = useState<number[]>([])
+  const [autoSnapshotEnabled, setAutoSnapshotEnabled] = useState(true)
+  const [autoSnapshotWeekdays, setAutoSnapshotWeekdays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7])
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const errorRef = useRef<HTMLDivElement | null>(null)
@@ -249,6 +249,14 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
   const recommendedRaid = getRecommendedRaid(raidOptions, selectedCandidates.length)
 
   const selectedRaidOption = raidOptions.find((item) => item.level === effectiveRaid)
+  const selectedRaidRiskClass =
+    selectedRaidOption?.backupRisk === 'low'
+      ? 'text-emerald-400'
+      : selectedRaidOption?.backupRisk === 'medium'
+        ? 'text-amber-400'
+        : 'text-red-400'
+  const selectedRaidRiskLabel =
+    selectedRaidOption?.backupRisk === 'low' ? 'Low' : selectedRaidOption?.backupRisk === 'medium' ? 'Medium' : 'High'
 
   useEffect(() => {
     if (selectedCandidates.length === 0) {
@@ -281,8 +289,8 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
     setPoolName('')
     setSelectedDiskIds([])
     setRaidLevel(RAID_LEVELS.SINGLE)
-    setAutoSnapshotEnabled(false)
-    setAutoSnapshotWeekdays([])
+    setAutoSnapshotEnabled(true)
+    setAutoSnapshotWeekdays([1, 2, 3, 4, 5, 6, 7])
     setSubmitError(null)
   }
 
@@ -316,57 +324,53 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
 
   return (
     <div className="flex min-h-full flex-col">
-      <div className="flex-1 space-y-4 p-4 select-text">
+      <div className="flex-1 space-y-10 p-4 select-text">
         <div className="space-y-3">
-          <div className="text-app-text text-xs font-semibold uppercase">Storage Name</div>
+          <div className="text-app-text flex items-center gap-2 text-sm font-semibold uppercase">
+            <Database className="text-app-text-muted size-4" />
+            <span>Storage Name</span>
+          </div>
           <Input
             id="storage-pool-name"
             type="text"
             value={poolName}
             onChange={(event) => setPoolName(event.target.value)}
             placeholder="e.g. pool-a"
-            className="text-sm"
           />
         </div>
 
-        <div className="space-y-3">
-          <div className="text-app-text text-xs font-semibold uppercase">
-            Disks
-            <span className="text-app-text-muted ml-1 normal-case">({selectedDiskIds.length} selected)</span>
+        <div className="space-y-4">
+          <div className="text-app-text flex items-center gap-2 text-sm font-semibold uppercase">
+            <HardDrive className="text-app-text-muted size-4" />
+            <span>
+              Disks <span className="text-app-text-muted ml-1 normal-case">({selectedDiskIds.length} selected)</span>
+            </span>
           </div>
-
           {raidCandidates.length === 0 && <EmptyState />}
-
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             {raidCandidates.map((candidate) => {
               const selected = selectedDiskIds.includes(candidate.path)
               const candidateKind = candidate.candidateType === 'partition' ? 'PARTITION' : 'DISK'
-              const availableCapacity = bytesFormat(candidate.sizeBytes, {
-                standard: 'm',
-                decimalPlaces: 0,
-              })
+              const availableCapacity = bytesFormat(candidate.sizeBytes, { standard: 's', decimalPlaces: 2 })
               const serial = candidate.serial || '-'
-
               return (
                 <button
                   key={candidate.path}
                   type="button"
                   onClick={() => toggleDisk(candidate.path)}
                   className={cn(
-                    'border-app-border bg-app-bg hover:border-app-border-strong flex items-center justify-between rounded-lg border px-2.5 py-2.5 text-left select-text',
+                    'border-app-border bg-app-bg hover:border-app-border-strong flex items-center justify-between rounded-lg border px-2 py-2.5 text-left select-text',
                     selected && 'border-app-border-strong bg-app-hover',
                   )}
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <div className="text-app-text w-14 shrink-0 text-base leading-none font-bold tracking-tight">
+                    <div className="text-app-text w-22 shrink-0 text-base leading-none font-bold tracking-tight">
                       {availableCapacity}
                     </div>
-
                     <div className="min-w-0">
                       <div className="text-app-text-muted truncate text-[11px]">SN: {maskSerial(serial)}</div>
                     </div>
                   </div>
-
                   <div className="flex items-center gap-2">
                     <StatusPill color="neutral" content={candidateKind} />
                     {selected ? <CheckSquare size={16} /> : <Square size={16} />}
@@ -378,90 +382,91 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
         </div>
 
         {selectedDiskIds.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-app-text text-xs font-semibold uppercase">RAID Mode</div>
-              <div className="text-app-text-muted text-xs">
-                Recommended: <span className="text-app-text font-semibold">{recommendedRaid.toUpperCase()}</span>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-app-text flex items-center gap-2 text-sm font-semibold uppercase">
+                <Layers3 className="text-app-text-muted size-4" />
+                <span>RAID Mode</span>
               </div>
             </div>
-
-            <div className="border-app-border overflow-hidden rounded-lg border">
+            <div className="flex flex-wrap gap-2">
               {raidOptions.map((option) => {
                 const active = effectiveRaid === option.level
                 const recommended = option.level === recommendedRaid
-
-                const riskClass =
-                  option.backupRisk === 'low'
-                    ? 'text-emerald-400'
-                    : option.backupRisk === 'medium'
-                      ? 'text-amber-400'
-                      : 'text-red-400'
-
-                const riskLabel =
-                  option.backupRisk === 'low' ? 'Low' : option.backupRisk === 'medium' ? 'Medium' : 'High'
-
                 return (
                   <button
                     key={option.level}
                     type="button"
                     onClick={() => setRaidLevel(option.level)}
                     className={cn(
-                      'border-app-border bg-app-bg hover:bg-app-hover grid w-full grid-cols-[1.15fr_1fr_0.75fr_0.8fr_0.6fr] items-center gap-3 border-b py-2.5 pr-3 pl-5 text-left text-xs transition-colors last:border-b-0',
-                      active && 'bg-app-hover',
-                      recommended && 'bg-emerald-400/5',
+                      'border-app-border hover:border-app-border-strong hover:bg-app-hover text-app-text-muted flex h-9 items-center gap-2 rounded-lg border bg-transparent px-3 text-sm transition-colors',
+                      active && 'border-app-border-strong bg-app-hover text-app-text',
                     )}
                   >
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span
-                        className={cn(
-                          'border-app-border grid size-3.5 shrink-0 place-items-center rounded-full border',
-                          active && 'border-app-text',
-                        )}
-                      >
-                        {active ? <span className="bg-app-text size-1.5 rounded-full" /> : null}
+                    <span
+                      className={cn(
+                        'border-app-border flex size-3 shrink-0 items-center justify-center rounded-full border transition-colors',
+                        active && 'border-app-text',
+                      )}
+                    >
+                      {active ? <span className="bg-app-text block size-[5px] rounded-full" /> : null}
+                    </span>
+                    <span>{option.level === RAID_LEVELS.SINGLE ? 'Single' : option.level.toUpperCase()}</span>
+                    {recommended && (
+                      <span className="bg-theme/10 text-theme rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase">
+                        Best
                       </span>
-
-                      <div className="flex min-w-0 items-center gap-1.5">
-                        <span className="text-app-text truncate text-sm font-semibold">{option.label}</span>
-                        {recommended && (
-                          <span className="rounded bg-emerald-400/15 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-400 uppercase">
-                            Best
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-app-text-muted text-[10px] whitespace-nowrap uppercase">Usable Capacity</div>
-                      <div className="text-app-text font-semibold">{formatEstimatedCapacity(option.usableBytes)}</div>
-                    </div>
-
-                    <div>
-                      <div className="text-app-text-muted text-[10px] whitespace-nowrap uppercase">Min. Tolerance</div>
-                      <div className="text-app-text font-semibold">{option.faultTolerance}</div>
-                    </div>
-
-                    <div>
-                      <div className="text-app-text-muted text-[10px] uppercase">Perf</div>
-                      <div className="text-app-text font-semibold">{option.performance}</div>
-                    </div>
-
-                    <div>
-                      <div className="text-app-text-muted text-[10px] uppercase">Risk</div>
-                      <div className={cn('font-semibold', riskClass)}>{riskLabel}</div>
-                    </div>
+                    )}
                   </button>
                 )
               })}
             </div>
-
             {selectedRaidOption && (
-              <SnapshotPolicyControl
-                enabled={autoSnapshotEnabled}
-                weekdays={autoSnapshotWeekdays}
-                 onWeekdaysChange={setAutoSnapshotWeekdays}
-              />
+              <div className="border-app-border bg-app-hover/30 grid grid-cols-[minmax(180px,1fr)_minmax(260px,1.25fr)] gap-5 rounded-lg border px-4 py-3">
+                <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="text-app-text truncate text-base font-semibold">{selectedRaidOption.label}</span>
+                    {effectiveRaid === recommendedRaid && (
+                      <span className="bg-theme/10 text-theme rounded px-2 py-0.5 text-[10px] font-semibold uppercase">
+                        Best
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-app-text-muted mt-1 text-xs leading-5">{selectedRaidOption.summary}</div>
+                </div>
+                <div className="grid gap-1.5">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-app-text-muted text-[10px] whitespace-nowrap uppercase">Usable Capacity</span>
+                    <span className="text-app-text text-sm font-semibold">
+                      {formatEstimatedCapacity(selectedRaidOption.usableBytes)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-app-text-muted text-[10px] whitespace-nowrap uppercase">Min. Tolerance</span>
+                    <span className="text-app-text text-sm font-semibold">{selectedRaidOption.faultTolerance}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-app-text-muted text-[10px] uppercase">Perf</span>
+                    <span className="text-app-text text-sm font-semibold">{selectedRaidOption.performance}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-app-text-muted text-[10px] uppercase">Risk</span>
+                    <span className={cn('text-sm font-semibold', selectedRaidRiskClass)}>{selectedRaidRiskLabel}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {selectedRaidOption && (
+              <div className="mt-8">
+                <SnapshotPolicyControl
+                  directSelection={true}
+                  weekdays={autoSnapshotWeekdays}
+                  onWeekdaysChange={(weekdays) => {
+                    setAutoSnapshotWeekdays(weekdays)
+                    setAutoSnapshotEnabled(weekdays.length > 0)
+                  }}
+                />
+              </div>
             )}
           </div>
         )}
@@ -476,22 +481,21 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
       <div className="border-app-border bg-app-hover mt-auto border-t px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-app-text app-body-text font-semibold">
-              {poolName.trim() || '未命名存储池'} · {selectedDiskIds.length} 块磁盘 · {effectiveRaid.toUpperCase()}·
+            <div className="text-app-text text-sm">
+              {poolName.trim() || '未命名存储池'} · {selectedDiskIds.length} 块磁盘 · {effectiveRaid.toUpperCase()} ·
               可用容量 {selectedRaidOption ? formatEstimatedCapacity(selectedRaidOption.usableBytes) : ''}
             </div>
-            <div className="app-caption text-app-text-muted mt-0.5 truncate">
+            <div className="text-app-text-muted mt-0.5 truncate text-xs">
               {selectedRaidOption ? `${selectedRaidOption.summary}` : '选择磁盘后配置 RAID 与快照策略'}
               {autoSnapshotEnabled ? ` · 自动快照 ${autoSnapshotWeekdays.length} 天/周` : ''}
             </div>
           </div>
-
           <Button
             type="button"
             variant={canSubmit ? 'primary' : 'secondary'}
             disabled={!canSubmit || submitting}
             loading={submitting}
-            className="min-w-28"
+            className="min-w-28 shrink-0"
             onClick={handleCreate}
           >
             开始创建存储

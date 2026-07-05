@@ -1,6 +1,7 @@
 import {
   ActionMenu,
   ActionMenuConfig,
+  Button,
   DataTableHeader,
   MoreButton,
   Progress,
@@ -8,94 +9,52 @@ import {
   Tooltip,
 } from '@/components/ui'
 import { ColumnIcon } from '@/components/ui/column-icon'
-import { bytesFormat, formatBytes, formatUsagePercent, getProgressColorClass } from '@/lib/utils'
+import { bytesFormat, formatUsagePercent, getProgressColorClass } from '@/lib/utils'
+import { isHealthyHealth } from '@/lib/health'
 import { StoragePoolModel } from '@/types/models/storage'
+import { getCloudProviderKey, getStoragePoolCondition } from '../utils'
 import {
   AlertCircle,
   ArrowDown,
   ArrowUp,
   Camera,
   Check,
+  Cloud,
   Eye,
   Gauge,
   Layers,
-  PanelTopOpen,
+  MoreHorizontal,
+  MoreVertical,
   Trash2,
   Wrench,
 } from 'lucide-react'
 
+function CloudStorageLogo({ className, src }: { className?: string; src: string }) {
+  return <img src={src} alt="" aria-hidden="true" className={className} />
+}
+
+const GoogleDriveLogo = ({ className }: { className?: string }) => (
+  <CloudStorageLogo src="/logos/cloud-storage/google-drive.png" className={className} />
+)
+
+const OneDriveLogo = ({ className }: { className?: string }) => (
+  <CloudStorageLogo src="/logos/cloud-storage/onedrive.svg" className={className} />
+)
+
+const DropboxLogo = ({ className }: { className?: string }) => (
+  <CloudStorageLogo src="/logos/cloud-storage/dropbox.png" className={className} />
+)
+
 export const getStoragePoolColumns = (
   onOpenDetails: (pool: StoragePoolModel) => void,
-  onOpenDetailsPage: (pool: StoragePoolModel) => void,
   onRequestDelete: (pool: StoragePoolModel) => void,
   onRequestBenchmark: (pool: StoragePoolModel) => void,
-  onRequestSnapshot: (pool: StoragePoolModel) => void,
+  onRequestSnapshotManager: (pool: StoragePoolModel) => void,
   onRequestFormat: (pool: StoragePoolModel) => void,
 ): DataTableHeader<StoragePoolModel>[] => {
-  const getPoolCondition = (pool: StoragePoolModel) => {
-    const members = pool.devices ?? []
-    const states = members.map((device) => String(device.state || '').toUpperCase())
-    const hasOffline = states.includes('OFFLINE')
-    const hasDegraded = states.includes('DEGRADED')
-    const hasRebuilding = states.includes('REBUILDING') || states.includes('RESYNCING')
-    const hasRiskHealth = members.some((device) => {
-      const health = String(device.health || '').toLowerCase()
-      return health === 'failed' || health === 'fail' || health === 'warning' || health === 'critical'
-    })
-
-    if (pool.kind === 'cloud' && !pool.mounted) {
-      return {
-        label: 'WARNING',
-        detail: '云盘本地挂载已断开',
-        color: 'warning' as const,
-      }
-    }
-    if (hasOffline) {
-      return {
-        label: 'WARNING',
-        detail: '部分磁盘离线',
-        color: 'danger' as const,
-      }
-    }
-    if (hasDegraded || String(pool.status || '').toLowerCase() === 'degraded') {
-      return {
-        label: 'WARNING',
-        detail: '部分磁盘异常',
-        color: 'warning' as const,
-      }
-    }
-    if (hasRebuilding) {
-      return {
-        label: 'WARNING',
-        detail: '磁盘正在重建/同步中',
-        color: 'warning' as const,
-      }
-    }
-    if (hasRiskHealth) {
-      return {
-        label: 'WARNING',
-        detail: '检测到磁盘健康告警',
-        color: 'warning' as const,
-      }
-    }
-    if (String(pool.health || '').toLowerCase() === 'healthy') {
-      return {
-        label: 'HEALTHY',
-        detail: '所有磁盘状态正常',
-        color: 'success' as const,
-      }
-    }
-    return {
-      label: 'UNKNOWN',
-      detail: '状态未知',
-      color: 'neutral' as const,
-    }
-  }
-
-  const makeLabel = (title: string, desc: string) => (
+  const makeLabel = (title: string) => (
     <span className="leading-tight">
-      <span className="block text-[12px] font-medium">{title}</span>
-      <span className="text-app-text-muted block text-[10px]">{desc}</span>
+      <span className="block text-[14px]">{title}</span>
     </span>
   )
 
@@ -104,36 +63,31 @@ export const getStoragePoolColumns = (
 
     return [
       {
-        label: makeLabel('View Details', 'Inspect pool information'),
+        label: makeLabel('View Details'),
         action: 'open',
         icon: Eye,
       },
       {
-        label: makeLabel('View detail 2', 'Open the full details page'),
-        action: 'open-page',
-        icon: PanelTopOpen,
-      },
-      {
-        label: makeLabel('Run Speed Test', 'Measure read/write performance'),
+        label: makeLabel('Run Speed Test'),
         action: 'speed-test',
         icon: Gauge,
       },
       ...(!isCloud
         ? [
             {
-              label: makeLabel('Format Pool', 'Erase and reinitialize filesystem'),
+              label: makeLabel('Format Pool'),
               action: 'format',
               icon: Wrench,
             },
             {
-              label: makeLabel('Create Snapshot', 'Create a restore point'),
-              action: 'snapshot',
+              label: makeLabel('快照管理'),
+              action: 'snapshot-manager',
               icon: Camera,
             },
           ]
         : []),
       {
-        label: makeLabel('Delete Pool', 'Remove this storage pool'),
+        label: makeLabel('Delete Pool'),
         action: 'delete',
         icon: Trash2,
         isDelete: true,
@@ -146,10 +100,20 @@ export const getStoragePoolColumns = (
       label: '',
       width: '222px',
       render: (_, record) => {
-        const healthy = String(record.health).toLowerCase() === 'healthy' && (record.kind !== 'cloud' || record.mounted)
+        const cloudProvider = record.kind === 'cloud' ? getCloudProviderKey(record) : null
+        const iconConfig =
+          cloudProvider === 'google-drive'
+            ? { icon: GoogleDriveLogo, className: 'object-contain' }
+            : cloudProvider === 'dropbox'
+              ? { icon: DropboxLogo, className: 'object-contain' }
+              : cloudProvider === 'onedrive'
+                ? { icon: OneDriveLogo, className: 'object-contain' }
+                : { icon: Layers, className: undefined }
+        const healthy = isHealthyHealth(record.health) && (record.kind !== 'cloud' || record.mounted)
         return (
           <ColumnIcon
-            icon={Layers}
+            icon={iconConfig.icon}
+            iconClassName={iconConfig.className}
             title={record.name}
             subTitle={[record.kind === 'local' ? record.raidLevel : null, record.filesystem]
               .filter(Boolean)
@@ -176,17 +140,21 @@ export const getStoragePoolColumns = (
         return (
           <div className="space-y-px pr-20">
             <Progress value={barPercent} showLabel={false} className={getProgressColorClass(barPercent)} />
-            <div className="text-app-text-muted flex justify-between text-[10px] font-semibold tracking-tighter">
-              <span>
-                {bytesFormat(record.usedBytes, {
-                  standard: 'm',
-                  decimalPlaces: 2,
-                })}{' '}
-                of{' '}
-                {bytesFormat(record.totalBytes, {
-                  standard: 'm',
-                  decimalPlaces: 2,
-                })}
+            <div className="text-app-text-muted flex justify-between text-[12px] font-semibold tracking-tighter">
+              <span className="inline-flex items-center gap-1">
+                <span>
+                  {bytesFormat(record.usedBytes, {
+                    standard: 's',
+                    decimalPlaces: 2,
+                  })}
+                </span>
+                <span>/</span>
+                <span>
+                  {bytesFormat(record.totalBytes, {
+                    standard: 's',
+                    decimalPlaces: 2,
+                  })}
+                </span>
               </span>
               <span>{showPercent} </span>
             </div>
@@ -199,7 +167,7 @@ export const getStoragePoolColumns = (
       label: 'STATE',
       width: '170px',
       render: (_, record) => (
-        <div className="space-y-1 text-xs">
+        <div className="space-y-1 text-[13px]">
           <div className="text-app-text-muted flex items-center gap-1.5">
             <ArrowDown className="h-3.5 w-3.5 text-sky-400" />
             <span className="uppercase">Read</span>
@@ -207,7 +175,7 @@ export const getStoragePoolColumns = (
               {record.readSpeedBytesPerSec
                 ? `${bytesFormat(record.readSpeedBytesPerSec, {
                     standard: 'm',
-                    decimalPlaces: 0,
+                    decimalPlaces: 2,
                   })}/s`
                 : '-'}
             </span>
@@ -219,7 +187,7 @@ export const getStoragePoolColumns = (
               {record.writeSpeedBytesPerSec
                 ? `${bytesFormat(record.writeSpeedBytesPerSec, {
                     standard: 'm',
-                    decimalPlaces: 0,
+                    decimalPlaces: 2,
                   })}/s`
                 : '-'}
             </span>
@@ -233,8 +201,8 @@ export const getStoragePoolColumns = (
       label: 'devices',
       render: (value, record) => (
         <div className="flex flex-col gap-1 text-center">
-          <span className="uppercase">{record.kind === 'local' ? record.devices.length : '-'}</span>
-          <span className="text-app-text-muted text-xs">Disks</span>
+          <span className="uppercase">{record.kind === 'local' ? (record.devices?.length ?? 0) : '-'}</span>
+          <span className="text-app-text-muted text-[13px]">Disks</span>
         </div>
       ),
     },
@@ -243,8 +211,8 @@ export const getStoragePoolColumns = (
       label: 'snapshotCount',
       render: (value, record) => (
         <div className="flex flex-col gap-1 text-center">
-          <span className="uppercase">{record.kind === 'local' ? record.snapshotCount : '-'}</span>
-          <span className="text-app-text-muted text-xs">Snapshot</span>
+          <span className="uppercase">{record.kind === 'local' ? (record.snapshotCount ?? 0) : '-'}</span>
+          <span className="text-app-text-muted text-[13px]">Snapshot</span>
         </div>
       ),
     },
@@ -253,7 +221,7 @@ export const getStoragePoolColumns = (
       label: 'condition',
       width: '200px',
       render: (_, record) => {
-        const condition = getPoolCondition(record)
+        const condition = getStoragePoolCondition(record)
         return (
           <div className="space-y-1">
             <Tooltip content={condition.detail}>
@@ -269,17 +237,13 @@ export const getStoragePoolColumns = (
       width: '56px',
       align: 'right',
       render: (_, record) => (
-        <div className="flex justify-end opacity-60 transition-opacity group-hover:opacity-100">
+        <div className="flex justify-end opacity-80 transition-opacity group-hover:opacity-100">
           <ActionMenu
             mode="left-click"
             align="end"
             onAction={(action) => {
               if (action === 'open') {
                 onOpenDetails(record)
-                return
-              }
-              if (action === 'open-page') {
-                onOpenDetailsPage(record)
                 return
               }
               if (action === 'speed-test') {
@@ -290,8 +254,8 @@ export const getStoragePoolColumns = (
                 onRequestFormat(record)
                 return
               }
-              if (action === 'snapshot') {
-                onRequestSnapshot(record)
+              if (action === 'snapshot-manager') {
+                onRequestSnapshotManager(record)
                 return
               }
               if (action === 'delete') {
@@ -300,10 +264,11 @@ export const getStoragePoolColumns = (
             }}
             items={getActionMenuItems(record)}
             trigger={
-              <MoreButton
-                variant="rowAction"
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={MoreHorizontal}
                 className="visible! opacity-100!"
-                aria-label={`More actions for ${record.name}`}
                 onClick={(event) => {
                   event.stopPropagation()
                 }}

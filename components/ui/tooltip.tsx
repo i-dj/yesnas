@@ -49,15 +49,15 @@ export function Tooltip({
             collisionPadding={collisionPadding}
             sticky="partial"
             className={cn(
-              'app-caption z-[120] max-w-72 rounded-md px-2 py-1 leading-snug shadow-md',
-              'bg-black text-white',
+              'app-caption z-120 max-w-72 rounded-md px-2 py-1 leading-snug shadow-md',
+              'bg-app-bg-highlight text-app-bg p-1 text-xs',
               'data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in data-[state=delayed-open]:zoom-in-95',
               'data-[side=top]:slide-in-from-bottom-1 data-[side=right]:slide-in-from-left-1 data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1',
               className,
             )}
           >
             {content}
-            <RadixTooltip.Arrow width={10} height={6} style={{ fill: 'black' }} />
+            <RadixTooltip.Arrow width={10} height={6} className="fill-app-bg-highlight" />
           </RadixTooltip.Content>
         </RadixTooltip.Portal>
       </RadixTooltip.Root>

@@ -2,7 +2,7 @@
 
 import React, { useId } from 'react'
 import * as ToggleGroup from '@radix-ui/react-toggle-group'
-import { LucideIcon } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 
@@ -22,6 +22,7 @@ interface ToggleButtonProps<T extends string> {
   showSeparator?: boolean
   variant?: 'tabs' | 'segmented'
   shape?: 'pill' | 'rounded'
+  allowReselect?: boolean
 }
 
 export const ToggleButton = <T extends string>({
@@ -32,8 +33,9 @@ export const ToggleButton = <T extends string>({
   className,
   itemClassName,
   variant = 'tabs',
-  showSeparator = true,
+  showSeparator = false,
   shape = 'pill',
+  allowReselect = false,
 }: ToggleButtonProps<T>) => {
   const isTabs = variant === 'tabs'
   const instanceId = useId()
@@ -45,12 +47,14 @@ export const ToggleButton = <T extends string>({
       type="single"
       value={value}
       defaultValue={defaultValue}
-      onValueChange={(val) => val && onChange?.(val as T)}
+      onValueChange={(val) => {
+        if (val) onChange?.(val as T)
+      }}
       className={cn(
-        'relative inline-flex h-9 items-stretch transition-all',
+        'relative inline-flex items-stretch transition-all',
         isTabs
-          ? cn('border-app-border bg-app-surface border', shape === 'pill' ? 'rounded-full' : 'rounded-lg')
-          : 'border-app-border w-full border-b-2 bg-transparent',
+          ? cn('h-8 gap-1 border-none bg-transparent', shape === 'pill' ? 'rounded-full' : 'rounded-lg')
+          : 'border-app-border h-9 w-full border-b-2 bg-transparent',
         className,
       )}
     >
@@ -61,8 +65,11 @@ export const ToggleButton = <T extends string>({
           <React.Fragment key={item.value}>
             <ToggleGroup.Item
               value={item.value}
+              onClick={() => {
+                if (allowReselect && value === item.value) onChange?.(item.value)
+              }}
               className={cn(
-                'app-body-text relative flex items-center justify-center px-3 transition-all outline-none',
+                'relative flex items-center justify-center px-3 text-sm transition-all outline-none',
                 isTabs ? 'flex-1' : 'flex-none',
                 isTabs
                   ? cn(
@@ -82,7 +89,7 @@ export const ToggleButton = <T extends string>({
               )}
               <div className="relative z-10 flex items-center gap-1.5">
                 {item.icon && <item.icon size={16} strokeWidth={2} />}
-                {item.label && <div className="font-medium whitespace-nowrap">{item.label}</div>}
+                {item.label && <div className="whitespace-nowrap">{item.label}</div>}
               </div>
 
               {!isTabs && isSelected && (

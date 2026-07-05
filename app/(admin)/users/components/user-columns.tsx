@@ -1,7 +1,7 @@
 import { Button, Tooltip, type DataTableHeader } from '@/components/ui'
 import { cn, formatSmartTimeInfo } from '@/lib/utils'
 import type { EnableStatus, User } from '@/types'
-import { Edit3, ShieldCheck, Trash2, UserRound } from 'lucide-react'
+import { Edit3, ShieldCheck, UserRound } from 'lucide-react'
 import type { useTranslations } from 'next-intl'
 
 import { UserAvatar } from './user-avatar'
@@ -14,11 +14,18 @@ const statusClassNames = {
 interface GetUserColumnsParams {
   t: ReturnType<typeof useTranslations>
   timeZone: string
+  locale: string
   onEdit: (user: User) => void
   onDelete: (user: User) => void
 }
 
-export function getUserColumns({ t, timeZone, onEdit, onDelete }: GetUserColumnsParams): DataTableHeader<User>[] {
+export function getUserColumns({
+  t,
+  timeZone,
+  locale,
+  onEdit,
+  onDelete,
+}: GetUserColumnsParams): DataTableHeader<User>[] {
   return [
     {
       key: 'username',
@@ -31,7 +38,7 @@ export function getUserColumns({ t, timeZone, onEdit, onDelete }: GetUserColumns
           <UserAvatar user={record} />
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-2">
-              <div className="text-app-text truncate font-medium">{record.displayName || record.username}</div>
+              <div className="text-app-text truncate text-sm">{record.displayName || record.username}</div>
             </div>
             <div className="text-app-text-muted mt-0.5 truncate text-xs">@{record.username}</div>
           </div>
@@ -44,9 +51,9 @@ export function getUserColumns({ t, timeZone, onEdit, onDelete }: GetUserColumns
       width: '140px',
       sortable: true,
 
-      render: (value: EnableStatus) => (
-        <span className={cn('inline-flex rounded-full px-2 py-1 text-[11px] font-medium', statusClassNames[value])}>
-          {t(`statuses.${value}`)}
+      render: (_, record) => (
+        <span className={cn('inline-flex rounded-full px-2 py-1 text-xs', statusClassNames[record.status])}>
+          {t(`statuses.${record.status}`)}
         </span>
       ),
     },
@@ -56,15 +63,15 @@ export function getUserColumns({ t, timeZone, onEdit, onDelete }: GetUserColumns
       width: '140px',
       sortable: true,
 
-      render: (value: boolean) => (
+      render: (_, record) => (
         <span
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium',
-            value ? 'bg-amber-500/15 text-amber-600' : 'bg-zinc-500/10 text-zinc-500',
+            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs',
+            record.isAdmin ? 'bg-amber-500/15 text-amber-600' : 'bg-zinc-500/10 text-zinc-500',
           )}
         >
-          {value ? <ShieldCheck className="h-3 w-3" /> : <UserRound className="h-3 w-3" />}
-          {value ? t('roles.admin') : t('roles.user')}
+          {record.isAdmin ? <ShieldCheck className="h-3 w-3" /> : <UserRound className="h-3 w-3" />}
+          {record.isAdmin ? t('roles.admin') : t('roles.user')}
         </span>
       ),
     },
@@ -74,11 +81,11 @@ export function getUserColumns({ t, timeZone, onEdit, onDelete }: GetUserColumns
       label: t('columns.updatedAt'),
       width: '220px',
       render: (_, record) => {
-        const updatedAtText = formatSmartTimeInfo(record.updatedAt, timeZone)
+        const updatedAtText = formatSmartTimeInfo(record.updatedAt, timeZone, locale)
 
         return (
           <Tooltip content={updatedAtText.fullText} disabled={!updatedAtText.showTooltip} triggerClassName="w-fit">
-            <span className="text-app-text-muted inline-flex w-fit items-center gap-2 text-xs">
+            <span className="text-app-text-muted inline-flex w-fit items-center gap-2 text-sm">
               {updatedAtText.text}
             </span>
           </Tooltip>

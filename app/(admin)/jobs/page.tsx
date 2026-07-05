@@ -4,7 +4,7 @@ import { jobApi } from '@/lib/api/job.api'
 
 export default async function JobsPage() {
   const [jobsResult, scheduledJobs] = await Promise.all([
-    jobApi.listJobs({ page: 1, pageSize: 10, status: 'all' }),
+    jobApi.listJobs({ page: 1, pageSize: 20, status: 'all' }),
     jobApi.scheduledJobs(),
   ])
   const timeZone = getServerTimeZone()

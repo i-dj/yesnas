@@ -54,7 +54,7 @@ export const Checkbox = ({
   return (
     <label
       className={cn(
-        'app-body-text flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 transition',
+        'flex h-8 cursor-pointer items-center gap-2 rounded-md px-2 text-sm transition',
         checked ? 'text-app-text' : 'text-app-text-muted',
         className,
       )}
@@ -75,13 +75,13 @@ function CheckboxMark({ checked }: { checked: boolean }) {
   return (
     <span
       className={cn(
-        'border-app-border grid size-5 shrink-0 place-items-center rounded-md border transition',
-        checked ? 'bg-app-text text-app-bg border-app-text' : 'bg-app-bg',
+        'grid size-4 shrink-0 place-items-center rounded-sm border transition',
+        checked ? 'bg-app-text text-app-bg border-app-text' : 'border-app-border-strong bg-app-bg',
       )}
       aria-hidden="true"
     >
       {checked ? (
-        <svg viewBox="0 0 16 16" className="size-3" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg viewBox="0 0 16 16" className="size-2.5" fill="none" stroke="currentColor" strokeWidth="2.25">
           <path d="M3.5 8.5 6.5 11 12.5 5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ) : null}

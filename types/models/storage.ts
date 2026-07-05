@@ -20,6 +20,8 @@ export interface DiskModel {
   transport: string
   fsType?: string
   label?: string
+  unsafeShutdownCount?: number
+  healthPercent?: number
   uuid?: string
   mountpoints?: string[]
   removable: boolean

@@ -36,7 +36,7 @@ export const storageApi = {
     }),
 
   updateSnapshotPolicy: (poolId: string, payload: UpdateStoragePoolSnapshotPolicyPayload) =>
-    request<StoragePoolModel>(`/system/storage-pools/${poolId}`, {
+    request<Partial<StoragePoolModel>>(`/system/storage-pools/${poolId}`, {
       method: 'PUT',
       body: payload,
     }),

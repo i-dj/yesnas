@@ -1,15 +1,8 @@
-import { formatBytes } from '@/lib/utils'
+import { formatBytesPerSecond, formatOptionalNumber } from '@/lib/utils'
 import type { HardwareDisk } from '@/types'
 
-export function formatOptional(value: number | null | undefined, suffix: string) {
-  if (value === null || value === undefined || !Number.isFinite(value)) return '-'
-  return `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}${suffix}`
-}
-
-export function formatSpeed(bytesPerSecond?: number) {
-  const value = typeof bytesPerSecond === 'number' && Number.isFinite(bytesPerSecond) ? bytesPerSecond : 0
-  return `${formatBytes(value)}/s`
-}
+export const formatOptional = formatOptionalNumber
+export const formatSpeed = formatBytesPerSecond
 
 export function isHealthyDisk(disk: HardwareDisk) {
   return ['passed', 'healthy'].includes(disk.health.toLowerCase())

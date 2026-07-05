@@ -9,6 +9,7 @@
       "open": "開く",
       "copy": "コピー",
       "move": "移動",
+      "clearInput": "入力内容を消去",
       "logout": "ログアウト",
       "feedback": "フィードバック",
       "changeAvatar": "アバターを変更",
@@ -37,7 +38,8 @@
       "hardware": "ハードウェア",
       "jobs": "タスク",
       "users": "ユーザー",
-      "logs": "ログ"
+      "logs": "ログ",
+      "docker": "Docker 管理"
     },
     "aria": {
       "expandSidebar": "サイドバーを展開",
@@ -50,8 +52,6 @@
     "total": "件のログ",
     "empty": "現在の条件に一致するログはありません",
     "activity": {
-      "title": "アクティビティヒートマップ",
-      "summary": "{count} 件のログを{bucket}単位で集計",
       "tooltip": "{time}: {count} 件、失敗 {failed} 件"
     },
     "ranges": {
@@ -59,38 +59,17 @@
       "7d": "7 日",
       "30d": "30 日",
       "90d": "90 日",
-      "1y": "1 年",
-      "custom": "カスタム"
-    },
-    "buckets": {
-      "hour": "時間",
-      "day": "日",
-      "month": "月"
+      "1y": "1 年"
     },
     "filters": {
       "search": "ログ、イベント、メッセージを検索",
-      "allCategories": "すべてのカテゴリ",
-      "allSeverities": "すべてのレベル",
-      "allResults": "すべての結果",
-      "more": "その他のフィルター",
-      "reset": "フィルターをリセット",
-      "source": "ソース（例: api）",
-      "event": "イベントタイプ",
-      "ipAddress": "IP アドレス",
-      "from": "開始時刻",
-      "to": "終了時刻"
+      "allSeverities": "すべてのレベル"
     },
     "columns": {
       "time": "時刻",
       "actor": "実行主体",
       "event": "イベント",
-      "source": "ソース",
-      "ipAddress": "IP アドレス",
-      "result": "結果"
-    },
-    "categories": {
-      "user": "ユーザー",
-      "system": "システム"
+      "ipAddress": "IP アドレス"
     },
     "severities": {
       "info": "情報",
@@ -100,26 +79,13 @@
     "values": {
       "system": "システム",
       "success": "成功",
-      "failed": "失敗"
+      "failed": "失敗",
+      "privateNetwork": "ローカルネットワーク",
+      "localMachine": "このデバイス"
     },
     "pagination": {
       "pageSize": "1 ページ {count} 件",
       "summary": "{page} / {totalPages} ページ"
-    },
-    "detail": {
-      "title": "ログ詳細",
-      "time": "発生時刻",
-      "category": "カテゴリ",
-      "severity": "レベル",
-      "source": "ソース",
-      "event": "イベント",
-      "action": "操作",
-      "actor": "実行主体",
-      "ipAddress": "IP アドレス",
-      "request": "リクエスト",
-      "resource": "リソース",
-      "userAgent": "ユーザーエージェント",
-      "details": "詳細データ"
     },
     "messages": {
       "loadFailed": "ログの読み込みに失敗しました",
@@ -260,40 +226,70 @@
     }
   },
   "Jobs": {
-    "loading": "Loading tasks...",
-    "empty": "No tasks yet",
-    "selectJob": "Select {name}",
+    "title": "実行予定のタスク",
+    "subtitle": "実行履歴 {total} 件 · スケジュール済みタスク {scheduled} 件",
+    "loading": "タスクを読み込み中...",
+    "empty": "タスクはありません",
+    "emptySearch": "現在の条件に一致するタスクはありません",
+    "searchPlaceholder": "タスク、メッセージ、ステータスを検索",
+    "selectJob": "{name} を選択",
+    "overview": {
+      "running": "実行中",
+      "success": "完了",
+      "paused": "一時停止",
+      "failed": "要確認"
+    },
+    "scheduled": {
+      "title": "スケジュール済みタスク",
+      "target": "対象：{target}",
+      "systemTarget": "システム",
+      "schedule": "実行周期：{schedule}",
+      "nextRun": "次回実行：{time}",
+      "waiting": "スケジュール待ち",
+      "enabled": "有効",
+      "disabled": "無効"
+    },
     "statuses": {
-      "all": "All",
-      "running": "Running",
-      "paused": "Paused",
-      "success": "Success",
-      "failed": "Failed",
-      "canceled": "Canceled"
+      "all": "すべて",
+      "running": "実行中",
+      "paused": "一時停止",
+      "success": "成功",
+      "failed": "失敗",
+      "canceled": "キャンセル済み"
     },
     "types": {
-      "cloud_sync": "Cloud sync",
-      "data_transfer": "Data transfer",
-      "back_to_cloud": "Back up to cloud",
+      "cloud_sync": "クラウド同期",
+      "data_transfer": "データ転送",
+      "back_to_cloud": "クラウドバックアップ",
       "auto_snapshot": "自動スナップショット"
     },
     "actions": {
-      "more": "More task actions",
-      "pause": "Pause",
-      "resume": "Resume",
-      "cancel": "Cancel",
-      "delete": "Delete"
+      "more": "その他のタスク操作",
+      "pause": "一時停止",
+      "resume": "再開",
+      "cancel": "キャンセル",
+      "delete": "削除"
+    },
+    "pagination": {
+      "pageSize": "1 ページ {count} 件",
+      "summary": "{page} / {totalPages} ページ"
+    },
+    "messages": {
+      "loadFailed": "タスクの読み込みに失敗しました",
+      "scheduledLoadFailed": "スケジュール済みタスクの読み込みに失敗しました",
+      "actionCompleted": "タスク操作が完了しました",
+      "actionFailed": "タスク操作に失敗しました"
     },
     "columns": {
-      "name": "Name",
-      "job": "Task",
-      "progress": "Progress",
-      "status": "Status",
-      "updatedAt": "Last Updated",
-      "speed": "Speed",
-      "remaining": "Remaining: {duration}",
-      "updatedAgo": "{value} ago",
-      "updatedSample": "10 minutes"
+      "name": "名前",
+      "job": "タスク",
+      "progress": "進捗",
+      "status": "ステータス",
+      "updatedAt": "最終更新",
+      "speed": "速度",
+      "remaining": "残り：{duration}",
+      "updatedAgo": "{value}前",
+      "updatedSample": "10分"
     },
     "mockTasks": {
       "1": {
@@ -374,10 +370,12 @@
       "username": "Username",
       "displayName": "Display name",
       "isAdmin": "Administrator",
+      "role": "アカウント権限",
       "avatar": "Avatar",
       "avatarCustom": "Custom avatar URL, data URI, or preset name",
       "avatarPreset": "Choose {preset} avatar",
       "avatarUpload": "Upload custom avatar",
+      "avatarHint": "プリセットを選択するか、画像をアップロードします。",
       "avatarZoom": "Zoom",
       "avatarZoomIn": "Zoom in",
       "avatarZoomOut": "Zoom out",
@@ -386,7 +384,14 @@
       "setAvatar": "Set Avatar",
       "password": "Password",
       "newPassword": "New password",
-      "status": "Status"
+      "passwordCreateHint": "新しいユーザーの安全なログインパスワードを設定します。",
+      "passwordEditHint": "空欄の場合、現在のパスワードを維持します。",
+      "status": "Status",
+      "sections": {
+        "profile": "基本情報",
+        "access": "権限とステータス",
+        "security": "アカウントセキュリティ"
+      }
     },
     "messages": {
       "created": "User created",
@@ -413,26 +418,26 @@
     "sharesTitle": "Shared Folders",
     "sharesSubtitle": "See which protocols are exposed for each shared folder.",
     "empty": "No shared folders yet",
-    "linkInfo": "Connection",
-    "disabledHint": "Enable this protocol to show its access link and port.",
-    "port": "Port {port}",
-    "shareCount": "{count} shares",
     "protocols": {
       "smb": {
         "name": "SMB",
-        "description": "LAN file access"
+        "description": "LAN file access",
+        "connectionHint": "Open this address in Windows File Explorer or macOS Finder."
       },
       "ftp": {
         "name": "FTP",
-        "description": "Legacy client access"
+        "description": "Legacy client access",
+        "connectionHint": "Open this address in an FTP client and sign in with a NAS user."
       },
       "webdav": {
         "name": "WebDAV",
-        "description": "HTTP remote mount"
+        "description": "HTTP remote mount",
+        "connectionHint": "Open the address in a browser or add it as a network location."
       },
       "nfs": {
         "name": "NFS",
-        "description": "Linux / server mount"
+        "description": "Linux / server mount",
+        "connectionHint": "Mount this address to a local directory on Linux or a server."
       }
     },
     "columns": {
@@ -474,8 +479,6 @@
       "status": "Status"
     },
     "messages": {
-      "loadOptionsFailed": "Load sharing options failed",
-      "loadProtocolsFailed": "Load protocol status failed",
       "saveFailed": "Save file share failed",
       "deleteFailed": "Delete file share failed",
       "protocolActionFailed": "Protocol action failed",

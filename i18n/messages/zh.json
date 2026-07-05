@@ -9,6 +9,7 @@
       "open": "打开",
       "copy": "复制",
       "move": "移动",
+      "clearInput": "清空输入内容",
       "logout": "退出",
       "feedback": "反馈",
       "changeAvatar": "修改头像",
@@ -37,7 +38,8 @@
       "hardware": "硬件信息",
       "jobs": "任务",
       "users": "用户",
-      "logs": "日志"
+      "logs": "日志",
+      "docker": "Docker 管理"
     },
     "aria": {
       "expandSidebar": "展开侧边栏",
@@ -50,8 +52,6 @@
     "total": "条日志",
     "empty": "没有匹配当前条件的日志",
     "activity": {
-      "title": "活动热力图",
-      "summary": "共 {count} 条日志，按{bucket}聚合",
       "tooltip": "{time}：{count} 条日志，{failed} 条失败"
     },
     "ranges": {
@@ -59,38 +59,17 @@
       "7d": "7 天",
       "30d": "30 天",
       "90d": "90 天",
-      "1y": "1 年",
-      "custom": "自定义"
-    },
-    "buckets": {
-      "hour": "小时",
-      "day": "天",
-      "month": "月"
+      "1y": "1 年"
     },
     "filters": {
       "search": "搜索日志、事件或消息",
-      "allCategories": "全部类别",
-      "allSeverities": "全部级别",
-      "allResults": "全部结果",
-      "more": "更多筛选",
-      "reset": "重置筛选",
-      "source": "来源，例如 api",
-      "event": "事件类型",
-      "ipAddress": "IP 地址",
-      "from": "开始时间",
-      "to": "结束时间"
+      "allSeverities": "全部级别"
     },
     "columns": {
       "time": "时间",
       "actor": "操作主体",
       "event": "事件",
-      "source": "来源",
-      "ipAddress": "IP 地址",
-      "result": "结果"
-    },
-    "categories": {
-      "user": "用户",
-      "system": "系统"
+      "ipAddress": "IP 地址"
     },
     "severities": {
       "info": "信息",
@@ -100,26 +79,13 @@
     "values": {
       "system": "系统",
       "success": "成功",
-      "failed": "失败"
+      "failed": "失败",
+      "privateNetwork": "局域网",
+      "localMachine": "本机"
     },
     "pagination": {
       "pageSize": "每页 {count} 条",
       "summary": "第 {page} / {totalPages} 页"
-    },
-    "detail": {
-      "title": "日志详情",
-      "time": "发生时间",
-      "category": "类别",
-      "severity": "级别",
-      "source": "来源",
-      "event": "事件",
-      "action": "操作",
-      "actor": "操作主体",
-      "ipAddress": "IP 地址",
-      "request": "请求",
-      "resource": "资源",
-      "userAgent": "用户代理",
-      "details": "详细数据"
     },
     "messages": {
       "loadFailed": "加载日志失败",
@@ -260,9 +226,29 @@
     }
   },
   "Jobs": {
+    "title": "待执行的任务",
+    "subtitle": "共 {total} 条执行记录 · {scheduled} 个计划任务",
     "loading": "正在加载任务...",
     "empty": "暂无任务",
+    "emptySearch": "没有匹配当前条件的任务",
+    "searchPlaceholder": "搜索任务、消息或状态",
     "selectJob": "选择 {name}",
+    "overview": {
+      "running": "运行中",
+      "success": "已完成",
+      "paused": "已暂停",
+      "failed": "需要关注"
+    },
+    "scheduled": {
+      "title": "计划任务",
+      "target": "目标：{target}",
+      "systemTarget": "系统",
+      "schedule": "执行周期：{schedule}",
+      "nextRun": "下次执行：{time}",
+      "waiting": "等待调度",
+      "enabled": "已启用",
+      "disabled": "已禁用"
+    },
     "statuses": {
       "all": "全部",
       "running": "运行中",
@@ -283,6 +269,16 @@
       "resume": "恢复",
       "cancel": "取消",
       "delete": "删除"
+    },
+    "pagination": {
+      "pageSize": "每页 {count} 条",
+      "summary": "第 {page} / {totalPages} 页"
+    },
+    "messages": {
+      "loadFailed": "加载任务失败",
+      "scheduledLoadFailed": "加载计划任务失败",
+      "actionCompleted": "任务操作已完成",
+      "actionFailed": "任务操作失败"
     },
     "columns": {
       "name": "名称",
@@ -374,10 +370,12 @@
       "username": "用户名",
       "displayName": "显示名称",
       "isAdmin": "管理员",
+      "role": "账户角色",
       "avatar": "头像",
       "avatarCustom": "自定义头像 URL、data URI 或预设名称",
       "avatarPreset": "选择 {preset} 头像",
       "avatarUpload": "上传自定义头像",
+      "avatarHint": "选择预设头像，或上传一张自定义图片。",
       "avatarZoom": "缩放",
       "avatarZoomIn": "放大",
       "avatarZoomOut": "缩小",
@@ -386,7 +384,14 @@
       "setAvatar": "设置头像",
       "password": "密码",
       "newPassword": "新密码",
-      "status": "状态"
+      "passwordCreateHint": "请为新用户设置一个安全的登录密码。",
+      "passwordEditHint": "留空将继续使用当前密码。",
+      "status": "状态",
+      "sections": {
+        "profile": "基本资料",
+        "access": "权限与状态",
+        "security": "账户安全"
+      }
     },
     "messages": {
       "created": "用户已创建",
@@ -413,26 +418,26 @@
     "sharesTitle": "共享目录",
     "sharesSubtitle": "查看当前目录开放了哪些共享协议。",
     "empty": "暂无共享目录",
-    "linkInfo": "连接信息",
-    "disabledHint": "开启协议后会显示访问链接和端口。",
-    "port": "端口 {port}",
-    "shareCount": "{count} 个共享",
     "protocols": {
       "smb": {
         "name": "SMB",
-        "description": "局域网文件访问"
+        "description": "局域网文件访问",
+        "connectionHint": "在 Windows 文件资源管理器或 macOS 访达中打开此地址。"
       },
       "ftp": {
         "name": "FTP",
-        "description": "兼容旧客户端"
+        "description": "兼容旧客户端",
+        "connectionHint": "使用 FTP 客户端打开此地址并输入 NAS 用户账号。"
       },
       "webdav": {
         "name": "WebDAV",
-        "description": "HTTP 远程挂载"
+        "description": "HTTP 远程挂载",
+        "connectionHint": "点击地址在浏览器打开，或添加为网络位置。"
       },
       "nfs": {
         "name": "NFS",
-        "description": "Linux / 服务器挂载"
+        "description": "Linux / 服务器挂载",
+        "connectionHint": "在 Linux 或服务器上将此地址挂载到本地目录。"
       }
     },
     "columns": {
@@ -474,8 +479,6 @@
       "status": "状态"
     },
     "messages": {
-      "loadOptionsFailed": "加载共享选项失败",
-      "loadProtocolsFailed": "加载协议状态失败",
       "saveFailed": "保存共享失败",
       "deleteFailed": "删除共享失败",
       "protocolActionFailed": "协议操作失败",

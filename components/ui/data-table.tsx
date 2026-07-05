@@ -12,7 +12,7 @@ const headerInnerVariants = cva('flex min-h-9 items-center gap-1 bg-clip-padding
     variant: {
       default: 'bg-app-item-bg',
       primary: 'bg-app-bg font-semibold',
-      plain: 'bg-transparent font-semibold',
+      plain: 'bg-transparent ',
     },
   },
   defaultVariants: { variant: 'default' },
@@ -31,8 +31,8 @@ const cellVariants = cva('relative px-4 py-2.5', {
   variants: {
     variant: {
       default: '',
-      primary: 'border-b border-app-border/50',
-      plain: 'border-b border-app-border/35',
+      primary: 'border-b border-app-border/70',
+      plain: 'border-b border-app-border/70',
     },
   },
 })
@@ -118,7 +118,7 @@ export const DataTable = <T extends { id: number | string }>({
                   style={{ width: h.width }}
                   className={cn(
                     'sticky top-0 z-30 p-0 text-left font-normal transition-all',
-                    showHeader && variant !== 'default' && 'border-app-border/50 border-b',
+                    showHeader && variant !== 'default' && 'border-app-border/70 border-b',
                     !showHeader && 'pointer-events-none h-0 border-none opacity-0',
                   )}
                 >
@@ -199,7 +199,7 @@ export const DataTable = <T extends { id: number | string }>({
                         cellVariants({ variant }),
                         radiusClass,
                         selected && 'bg-app-active/50',
-                        'app-body-text px-2 py-2',
+                        'app-body-text px-2 py-1.5',
                         h.align === 'right' && 'text-right',
                         h.align === 'center' && 'text-center',
                         tdClassName,
@@ -214,9 +214,7 @@ export const DataTable = <T extends { id: number | string }>({
                         )}
                       />
                       <div className={cn('relative z-10 select-text', h.key !== '__selection__' && 'truncate')}>
-                        {h.render
-                          ? h.render(getCellValue(row, h.key), row)
-                          : renderCellValue(getCellValue(row, h.key))}
+                        {h.render ? h.render(getCellValue(row, h.key), row) : renderCellValue(getCellValue(row, h.key))}
                       </div>
                     </td>
                   )

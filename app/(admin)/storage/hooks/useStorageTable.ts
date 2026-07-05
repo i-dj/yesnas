@@ -3,15 +3,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { DiskModel, StoragePoolModel } from '@/types/models/storage'
 
-export const storageTabItems = [
-  { value: 'all', label: '全部' },
-  { value: 'used', label: '已使用' },
-  { value: 'unused', label: '未使用' },
-] as const
-
-export type StorageTabValue = (typeof storageTabItems)[number]['value']
-export type DiskTableRow = DiskModel & { id: string }
-
 export function useStorageTable({
   diskList,
   storagePools,
@@ -19,32 +10,11 @@ export function useStorageTable({
   diskList: DiskModel[]
   storagePools: StoragePoolModel[]
 }) {
-  const [activeTab, setActiveTab] = useState<StorageTabValue>('all')
   const [poolList, setPoolList] = useState<StoragePoolModel[]>(storagePools)
 
   useEffect(() => {
     setPoolList(storagePools)
   }, [storagePools])
-
-  const diskRows = useMemo<DiskTableRow[]>(() => {
-    return diskList
-      .filter((disk) => {
-        if (activeTab === 'all') return true
-        return activeTab === 'used' ? disk.inUse : !disk.inUse
-      })
-      .map((disk) => ({ ...disk, id: disk.path }))
-  }, [activeTab, diskList])
-
-  const diskStats = useMemo(() => {
-    const total = diskList.length
-    const available = diskList.filter((disk) => !disk.inUse).length
-    return {
-      total,
-      available,
-      inUse: total - available,
-    }
-  }, [diskList])
-
   const replaceCandidates = useMemo(() => {
     const items: Array<{
       path: string
@@ -83,8 +53,33 @@ export function useStorageTable({
     setPoolList((current) => current.filter((pool) => pool.id !== poolId))
   }
 
-  const updatePool = (nextPool: StoragePoolModel) => {
-    setPoolList((current) => current.map((pool) => (pool.id === nextPool.id ? nextPool : pool)))
+  const updatePool = (nextPool: Partial<StoragePoolModel> & Pick<StoragePoolModel, 'id'>) => {
+    setPoolList((current) =>
+      current.map((pool) =>
+        pool.id === nextPool.id
+          ? {
+              ...pool,
+              ...nextPool,
+            }
+          : pool,
+      ),
+    )
+  }
+
+  const upsertPool = (nextPool: StoragePoolModel) => {
+    setPoolList((current) => {
+      const index = current.findIndex((pool) => pool.id === nextPool.id || pool.storageId === nextPool.storageId)
+      if (index === -1) return [nextPool, ...current]
+
+      return current.map((pool, poolIndex) =>
+        poolIndex === index
+          ? {
+              ...pool,
+              ...nextPool,
+            }
+          : pool,
+      )
+    })
   }
 
   const updatePoolBenchmark = (
@@ -108,14 +103,11 @@ export function useStorageTable({
   }
 
   return {
-    activeTab,
-    setActiveTab,
-    diskRows,
-    diskStats,
     poolList,
     replaceCandidates,
     removePool,
     updatePool,
+    upsertPool,
     updatePoolBenchmark,
   }
 }

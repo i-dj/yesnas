@@ -113,14 +113,10 @@ export const ActionMenu = ({
       {items.map((item, index) => (
         <React.Fragment key={`${item.action}-${index}`}>
           {item.render ? (
-            <div className={cn('px-1', item.className)}>
-              {item.render({ closeMenu: () => setOpen(false) })}
-            </div>
+            <div className={cn('px-1', item.className)}>{item.render({ closeMenu: () => setOpen(false) })}</div>
           ) : item.isHeader ? (
             <div className="mt-1 px-3 py-0 select-none">
-              <span className="text-app-text-sub text-[10px] font-medium tracking-wider uppercase">
-                {item.label}
-              </span>
+              <span className="text-app-text-sub text-[10px] font-medium tracking-wider uppercase">{item.label}</span>
             </div>
           ) : (
             <MenuItem
@@ -134,16 +130,13 @@ export const ActionMenu = ({
                 }
               }}
               className={cn(
-                'group flex cursor-pointer items-center rounded-md px-2 py-1.5 text-[12px] transition-colors duration-200 ease-out outline-none',
-                itemJustify === 'between'
-                  ? 'justify-between gap-4'
-                  : 'justify-start gap-3',
+                'group flex cursor-pointer items-center rounded-md px-2 py-1.5 text-sm transition-colors duration-200 ease-out outline-none',
+                itemJustify === 'between' ? 'justify-between gap-4' : 'justify-start gap-3',
                 !item.isDelete && 'text-app-text-muted',
                 !item.isDelete
                   ? 'data-highlighted:bg-app-hover data-highlighted:text-app-text'
                   : 'text-red-500 data-highlighted:bg-red-500/10 data-highlighted:text-red-600',
-                item.checked &&
-                  'bg-app-active text-app-text border-app-border-strong border',
+                item.checked && 'bg-app-active text-app-text border-app-border-strong border',
                 'data-disabled:cursor-not-allowed data-disabled:opacity-40',
                 item.className,
               )}
@@ -151,23 +144,13 @@ export const ActionMenu = ({
               {iconPosition === 'left' ? (
                 <>
                   {renderIcon(item)}
-                  <span
-                    className={cn(
-                      'text-left',
-                      itemJustify === 'between' ? 'flex-1' : 'min-w-0',
-                    )}
-                  >
+                  <span className={cn('text-left', itemJustify === 'between' ? 'flex-1' : 'min-w-0')}>
                     {item.label}
                   </span>
                 </>
               ) : (
                 <>
-                  <span
-                    className={cn(
-                      'text-left',
-                      itemJustify === 'between' ? 'flex-1' : 'min-w-0',
-                    )}
-                  >
+                  <span className={cn('text-left', itemJustify === 'between' ? 'flex-1' : 'min-w-0')}>
                     {item.label}
                   </span>
                   {renderIcon(item)}
@@ -182,8 +165,10 @@ export const ActionMenu = ({
   )
 
   const contentClassName = cn(
-    'bg-app-bg min-w-48 mx-1 overflow-hidden rounded-lg border border-app-border shadow-xl',
-    'p-1',
+    'bg-white dark:bg-[#242529]',
+    'min-w-48 mx-1 overflow-hidden rounded-xl border border-app-border',
+    'px-2 py-1.5',
+    'shadow-[0_18px_42px_rgba(0,0,0,0.34)]',
   )
 
   const TriggerNode = trigger || children
@@ -195,12 +180,7 @@ export const ActionMenu = ({
         <DropdownMenu.Portal forceMount>
           <AnimatePresence>
             {open && (
-              <DropdownMenu.Content
-                asChild
-                align={align}
-                sideOffset={8}
-                className={contentClassName}
-              >
+              <DropdownMenu.Content asChild align={align} sideOffset={8} className={contentClassName}>
                 <motion.div
                   initial="hidden"
                   animate="visible"
@@ -226,11 +206,7 @@ export const ActionMenu = ({
       <ContextMenu.Portal forceMount>
         <AnimatePresence>
           {open && (
-            <ContextMenu.Content
-              asChild
-              collisionPadding={16}
-              className={contentClassName}
-            >
+            <ContextMenu.Content asChild collisionPadding={16} className={contentClassName}>
               <motion.div
                 initial="hidden"
                 animate="visible"

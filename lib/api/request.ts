@@ -1,6 +1,6 @@
 import { toast } from '@/store/use-toast-store'
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 const BASE_URL = 'http://yesnas:8080/api/v1'
 
@@ -64,7 +64,8 @@ export async function request<T>(url: string, options: ApiOptions = {}): Promise
     throw new Error(message)
   }
 
-  const json = await res.json()
+  const text = await res.text()
+  const json = text ? JSON.parse(text) : null
 
   if (options.unwrapList) {
     return unwrapList<T>(json) as T

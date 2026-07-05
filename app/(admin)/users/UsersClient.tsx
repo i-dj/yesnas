@@ -1,12 +1,12 @@
 'use client'
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
-import { Button, ConfirmModal, DataTable, EmptyState, Input, ToggleButton } from '@/components/ui'
+import { Button, ConfirmModal, DataTable, EmptyState, SearchInput, ToggleButton } from '@/components/ui'
 import { type User } from '@/types'
-import { Plus, Search, UsersRound } from 'lucide-react'
+import { Plus, UsersRound } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { UserFormDrawer } from './components/user-form-drawer'
 import { getUserColumns } from './components/user-columns'
@@ -23,6 +23,7 @@ interface UsersClientProps {
 
 export function UsersClient({ users, timeZone }: UsersClientProps) {
   const t = useTranslations('Users')
+  const locale = useLocale()
   const router = useRouter()
   const modal = useUserModal()
   const table = useUserTable(users)
@@ -40,10 +41,11 @@ export function UsersClient({ users, timeZone }: UsersClientProps) {
       getUserColumns({
         t,
         timeZone,
+        locale,
         onEdit: modal.openEdit,
         onDelete: modal.openDelete,
       }),
-    [t, timeZone, users],
+    [locale, t, timeZone, users],
   )
 
   const handleDelete = async () => await actions.remove()
@@ -60,10 +62,10 @@ export function UsersClient({ users, timeZone }: UsersClientProps) {
   const statusTabs = statusFilters.map((filter) => ({
     value: filter.value,
     label: (
-      <span className="inline-flex items-center gap-2.5">
+      <span className="inline-flex items-center gap-1.5">
         <span>{filter.text}</span>
         <span
-          className={`app-micro-label grid h-5 min-w-5 place-items-center rounded-full px-1.5 ${
+          className={`grid h-4 min-w-4 place-items-center rounded-full px-1 text-[10px] leading-none ${
             table.statusFilter === filter.value ? 'bg-app-bg/80 text-app-text' : 'bg-app-active text-app-text-muted'
           }`}
         >
@@ -74,17 +76,14 @@ export function UsersClient({ users, timeZone }: UsersClientProps) {
   }))
 
   return (
-    <PageWrapper className="flex flex-col gap-4">
+    <PageWrapper>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="app-page-title text-app-text flex items-center gap-2">
-            <UsersRound className="size-5 text-sky-400" />
-            {t('title')}
-          </div>
-          <p className="app-body-text text-app-text-muted mt-1">{t('subtitle')}</p>
+          <div className="app-page-title text-app-text flex items-center gap-2">{t('title')}</div>
+          <p className="text-app-text-muted mt-1 text-sm">{t('subtitle')}</p>
         </div>
 
-        <Button size="sm" icon={Plus} onClick={modal.openCreate}>
+        <Button icon={Plus} onClick={modal.openCreate}>
           {t('actions.create')}
         </Button>
       </div>
@@ -94,26 +93,15 @@ export function UsersClient({ users, timeZone }: UsersClientProps) {
       <section className="min-h-0 overflow-hidden">
         <div className="border-app-border/50 flex flex-wrap items-center justify-between gap-3 border-b pb-3">
           <div className="min-w-0 overflow-x-auto">
-            <ToggleButton
-              items={statusTabs}
-              value={table.statusFilter}
-              onChange={table.setStatusFilter}
-              showSeparator={false}
-              shape="rounded"
-              className="h-8 border-none bg-transparent"
-              itemClassName="px-2.5"
-            />
+            <ToggleButton items={statusTabs} value={table.statusFilter} onChange={table.setStatusFilter} />
           </div>
 
-          <div className="relative w-64 max-w-full">
-            <Search className="text-app-text-muted pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2" />
-            <Input
-              value={table.keyword}
-              placeholder={t('searchPlaceholder')}
-              className="bg-transparent pl-8"
-              onChange={(e) => table.setKeyword(e.target.value)}
-            />
-          </div>
+          <SearchInput
+            wrapperClassName="w-64 max-w-full"
+            value={table.keyword}
+            placeholder={t('searchPlaceholder')}
+            onChange={(event) => table.setKeyword(event.target.value)}
+          />
         </div>
 
         {table.list.length ? (
@@ -123,6 +111,7 @@ export function UsersClient({ users, timeZone }: UsersClientProps) {
             sortConfig={table.sort}
             onSortAction={table.handleSort}
             variant="plain"
+            className="[&_.app-body-text]:text-xs"
           />
         ) : (
           <EmptyState message={table.keyword ? t('emptySearch') : t('empty')} className="border-none bg-transparent" />

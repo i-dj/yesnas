@@ -1,6 +1,5 @@
-import type { DataTableHeader } from '@/components/ui'
-import { StatusPill, Tooltip } from '@/components/ui'
-import { formatDateTime } from '@/lib/utils'
+import { Tooltip, type DataTableHeader } from '@/components/ui'
+import { formatDateTime, getTimestamp } from '@/lib/utils'
 import type { Log } from '@/types'
 import { CheckCircle2, CircleAlert, CircleX, UserRound } from 'lucide-react'
 import type { useTranslations } from 'next-intl'
@@ -8,21 +7,55 @@ import type { useTranslations } from 'next-intl'
 export function getLogColumns({
   t,
   timeZone,
+  locale,
 }: {
   t: ReturnType<typeof useTranslations>
   timeZone: string
+  locale: string
 }): DataTableHeader<Log>[] {
   return [
+    {
+      key: 'ipAddress',
+      label: t('columns.ipAddress'),
+      width: '160px',
+      render: (_, record) => (
+        <span className="text-app-text-muted">
+          {record.ipType === 'private'
+            ? t('values.privateNetwork')
+            : record.ipType === 'local'
+              ? t('values.localMachine')
+              : `${record.country ?? ''}${record.city ?? ''}` || '-'}
+        </span>
+      ),
+    },
+    {
+      key: 'event',
+      label: t('columns.event'),
+      render: (_, log) => (
+        <div className="flex min-w-0 items-center gap-2">
+          <SeverityIcon severity={log.severity} />
+          <Tooltip content={log.content || '-'} disabled={!log.content}>
+            <span className="text-app-text-muted truncate text-sm leading-none">{log.content || '-'}</span>
+          </Tooltip>
+        </div>
+      ),
+    },
     {
       key: 'occurredAt',
       label: t('columns.time'),
       width: '180px',
-      render: (value: string) => <span className="text-app-text-muted">{formatDateTime(value, timeZone)}</span>,
+      render: (_, record) => (
+        <Tooltip content={formatDateTime(record.occurredAt, timeZone)}>
+          <span className="text-app-text-muted" suppressHydrationWarning>
+            {getTimestamp(new Date(record.occurredAt), locale, timeZone)}
+          </span>
+        </Tooltip>
+      ),
     },
     {
       key: 'actorUsername',
       label: t('columns.actor'),
-      width: '150px',
+      width: '120px',
       render: (_, log) => (
         <div className="flex min-w-0 items-center gap-2">
           <span className="bg-app-hover grid size-7 shrink-0 place-items-center rounded-full">
@@ -30,42 +63,6 @@ export function getLogColumns({
           </span>
           <span className="truncate">{log.actorDisplayName || log.actorUsername || t('values.system')}</span>
         </div>
-      ),
-    },
-    {
-      key: 'event',
-      label: t('columns.event'),
-      width: '34%',
-      render: (_, log) => (
-        <div className="min-w-0">
-          <div className="text-app-text flex min-w-0 items-center gap-2 font-medium">
-            <SeverityIcon severity={log.severity} />
-            <span className="truncate">{log.event || log.action || '-'}</span>
-          </div>
-          <Tooltip content={log.message || '-'} disabled={!log.message} triggerClassName="block min-w-0">
-            <p className="app-caption text-app-text-muted mt-0.5 truncate">{log.message || '-'}</p>
-          </Tooltip>
-        </div>
-      ),
-    },
-    {
-      key: 'source',
-      label: t('columns.source'),
-      width: '110px',
-      render: (value: string) => <span className="text-app-text-muted">{value || '-'}</span>,
-    },
-    {
-      key: 'ipAddress',
-      label: t('columns.ipAddress'),
-      width: '150px',
-      render: (value: string) => <span className="text-app-text-muted">{value || '-'}</span>,
-    },
-    {
-      key: 'success',
-      label: t('columns.result'),
-      width: '100px',
-      render: (value: boolean) => (
-        <StatusPill color={value ? 'success' : 'danger'} content={value ? t('values.success') : t('values.failed')} />
       ),
     },
   ]

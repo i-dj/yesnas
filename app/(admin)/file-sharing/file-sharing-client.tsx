@@ -19,67 +19,25 @@ import {
   getFileShareProtocolsUrl,
   getFileShareUrl,
   getFileSharesUrl,
-  getStoragePoolsUrl,
-  getUsersUrl,
 } from '@/lib/file-api'
 import { cn } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
 import type { User } from '@/types'
 import type { StoragePoolModel } from '@/types/models/storage'
-import { Copy, Globe2, HardDriveDownload, Network, Plus, UploadCloud } from 'lucide-react'
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { Copy, ExternalLink, Globe2, HardDriveDownload, Network, Plus, UploadCloud, type LucideIcon } from 'lucide-react'
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { getFileSharingColumns } from './_columns/file-sharing-columns'
 import type { FileShareProtocolItem, ProtocolItem, ProtocolKey, ShareStatus, SharedFolder } from './_types'
 import { UserPicker } from './_components/user-picker'
 
-const initialProtocols: ProtocolItem[] = [
-  {
-    protocol: 'smb',
-    key: 'smb',
-    icon: HardDriveDownload,
-    shareUrl: 'smb://yesnas:445',
-    port: 445,
-    active: false,
-    serviceName: 'smbd',
-    status: 'unknown',
-    shareCount: 0,
-  },
-  {
-    protocol: 'ftp',
-    key: 'ftp',
-    icon: UploadCloud,
-    shareUrl: 'ftp://yesnas:21',
-    port: 21,
-    active: false,
-    serviceName: 'proftpd',
-    status: 'unknown',
-    shareCount: 0,
-  },
-  {
-    protocol: 'webdav',
-    key: 'webdav',
-    icon: Globe2,
-    shareUrl: 'http://yesnas:8088',
-    port: 8088,
-    active: false,
-    serviceName: 'apache2',
-    status: 'unknown',
-    shareCount: 0,
-  },
-  {
-    protocol: 'nfs',
-    key: 'nfs',
-    icon: Network,
-    shareUrl: 'yesnas:/',
-    port: 2049,
-    active: false,
-    serviceName: 'nfs-server',
-    status: 'unknown',
-    shareCount: 0,
-  },
-]
+const protocolIcons: Record<ProtocolKey, LucideIcon> = {
+  smb: HardDriveDownload,
+  ftp: UploadCloud,
+  webdav: Globe2,
+  nfs: Network,
+}
 
 const emptyForm = {
   name: '',
@@ -114,17 +72,6 @@ const parseApiErrorMessage = (raw: string, fallback: string) => {
   }
 }
 
-const formatProtocolEndpoint = (href: string, port: number) => {
-  if (/^[a-z]+:\/\/[^/]+:\d+/i.test(href) || /^[^/]+:\//.test(href)) return href
-
-  const protocol = href.match(/^([a-z]+):\/\//i)?.[1]?.toLowerCase()
-  const withoutProtocol = href.replace(/^[a-z]+:\/\//i, '')
-  const withoutPath = withoutProtocol.split('/')[0] || withoutProtocol
-  const withoutExistingPort = withoutPath.replace(/:\d+$/, '')
-
-  return `${protocol ? `${protocol}://` : ''}${withoutExistingPort}:${port}`
-}
-
 const parseClientNetworks = (value: string) =>
   value
     .split(/[\n,，]/)
@@ -138,22 +85,13 @@ const normalizeShare = (share: SharedFolder): SharedFolder => ({
   clientNetworks: share.clientNetworks ?? [],
 })
 
-const mergeProtocolItems = (current: ProtocolItem[], items: FileShareProtocolItem[]) =>
-  current.map((protocol) => {
-    const item = items.find((candidate) => candidate.protocol === protocol.key)
-
-    return item
-      ? {
-          ...protocol,
-          serviceName: item.serviceName,
-          active: item.active,
-          status: item.status,
-          shareUrl: item.shareUrl,
-          port: item.port,
-          shareCount: item.shareCount,
-        }
-      : protocol
-  })
+const toProtocolItems = (items: FileShareProtocolItem[] = []): ProtocolItem[] =>
+  items.map((item) => ({
+    key: item.protocol,
+    icon: protocolIcons[item.protocol],
+    active: item.active,
+    shareUrl: item.shareUrl,
+  }))
 
 export function FileSharingClient({
   initialData,
@@ -162,14 +100,14 @@ export function FileSharingClient({
     storagePools: StoragePoolModel[]
     users: User[]
     shares: SharedFolder[]
-    protocols: FileShareProtocolItem[]
+    protocols: { items?: FileShareProtocolItem[] }
   }
 }) {
   const t = useTranslations('FileSharing')
-  const [protocols, setProtocols] = useState(initialProtocols)
-  const [shares, setShares] = useState<SharedFolder[]>([])
-  const [storagePools, setStoragePools] = useState<StoragePoolModel[]>([])
-  const [users, setUsers] = useState<User[]>([])
+  const [protocols, setProtocols] = useState(() => toProtocolItems(initialData.protocols.items))
+  const [shares, setShares] = useState<SharedFolder[]>(() => initialData.shares.map(normalizeShare))
+  const storagePools = initialData.storagePools
+  const users = initialData.users
   const [targetError, setTargetError] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingShare, setEditingShare] = useState<SharedFolder | null>(null)
@@ -187,67 +125,6 @@ export function FileSharingClient({
     }
   }, [form.path, form.storagePoolId, poolById])
 
-  useEffect(() => {
-    let cancelled = false
-
-    const loadFileSharing = async () => {
-      try {
-        const [poolRes, userRes, sharesRes, protocolRes] = await Promise.all([
-          fetch(getStoragePoolsUrl(), { cache: 'no-store' }),
-          fetch(getUsersUrl(), { cache: 'no-store' }),
-          fetch(getFileSharesUrl(), { cache: 'no-store' }),
-          fetch(getFileShareProtocolsUrl(), { cache: 'no-store' }),
-        ])
-        if (!poolRes.ok) {
-          const text = await poolRes.text()
-          throw new Error(parseApiErrorMessage(text, `Load storage pools failed: ${poolRes.status}`))
-        }
-        if (!userRes.ok) {
-          const text = await userRes.text()
-          throw new Error(parseApiErrorMessage(text, `Load users failed: ${userRes.status}`))
-        }
-        if (!sharesRes.ok) {
-          const text = await sharesRes.text()
-          throw new Error(parseApiErrorMessage(text, `Load file shares failed: ${sharesRes.status}`))
-        }
-        const poolPayload = (await poolRes.json()) as StoragePoolModel[]
-        const userPayload = (await userRes.json()) as User[] | { users?: User[]; items?: User[] }
-        const sharesPayload = (await sharesRes.json()) as { items?: SharedFolder[] } | SharedFolder[]
-        let protocolPayload: { items?: FileShareProtocolItem[] } | null = null
-        let protocolError: Error | null = null
-
-        if (protocolRes.ok) {
-          protocolPayload = (await protocolRes.json()) as { items?: FileShareProtocolItem[] }
-        } else {
-          const text = await protocolRes.text()
-          protocolError = new Error(
-            parseApiErrorMessage(text, `Load file share protocols failed: ${protocolRes.status}`),
-          )
-        }
-
-        if (cancelled) return
-
-        setStoragePools(Array.isArray(poolPayload) ? poolPayload : [])
-        setUsers(Array.isArray(userPayload) ? userPayload : userPayload.users || userPayload.items || [])
-        setShares((Array.isArray(sharesPayload) ? sharesPayload : sharesPayload.items || []).map(normalizeShare))
-        if (protocolPayload) {
-          setProtocols((current) => mergeProtocolItems(current, protocolPayload.items ?? []))
-        } else if (protocolError) {
-          toast.error(`${t('messages.loadProtocolsFailed')}: ${protocolError.message}`, 5000)
-        }
-      } catch (error) {
-        if (cancelled) return
-        const message = error instanceof Error ? error.message : 'Load sharing options failed'
-        toast.error(`${t('messages.loadOptionsFailed')}: ${message}`, 5000)
-      }
-    }
-
-    void loadFileSharing()
-    return () => {
-      cancelled = true
-    }
-  }, [t])
-
   const refreshProtocols = async () => {
     const response = await fetch(getFileShareProtocolsUrl(), { cache: 'no-store' })
     if (!response.ok) {
@@ -256,7 +133,7 @@ export function FileSharingClient({
     }
 
     const payload = (await response.json()) as { items?: FileShareProtocolItem[] }
-    setProtocols((current) => mergeProtocolItems(current, payload.items ?? []))
+    setProtocols(toProtocolItems(payload.items))
   }
 
   const runProtocolAction = async (protocol: ProtocolItem) => {
@@ -555,6 +432,7 @@ export function FileSharingClient({
           </Field>
           <Field label={t('form.status')}>
             <Select
+              id="file-share-status"
               value={form.status}
               onChange={(event) =>
                 setForm((current) => ({
@@ -590,6 +468,18 @@ function ProtocolCard({ protocol, onToggle }: { protocol: ProtocolItem; onToggle
   const t = useTranslations('FileSharing')
   const Icon = protocol.icon
   const endpoint = protocol.shareUrl
+  const href =
+    protocol.key === 'nfs'
+      ? `nfs://${endpoint.replace(/^nfs:\/\//, '').replace(':/', '/')}`
+      : endpoint
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(endpoint)
+    } catch {
+      // Clipboard access may be unavailable in an insecure browser context.
+    }
+  }
 
   return (
     <section className="border-app-border bg-app-bg flex min-h-[136px] flex-col rounded-lg border p-3">
@@ -622,20 +512,31 @@ function ProtocolCard({ protocol, onToggle }: { protocol: ProtocolItem; onToggle
       </div>
 
       <p className="text-app-text-muted mt-2 truncate text-xs">{t(`protocols.${protocol.key}.description`)}</p>
-      <div className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px]">
-        <span
-          className={cn('size-1.5 shrink-0 rounded-full', protocol.active ? 'bg-emerald-400' : 'bg-app-text-muted/45')}
-        />
-        <span className="text-app-text-muted min-w-0 truncate">
-          {protocol.serviceName} · {protocol.status} · {t('shareCount', { count: protocol.shareCount })}
-        </span>
-      </div>
+      <p className="text-app-text-muted mt-1 line-clamp-2 text-[11px]">
+        {t(`protocols.${protocol.key}.connectionHint`)}
+      </p>
 
       <div className="mt-auto flex h-9 pt-2.5">
         <div className="bg-app-hover/45 flex w-full min-w-0 items-center justify-between gap-2 rounded-md px-2.5 py-1.5">
-          <div className="text-app-text min-w-0 truncate font-mono text-xs">{endpoint}</div>
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="text-app-text hover:text-app-primary flex min-w-0 items-center gap-1 truncate font-mono text-xs transition-colors"
+            title={endpoint}
+          >
+            <span className="truncate">{endpoint}</span>
+            <ExternalLink className="size-3 shrink-0" />
+          </a>
           <Tooltip content={t('actions.copy')}>
-            <Button variant="ghost" size="xs" icon={Copy} className="h-5 w-5 rounded p-0" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              icon={Copy}
+              className="h-5 w-5 rounded p-0"
+              onClick={handleCopy}
+            />
           </Tooltip>
         </div>
       </div>

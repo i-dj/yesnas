@@ -3,7 +3,7 @@
 import { ArrowDownToLine, ArrowUpFromLine, Network } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-import { StatusPill } from '@/components/ui'
+import { StatusPill, Tooltip } from '@/components/ui'
 import type { HardwareNetworkInterface } from '@/types'
 import { formatSpeed } from '../utils'
 import { DetailContent, DetailValue, DevicePanel } from './device-panel'
@@ -27,14 +27,14 @@ export function NetworkPanel({ networkInterface }: { networkInterface: HardwareN
         />
       }
     >
-      <div className="grid min-w-0 gap-x-6 gap-y-2 sm:grid-cols-[minmax(0,2fr)_minmax(7rem,0.75fr)]">
+      <div className="grid min-w-0 gap-x-6 gap-y-2">
         <DetailContent label={t('fields.ipAddress')}>
-          <span className="grid min-h-9 min-w-0 flex-1 content-start leading-[1.125rem]" title={ipAddresses}>
+          <span className="`leading-4.5 grid min-h-9 min-w-0 flex-1 content-start">
             {ips.length ? (
               ips.slice(0, 2).map((ip) => (
-                <span key={ip} className="block min-w-0 truncate">
+                <Tooltip content={ip} key={ip} triggerClassName="block min-w-0 truncate">
                   {ip}
-                </span>
+                </Tooltip>
               ))
             ) : (
               <span>-</span>
@@ -42,6 +42,7 @@ export function NetworkPanel({ networkInterface }: { networkInterface: HardwareN
           </span>
         </DetailContent>
         <DetailValue label="MTU" value={String(networkInterface.mtu || '-')} />
+
         <DetailContent label={t('fields.receiveSendSpeed')}>
           <span className="inline-flex items-center gap-1 whitespace-nowrap">
             <ArrowDownToLine className="size-3 text-sky-400" />

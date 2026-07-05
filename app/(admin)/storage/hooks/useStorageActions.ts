@@ -10,7 +10,7 @@ import type { StoragePoolModel } from '@/types/models/storage'
 interface StorageActionsOptions {
   onPoolDeleted?: (poolId: string) => void
   onPoolFormatted?: (pool: StoragePoolModel) => void
-  onPoolUpdated?: (pool: StoragePoolModel) => void
+  onPoolUpdated?: (pool: Partial<StoragePoolModel> & Pick<StoragePoolModel, 'id'>) => void
 }
 
 export interface CreatePoolPayload {
@@ -141,9 +141,12 @@ export function useStorageActions({ onPoolDeleted, onPoolFormatted, onPoolUpdate
         }),
       success: `Snapshot policy updated: ${pool.name}`,
       fail: 'Update snapshot policy failed',
-      onSuccess: (result) => {
-        onPoolUpdated?.(result)
-        router.refresh()
+      onSuccess: () => {
+        onPoolUpdated?.({
+          id: pool.id,
+          autoSnapshotEnabled: payload.autoSnapshotEnabled,
+          autoSnapshotSchedule: payload.autoSnapshotEnabled ? payload.autoSnapshotWeekdays.join('') : '',
+        })
       },
     })
 

@@ -1,19 +1,28 @@
-'use client'
+﻿'use client'
 
-import { Button, EmptyState, Input, MetricStat, Progress, SideDrawer, StatusPill } from '@/components/ui'
+import { Button, EmptyState, Input, SideDrawer, StatusPill } from '@/components/ui'
+import { bytesFormat, formatSmartTime } from '@/lib/utils'
+import type { StoragePoolModel } from '@/types/models/storage'
 import {
-  bytesFormat,
-  calculateUsedPercent,
-  cn,
-  formatDateTime,
-  formatUsagePercent,
-  getProgressColorClass,
-} from '@/lib/utils'
-import type { StoragePoolModel, StoragePoolSnapshotModel } from '@/types/models/storage'
-import { AlertTriangle, ArrowDown, ArrowUp, Camera, HardDrive, HeartPulse, RotateCcw, ShieldAlert } from 'lucide-react'
+  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  Cloud,
+  HardDrive,
+  ShieldAlert,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { SnapshotPolicyControl } from './snapshot-policy-control'
 import { StorageDetailList, StorageDetailSection } from './storage-detail-section'
+import { StorageSummaryHeader } from './summary/storage-summary-header'
+import {
+  getCloudAccountLabel,
+  getCloudProviderKey,
+  getCloudProviderLogoSrc,
+  getCloudStatusBadge,
+  getLocalHealthBadge,
+  getPoolMemberStatus,
+  displayValue,
+} from '../utils'
 
 interface StoragePoolDetailProps {
   open: boolean
@@ -25,18 +34,6 @@ interface StoragePoolDetailProps {
     kind: 'disk' | 'partition'
   }>
   onOpenChange: (open: boolean) => void
-  onRestoreSnapshot?: (
-    pool: StoragePoolModel,
-    snapshotId: string,
-    payload: { password: string; createBackup: boolean },
-  ) => Promise<void>
-  onUpdateSnapshotPolicy?: (
-    pool: StoragePoolModel,
-    payload: {
-      autoSnapshotEnabled: boolean
-      autoSnapshotWeekdays: number[]
-    },
-  ) => Promise<boolean | void>
   onReplaceDisk?: (
     pool: StoragePoolModel,
     payload: {
@@ -47,161 +44,39 @@ interface StoragePoolDetailProps {
   ) => Promise<void>
 }
 
-const groupSnapshots = (items: StoragePoolSnapshotModel[]) => {
-  const now = Date.now()
-  const oneDay = 24 * 60 * 60 * 1000
-  const sevenDays = 7 * oneDay
-  const fourteenDays = 14 * oneDay
-  const thirtyDays = 30 * oneDay
-
-  const groups = {
-    recent7Days: [] as StoragePoolSnapshotModel[],
-    lastWeek: [] as StoragePoolSnapshotModel[],
-    lastMonth: [] as StoragePoolSnapshotModel[],
-  }
-
-  for (const item of items) {
-    const ts = item.createdAt ? new Date(item.createdAt).getTime() : NaN
-    if (Number.isNaN(ts)) {
-      groups.lastMonth.push(item)
-      continue
-    }
-    const age = now - ts
-    if (age <= sevenDays) {
-      groups.recent7Days.push(item)
-    } else if (age <= fourteenDays) {
-      groups.lastWeek.push(item)
-    } else if (age <= thirtyDays) {
-      groups.lastMonth.push(item)
-    } else {
-      groups.lastMonth.push(item)
-    }
-  }
-
-  return groups
-}
-
-function parseSnapshotWeekdays(schedule?: string) {
-  return [
-    ...new Set(
-      (schedule ?? '')
-        .split('')
-        .map(Number)
-        .filter((day) => day >= 1 && day <= 7),
-    ),
-  ].sort()
-}
-
-function sameNumbers(left: number[], right: number[]) {
-  const sortedLeft = [...left].sort()
-  const sortedRight = [...right].sort()
-  return sortedLeft.length === sortedRight.length && sortedLeft.every((value, index) => value === sortedRight[index])
-}
+const cloudProviderLabels = {
+  'google-drive': 'Google Drive',
+  onedrive: 'OneDrive',
+  dropbox: 'Dropbox',
+  cloud: 'Cloud Storage',
+} as const
 
 export function StoragePoolDetail({
   open,
   activePool,
   replaceCandidates = [],
   onOpenChange,
-  onRestoreSnapshot,
-  onUpdateSnapshotPolicy,
   onReplaceDisk,
 }: StoragePoolDetailProps) {
-  const [restoreSnapshotId, setRestoreSnapshotId] = useState<string | null>(null)
-  const [restorePassword, setRestorePassword] = useState('')
-  const [restoreCreateBackup, setRestoreCreateBackup] = useState(true)
-  const [restoreSubmitting, setRestoreSubmitting] = useState(false)
   const [replaceTargetPath, setReplaceTargetPath] = useState<string | null>(null)
   const [replaceNewPath, setReplaceNewPath] = useState('')
   const [replacePassword, setReplacePassword] = useState('')
   const [replaceSubmitting, setReplaceSubmitting] = useState(false)
-  const [autoSnapshotEnabled, setAutoSnapshotEnabled] = useState(false)
-  const [autoSnapshotWeekdays, setAutoSnapshotWeekdays] = useState<number[]>([])
-  const [snapshotPolicySubmitting, setSnapshotPolicySubmitting] = useState(false)
 
   useEffect(() => {
     if (open) return
-    setRestoreSnapshotId(null)
-    setRestorePassword('')
-    setRestoreCreateBackup(true)
-    setRestoreSubmitting(false)
     setReplaceTargetPath(null)
     setReplaceNewPath('')
     setReplacePassword('')
     setReplaceSubmitting(false)
-    setSnapshotPolicySubmitting(false)
   }, [open])
 
   useEffect(() => {
-    setRestoreSnapshotId(null)
-    setRestorePassword('')
-    setRestoreCreateBackup(true)
-    setRestoreSubmitting(false)
     setReplaceTargetPath(null)
     setReplaceNewPath('')
     setReplacePassword('')
     setReplaceSubmitting(false)
-    setSnapshotPolicySubmitting(false)
-    setAutoSnapshotEnabled(Boolean(activePool?.autoSnapshotEnabled))
-    setAutoSnapshotWeekdays(parseSnapshotWeekdays(activePool?.autoSnapshotSchedule))
-  }, [activePool?.autoSnapshotEnabled, activePool?.autoSnapshotSchedule, activePool?.id])
-
-  const snapshots = (activePool?.snapshots ?? [])
-    .filter((item): item is StoragePoolSnapshotModel => Boolean(item))
-    .sort((a, b) => {
-      const t1 = a.createdAt ? new Date(a.createdAt).getTime() : 0
-      const t2 = b.createdAt ? new Date(b.createdAt).getTime() : 0
-      return t2 - t1
-    })
-  const groupedSnapshots = groupSnapshots(snapshots)
-
-  const getMemberStatus = (device: StoragePoolModel['devices'][number]) => {
-    const state = String(device.state || '').toUpperCase()
-    const health = String(device.health || '').toLowerCase()
-    const isFailedHealth = health === 'failed' || health === 'fail' || health === 'warning' || health === 'critical'
-
-    if (state === 'OFFLINE') {
-      return { text: 'OFFLINE', color: 'danger' as const, atRisk: true }
-    }
-    if (state === 'DEGRADED') {
-      return { text: 'DEGRADED', color: 'warning' as const, atRisk: true }
-    }
-    if (state === 'REBUILDING' || state === 'RESYNCING') {
-      return { text: state, color: 'warning' as const, atRisk: false }
-    }
-    if (state === 'ONLINE') {
-      if (isFailedHealth) {
-        return { text: String(device.health || 'WARNING').toUpperCase(), color: 'danger' as const, atRisk: true }
-      }
-      if (health === 'passed' || health === 'healthy') {
-        return { text: 'ONLINE', color: 'success' as const, atRisk: false }
-      }
-      return { text: 'ONLINE', color: 'neutral' as const, atRisk: false }
-    }
-    if (isFailedHealth) {
-      return { text: String(device.health || 'FAILED').toUpperCase(), color: 'danger' as const, atRisk: true }
-    }
-    return { text: 'UNKNOWN', color: 'warning' as const, atRisk: false }
-  }
-
-  const handleConfirmRestoreSnapshot = async (snapshotId: string) => {
-    if (!activePool || !onRestoreSnapshot) return
-    const password = restorePassword.trim()
-
-    try {
-      setRestoreSubmitting(true)
-      await onRestoreSnapshot(activePool, snapshotId, {
-        password,
-        createBackup: restoreCreateBackup,
-      })
-      setRestoreSnapshotId(null)
-      setRestorePassword('')
-    } catch {
-      // keep form data for user to retry
-    } finally {
-      setRestoreSubmitting(false)
-    }
-  }
+  }, [activePool?.id])
 
   const handleConfirmReplaceDisk = async () => {
     if (!activePool || !onReplaceDisk || !replaceTargetPath) return
@@ -223,112 +98,75 @@ export function StoragePoolDetail({
     }
   }
 
-  const handleSaveSnapshotPolicy = async () => {
-    if (!activePool || !onUpdateSnapshotPolicy) return
-    try {
-      setSnapshotPolicySubmitting(true)
-      await onUpdateSnapshotPolicy(activePool, {
-        autoSnapshotEnabled,
-        autoSnapshotWeekdays,
-      })
-    } finally {
-      setSnapshotPolicySubmitting(false)
-    }
-  }
-
-  const snapshotPolicyDirty =
-    Boolean(activePool?.autoSnapshotEnabled) !== autoSnapshotEnabled ||
-    !sameNumbers(parseSnapshotWeekdays(activePool?.autoSnapshotSchedule), autoSnapshotWeekdays)
-  const usedPercent = calculateUsedPercent(activePool?.usedBytes ?? 0, activePool?.totalBytes ?? 0)
   const warnings = [...(activePool?.warnings ?? [])]
-  const cloudUnmountedWarning = '云盘账号可访问，但本地挂载未激活，SMB 或本地路径访问可能不可用。'
+  const cloudUnmountedWarning = 'äº‘ç›˜è´¦å·å¯è®¿é—®ï¼Œä½†æœ¬åœ°æŒ‚è½½æœªæ¿€æ´»ï¼ŒSMB æˆ–æœ¬åœ°è·¯å¾„è®¿é—®å¯èƒ½ä¸å¯ç”¨ã€‚'
   if (activePool?.kind === 'cloud' && !activePool.mounted && !warnings.includes(cloudUnmountedWarning)) {
     warnings.unshift(cloudUnmountedWarning)
   }
-  const healthValue =
-    activePool?.kind === 'cloud' && !activePool.mounted ? 'warning' : String(activePool?.health || '-').toLowerCase()
-  const healthIconClassName =
-    healthValue === 'healthy' && (activePool?.kind !== 'cloud' || activePool.mounted)
-      ? 'text-emerald-400'
-      : healthValue === 'error'
-        ? 'text-red-400'
-        : 'text-amber-400'
+  const isCloudPool = activePool?.kind === 'cloud'
+  const cloudProvider = isCloudPool && activePool ? getCloudProviderKey(activePool) : null
+  const cloudProviderLogoSrc = cloudProvider ? getCloudProviderLogoSrc(cloudProvider) : ''
+  const cloudAccount = activePool ? getCloudAccountLabel(activePool) : ''
+  const detailBadge = activePool
+    ? activePool.kind === 'cloud'
+      ? getCloudStatusBadge(activePool)
+      : getLocalHealthBadge(activePool.health)
+    : null
 
   return (
-    <SideDrawer open={open} onOpenChange={onOpenChange} title={'Pool Details'}>
+    <SideDrawer open={open} onOpenChange={onOpenChange} title={isCloudPool ? 'Cloud Storage' : 'Pool Details'}>
       {!activePool ? (
         <div className="text-app-text-muted text-sm">No pool selected.</div>
       ) : (
         <div className="space-y-5">
-          <section className=" ">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-app-text truncate text-xl leading-tight font-semibold">{activePool.name}</div>
-                <div className="text-app-text-muted app-body-text mt-1 uppercase">
-                  {activePool.kind === 'local' && activePool.raidLevel + ' · '}
-                  {activePool.filesystem}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <MetricStat
-                  label="Members"
-                  className="bg-app-surface"
-                  value={activePool.kind === 'local' ? String(activePool.devices.length) : '-'}
-                />
-                <MetricStat
-                  label="Snapshots"
-                  className="bg-app-surface"
-                  value={activePool.kind === 'local' ? String(activePool.snapshotCount) : '-'}
-                />
+          <StorageSummaryHeader
+            title={activePool.name}
+            subtitle={
+              activePool.kind === 'cloud' && cloudProvider
+                ? cloudProviderLabels[cloudProvider]
+                : [activePool.raidLevel, activePool.filesystem].filter(Boolean).join(' Â· ').toUpperCase()
+            }
+            icon={activePool.kind === 'cloud' ? undefined : HardDrive}
+            iconSrc={cloudProviderLogoSrc}
+            metrics={[
+              {
+                label: 'Free space',
+                value: bytesFormat(activePool.freeBytes, {
+                  standard: 's',
+                  decimalPlaces: 2,
+                }),
+              },
+            ]}
+            usedBytes={activePool.usedBytes}
+            totalBytes={activePool.totalBytes}
+            usagePercent={activePool.usagePercent}
+            pathLabel={activePool.kind === 'local' ? activePool.dataPath : undefined}
+          />
 
-                <MetricStat
-                  label="Free space"
-                  className="bg-app-surface"
-                  value={bytesFormat(activePool.freeBytes, {
-                    standard: 'm',
-                    decimalPlaces: 2,
-                  })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Progress value={usedPercent} showLabel={false} className={getProgressColorClass(usedPercent)} />
-              <div className="text-app-text-muted flex items-center justify-between text-[11px]">
-                <span>
-                  {bytesFormat(activePool.usedBytes ?? 0, {
-                    standard: 'm',
-                    decimalPlaces: 2,
-                  })}{' '}
-                  of{' '}
-                  {bytesFormat(activePool.totalBytes ?? 0, {
-                    standard: 'm',
-                    decimalPlaces: 2,
-                  })}{' '}
-                  ({activePool.dataPath})
-                </span>
-                <span>
-                  {formatUsagePercent(activePool.usedBytes ?? 0, activePool.totalBytes ?? 0, activePool.usagePercent)}
-                </span>
-              </div>
-            </div>
-          </section>
-
-          <StorageDetailSection icon={HardDrive} title="Pool Information">
+          <StorageDetailSection
+            icon={activePool.kind === 'cloud' ? Cloud : HardDrive}
+            title="Storage Information"
+            action={detailBadge ? <StatusPill color={detailBadge.color} content={detailBadge.content} /> : null}
+          >
             <StorageDetailList
               items={[
-                { label: 'Status', value: activePool.status },
+                ...(activePool.kind === 'cloud'
+                  ? [
+                      {
+                        label: 'Provider',
+                        value: cloudProvider ? cloudProviderLabels[cloudProvider] : activePool.filesystem || '-',
+                        fullWidth: true,
+                      },
+                      { label: 'Account', value: displayValue(cloudAccount), fullWidth: true },
+                      {
+                        label: 'Mount Path',
+                        value: displayValue(activePool.mountPath || activePool.dataPath),
+                        fullWidth: true,
+                      },
+                    ]
+                  : []),
                 {
-                  label: 'Health',
-                  value: (
-                    <span className="inline-flex items-center gap-1.5">
-                      <HeartPulse className={`h-3.5 w-3.5 ${healthIconClassName}`} />
-                      {healthValue.toUpperCase()}
-                    </span>
-                  ),
-                },
-                {
-                  label: 'Read Speed',
+                  label: activePool.kind === 'cloud' ? 'Download' : 'Read Speed',
                   value: (
                     <span className="inline-flex items-center gap-1.5">
                       <ArrowDown className="h-3.5 w-3.5 text-sky-400" />
@@ -342,7 +180,7 @@ export function StoragePoolDetail({
                   ),
                 },
                 {
-                  label: 'Write Speed',
+                  label: activePool.kind === 'cloud' ? 'Upload' : 'Write Speed',
                   value: (
                     <span className="inline-flex items-center gap-1.5">
                       <ArrowUp className="h-3.5 w-3.5 text-violet-400" />
@@ -355,8 +193,8 @@ export function StoragePoolDetail({
                     </span>
                   ),
                 },
-                { label: 'Created At', value: formatDateTime(activePool.createdAt) },
-                { label: 'Last Checked', value: formatDateTime(activePool.lastCheckedAt) },
+                { label: 'Created At', value: formatSmartTime(activePool.createdAt) },
+                { label: 'Last Checked', value: formatSmartTime(activePool.lastCheckedAt) },
               ]}
             />
           </StorageDetailSection>
@@ -379,38 +217,20 @@ export function StoragePoolDetail({
 
           {activePool.kind === 'local' && (
             <>
-              <SnapshotPolicyControl
-                enabled={autoSnapshotEnabled}
-                weekdays={autoSnapshotWeekdays}
-                directSelection
-                disabled={snapshotPolicySubmitting}
-                saving={snapshotPolicySubmitting}
-                onWeekdaysChange={() => {}}
-              />
               <section className="space-y-2">
                 <div className="border-app-border flex items-center gap-1.5 border-b pb-1">
-                  <HardDrive className="text-app-text-muted h-3.5 w-3.5" />
-                  <span className="text-app-text text-xs font-semibold uppercase">RAID Members</span>
+                  <HardDrive className="text-app-text-muted h-4 w-4" />
+                  <span className="text-app-text text-sm font-semibold uppercase">RAID Members</span>
                 </div>
                 <div className="grid grid-cols-1 gap-1">
                   {activePool.devices.map((device) => {
-                    const memberStatus = getMemberStatus(device)
+                    const memberStatus = getPoolMemberStatus(device)
                     return (
                       <div key={device.id || device.devicePath} className="space-y-1">
                         <div className="bg-app-hover/25 flex items-center justify-between gap-2 rounded-md px-2 py-1.5">
                           <div className="min-w-0">
-                            <div className="text-app-text truncate text-xs">{device.model}</div>
-                            <div className="text-app-text-muted truncate text-[11px]">
-                              SN: {device.serial} · {device.devicePath || 'N/A'}
-                            </div>
-                            <div className="text-app-text-muted text-[10px] uppercase">
-                              {bytesFormat(device.sizeBytes ?? 0, {
-                                standard: 'm',
-                                decimalPlaces: 0,
-                              })}
-                              · {String(device.transport || '').toUpperCase()} ·{' '}
-                              {(device.deviceRole || 'data').toUpperCase()}
-                            </div>
+                            <div className="text-app-text mb-1 truncate text-sm">{device.model}</div>
+                            <div className="text-app-text-muted truncate text-[13px]">SN: {device.serial}</div>
                           </div>
                           <div className="flex shrink-0 items-center gap-1.5">
                             <StatusPill color={memberStatus.color} content={memberStatus.text} />
@@ -434,7 +254,7 @@ export function StoragePoolDetail({
                         {replaceTargetPath === (device.devicePath || device.path) && (
                           <div className="bg-app-bg mt-1 rounded-md p-2">
                             <div className="space-y-2">
-                              <div className="text-app-text-muted text-[11px]">Select replacement disk</div>
+                              <div className="text-app-text-muted text-xs">Select replacement disk</div>
                               {replaceCandidates.length === 0 ? (
                                 <EmptyState message="No available disk for replacement." />
                               ) : (
@@ -452,12 +272,12 @@ export function StoragePoolDetail({
                                     >
                                       <div className="text-app-text text-xs">{candidate.path}</div>
                                       <div className="text-app-text-muted text-[10px] uppercase">
-                                        {candidate.label} ·{' '}
+                                        {candidate.label} Â·{' '}
                                         {bytesFormat(candidate.sizeBytes ?? 0, {
                                           standard: 'm',
                                           decimalPlaces: 0,
                                         })}{' '}
-                                        · {candidate.kind.toUpperCase()}
+                                        Â· {candidate.kind.toUpperCase()}
                                       </div>
                                     </button>
                                   ))}
@@ -469,7 +289,7 @@ export function StoragePoolDetail({
                                 value={replacePassword}
                                 onChange={(event) => setReplacePassword(event.target.value)}
                                 placeholder="Admin password"
-                                className="h-8 text-xs"
+                                className="text-xs"
                               />
 
                               <div className="flex justify-end gap-2">
@@ -502,109 +322,6 @@ export function StoragePoolDetail({
                   })}
                 </div>
               </section>
-              <section className="space-y-2">
-                <div className="border-app-border flex items-center gap-1.5 border-b pb-1">
-                  <Camera className="text-app-text-muted h-3.5 w-3.5" />
-                  <div className="text-app-text text-xs font-semibold uppercase">Snapshots</div>
-                </div>
-                {snapshots.length === 0 && <EmptyState />}
-                <div className="space-y-1.5">
-                  {(
-                    [
-                      {
-                        label: '最近七天',
-                        items: groupedSnapshots.recent7Days,
-                      },
-                      { label: '上周', items: groupedSnapshots.lastWeek },
-                      { label: '上个月', items: groupedSnapshots.lastMonth },
-                    ] as Array<{
-                      label: string
-                      items: StoragePoolSnapshotModel[]
-                    }>
-                  ).map(({ label, items }) => {
-                    const rows = items
-                    if (rows.length === 0) return null
-                    return (
-                      <div key={label} className="space-y-1">
-                        <div className="text-app-text-muted text-[11px] font-semibold uppercase">{label}</div>
-                        <div className="grid grid-cols-1 gap-1">
-                          {rows.map((snapshot) => (
-                            <div key={snapshot.id} className="bg-app-hover/25 rounded-md px-2 py-1.5">
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="min-w-0">
-                                  <div className="text-app-text truncate text-xs">{snapshot.name}</div>
-                                  <div className="text-app-text-muted truncate text-[10px]">
-                                    {formatDateTime(snapshot.createdAt)}
-                                    {snapshot.description ? ` · ${snapshot.description}` : ''}
-                                  </div>
-                                </div>
-                                <Button
-                                  size="xs"
-                                  className="text-[11px]"
-                                  variant="secondary"
-                                  icon={RotateCcw}
-                                  loading={restoreSubmitting && restoreSnapshotId === snapshot.id}
-                                  onClick={() => {
-                                    setRestoreSnapshotId((prev) => (prev === snapshot.id ? null : snapshot.id))
-                                  }}
-                                >
-                                  Restore
-                                </Button>
-                              </div>
-                              {restoreSnapshotId === snapshot.id && (
-                                <div className="bg-app-bg mt-2 rounded-md p-2">
-                                  <div className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-                                    <Input
-                                      type="password"
-                                      value={restorePassword}
-                                      onChange={(event) => {
-                                        setRestorePassword(event.target.value)
-                                      }}
-                                      placeholder="Admin password"
-                                      className="h-8 text-xs"
-                                    />
-                                    <label className="text-app-text-muted flex items-center gap-2 text-xs">
-                                      <input
-                                        type="checkbox"
-                                        checked={restoreCreateBackup}
-                                        onChange={(event) => setRestoreCreateBackup(event.target.checked)}
-                                      />
-                                      Backup before restore
-                                    </label>
-                                  </div>
-
-                                  <div className="mt-2 flex justify-end gap-2">
-                                    <Button
-                                      size="xs"
-                                      className="text-[11px]"
-                                      variant="secondary"
-                                      onClick={() => {
-                                        setRestoreSnapshotId(null)
-                                        setRestorePassword('')
-                                      }}
-                                    >
-                                      Cancel
-                                    </Button>
-                                    <Button
-                                      size="xs"
-                                      variant="danger"
-                                      className="text-[11px]"
-                                      loading={restoreSubmitting && restoreSnapshotId === snapshot.id}
-                                      onClick={() => handleConfirmRestoreSnapshot(snapshot.id)}
-                                    >
-                                      Confirm Restore
-                                    </Button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </section>{' '}
             </>
           )}
         </div>

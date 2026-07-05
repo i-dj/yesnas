@@ -2,7 +2,6 @@
 
 import {
   Activity,
-  ChevronDown,
   Computer,
   Cpu,
   Database,
@@ -20,17 +19,17 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
-import { Card } from '@/components/ui'
+import { Card, Select } from '@/components/ui'
 import { useSse } from '@/hooks/use-sse'
 import { getSystemNetworkStreamUrl, getSystemNetworkUrl, getSystemStatusStreamUrl } from '@/lib/file-api'
 import { cn, formatBytes, formatOptionalNumber, formatPercent, formatUptime } from '@/lib/utils'
+import { healthLabelMap } from '@/lib/health'
 import { CompactResourceCard, FileSharingOverview, NetworkChart } from './components'
 import type { NetworkRange } from './types'
 import {
   formatCheckedAt,
   formatInterfaceOption,
   formatSpeed,
-  healthLabelMap,
   mergeRealtimeNetworkSnapshot,
   statusLabelMap,
 } from './utils'
@@ -167,7 +166,7 @@ export default function DashboardPage() {
       <section className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex flex-row gap-3">
           <h1 className="app-page-title text-app-text mb-2">信息中心</h1>
-          <div className="text-app-text-muted flex items-center gap-2 text-xs font-medium">
+          <div className="text-app-text-muted flex items-center gap-2 text-sm font-medium">
             <span
               className={cn(
                 'inline-flex size-2 rounded-full',
@@ -191,7 +190,7 @@ export default function DashboardPage() {
           <Card key={card.title} className="p-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-app-text-muted text-xs font-medium">{card.title}</p>
+                <p className="text-app-text-muted text-sm font-medium">{card.title}</p>
                 <p className="text-app-text mt-2 truncate text-xl font-semibold tracking-normal">{card.value}</p>
               </div>
               <span
@@ -203,7 +202,7 @@ export default function DashboardPage() {
                 <card.icon className="size-3.5" />
               </span>
             </div>
-            {card.meta && <p className="text-app-text-muted mt-3 truncate text-xs">{card.meta}</p>}
+            {card.meta && <p className="text-app-text-muted mt-2 truncate text-[13px]">{card.meta}</p>}
           </Card>
         ))}
       </section>
@@ -214,7 +213,7 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <h2 className="text-app-text text-sm font-semibold">网络带宽</h2>
-                <p className="text-app-text-muted mt-1 text-xs">
+                <p className="text-app-text-muted mt-1 text-sm">
                   {networkRanges.find((item) => item.value === networkRange)?.label ?? networkRange} ·{' '}
                   {selectedNetwork === 'all' ? '全部网卡' : selectedNetwork}
                 </p>
@@ -245,31 +244,28 @@ export default function DashboardPage() {
                     className={cn(
                       'px-2.5 transition',
                       networkRange === range.value
-                        ? 'bg-app-hover text-app-text'
-                        : 'text-app-text-muted hover:text-app-text hover:bg-app-hover/60',
+                        ? 'bg-app-hover text-sm'
+                        : 'text-app-text-muted hover:text-app-text hover:bg-app-hover/60 text-sm',
                     )}
                   >
                     {range.label}
                   </button>
                 ))}
               </div>
-              <label className="text-app-text-muted flex items-center text-xs">
-                <span className="border-app-border bg-app-bg relative inline-flex h-8 w-full min-w-0 items-center rounded-md border sm:w-72">
-                  <select
-                    value={selectedNetwork}
-                    onChange={(event) => setSelectedNetwork(event.target.value)}
-                    className="text-app-text h-full w-full appearance-none bg-transparent px-2.5 pr-7 text-xs outline-none"
-                  >
-                    <option value="all">全部网卡</option>
-                    {networkInterfaces.map((item) => (
-                      <option key={item.name} value={item.name}>
-                        {formatInterfaceOption(item)}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="text-app-text-muted pointer-events-none absolute right-2 size-3" />
-                </span>
-              </label>
+              <Select
+                id="dashboard-network-interface"
+                value={selectedNetwork}
+                wrapperClassName="w-full sm:w-72"
+                className="h-8 bg-transparent text-sm"
+                onChange={(event) => setSelectedNetwork(event.target.value)}
+              >
+                <option value="all">全部网卡</option>
+                {networkInterfaces.map((item) => (
+                  <option key={item.name} value={item.name}>
+                    {formatInterfaceOption(item)}
+                  </option>
+                ))}
+              </Select>
             </div>
           </div>
 
@@ -336,9 +332,9 @@ function MiniStatus({ icon: Icon, label, value }: { icon: LucideIcon; label: str
     <div className="flex items-center gap-2 px-1 py-1 sm:px-3">
       <span className="flex items-center gap-1.5">
         <Icon className="text-app-text-muted size-3.5" />
-        <span className="text-app-text-muted text-xs">{label}</span>
+        <span className="text-app-text-muted text-sm">{label}</span>
       </span>
-      <span className="text-app-text text-xs font-semibold">{value}</span>
+      <span className="text-app-text text-sm font-semibold">{value}</span>
     </div>
   )
 }
@@ -355,13 +351,13 @@ function NetworkTrafficStat({
   className: string
 }) {
   return (
-    <div className="bg-app-bg/70 flex min-w-35 items-center gap-2 rounded-md px-2 py-1">
-      <span className="bg-app-hover grid size-8 shrink-0 place-items-center rounded-md">
-        <Icon className={cn('size-3.5 opacity-50', className)} />
+    <div className="flex min-w-36 items-center gap-2 rounded-md px-2 py-1">
+      <span className="border-app-border grid size-8.5 shrink-0 place-items-center rounded-md border">
+        <Icon className={cn('size-4 opacity-50', className)} />
       </span>
       <span className="min-w-0">
-        <span className="text-app-text-muted block text-[12px]">{label}</span>
-        <span className="text-app-text block truncate text-xs font-semibold tracking-normal">{value}</span>
+        <span className="text-app-text-muted block text-xs">{label}</span>
+        <span className="text-app-text block truncate text-sm font-semibold tracking-normal">{value}</span>
       </span>
     </div>
   )

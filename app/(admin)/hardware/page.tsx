@@ -19,11 +19,10 @@ export default function HardwarePage() {
   })
 
   return (
-    <PageWrapper className="-mx-8 gap-3 overflow-y-auto px-8 pb-8">
+    <PageWrapper className="flex-1 overflow-x-hidden overflow-y-auto">
       <section className="flex shrink-0 flex-col gap-2 pb-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="app-page-title text-app-text flex items-center gap-2">
-            <CircuitBoard className="size-5 text-sky-400" />
             {t('title')}
             <StatusPill
               color={streamState === 'error' ? 'danger' : streamState === 'ready' ? 'success' : 'neutral'}
@@ -36,9 +35,9 @@ export default function HardwarePage() {
               }
             />
           </div>
-          <p className="text-app-text-muted mt-0.5 text-xs">{t('subtitle')}</p>
+          <p className="text-app-text-muted mt-0.5 text-sm">{t('subtitle')}</p>
         </div>
-        <p className="text-app-text-muted text-xs">
+        <p className="text-app-text-muted text-sm">
           {t('lastUpdated', { value: snapshot ? formatDateTime(snapshot.checkedAt) : '--' })}
         </p>
       </section>

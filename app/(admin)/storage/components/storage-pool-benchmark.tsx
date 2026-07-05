@@ -1,9 +1,11 @@
 'use client'
 
 import { Button, Progress, SideDrawer } from '@/components/ui'
-import { calculateUsedPercent, cn, getProgressColorClass } from '@/lib/utils'
-import { bytesFormat } from '@/lib/utils'
+import { bytesFormat, cn } from '@/lib/utils'
 import type { StoragePoolModel } from '@/types/models/storage'
+import { HardDrive } from 'lucide-react'
+import { getCloudProviderKey, getCloudProviderLogoSrc } from '../utils'
+import { StorageSummaryHeader } from './summary/storage-summary-header'
 
 const sizeItems = [
   { value: '1', label: '1G' },
@@ -12,6 +14,22 @@ const sizeItems = [
   { value: '20', label: '20G' },
   { value: '50', label: '50G' },
 ] as const
+
+const cloudProviderLabels = {
+  'google-drive': 'Google Drive',
+  onedrive: 'OneDrive',
+  dropbox: 'Dropbox',
+  cloud: 'Cloud Storage',
+} as const
+
+function formatSpeed(value: number) {
+  return value
+    ? `${bytesFormat(value, {
+        standard: 's',
+        decimalPlaces: 2,
+      })}/s`
+    : '-'
+}
 
 export type BenchmarkStage = 'idle' | 'ready' | 'write' | 'read' | 'completed' | 'failed'
 
@@ -65,8 +83,9 @@ export function StoragePoolBenchmark({
   const testFileBytes = state.sizeGiB * 1024 * 1024 * 1024
   const totalBytes = pool?.totalBytes ?? 0
   const freeBytes = pool?.freeBytes ?? 0
+  const cloudProvider = pool?.kind === 'cloud' ? getCloudProviderKey(pool) : null
+  const cloudProviderLogoSrc = cloudProvider ? getCloudProviderLogoSrc(cloudProvider) : ''
 
-  const usedPercent = calculateUsedPercent(pool?.usedBytes ?? 0, totalBytes)
   const insufficientSpace = freeBytes > 0 ? testFileBytes > freeBytes : false
   const progressPercent = Math.max(0, Math.min(100, state.percent || 0))
 
@@ -74,34 +93,33 @@ export function StoragePoolBenchmark({
     <SideDrawer open={open} onOpenChange={onOpenChange} title={'Benchmark'}>
       {!pool ? null : (
         <div className="space-y-8 pb-4">
-          <div className=" ">
-            <div className="text-app-text text-sm font-semibold">{pool.name}</div>
-            <div className="text-app-text-muted mt-1.5 truncate text-xs uppercase">
-              {pool.kind === 'local' ? pool.raidLevel + ' · ' : ''}
-              {pool.filesystem}
-            </div>
-            <div className="mt-2">
-              <Progress value={usedPercent} showLabel={false} className={getProgressColorClass(usedPercent)} />{' '}
-              <div className="text-app-text-muted flex items-center justify-between text-xs">
-                <span>
-                  {bytesFormat(pool.usedBytes ?? 0, {
-                    standard: 's',
-                    decimalPlaces: 2,
-                  })}{' '}
-                  /{' '}
-                  {bytesFormat(pool.totalBytes ?? 0, {
-                    standard: 's',
-                    decimalPlaces: 2,
-                  })}
-                </span>
-                <span>{Math.round(usedPercent)}%</span>
-              </div>
-            </div>
-          </div>
+          <StorageSummaryHeader
+            title={pool.name}
+            subtitle={
+              pool.kind === 'cloud' && cloudProvider
+                ? cloudProviderLabels[cloudProvider]
+                : [pool.raidLevel, pool.filesystem].filter(Boolean).join(' · ')
+            }
+            icon={pool.kind === 'cloud' ? undefined : HardDrive}
+            iconSrc={cloudProviderLogoSrc}
+            metrics={[
+              {
+                label: 'Free space',
+                value: bytesFormat(pool.freeBytes, {
+                  standard: 's',
+                  decimalPlaces: 2,
+                }),
+              },
+            ]}
+            usedBytes={pool.usedBytes}
+            totalBytes={pool.totalBytes}
+            usagePercent={pool.usagePercent}
+            pathLabel={pool.kind === 'local' ? pool.dataPath : undefined}
+          />
 
           {pool.kind === 'local' && (
             <div className="space-y-5">
-              <div className="text-app-text text-xs font-semibold uppercase">Test File Size</div>
+              <div className="text-app-text text-sm font-semibold uppercase">Test File Size</div>
               <div className="border-app-border flex items-center gap-4 border-b pb-2">
                 {sizeItems.map((item) => {
                   const active = String(state.sizeGiB) === item.value
@@ -127,7 +145,7 @@ export function StoragePoolBenchmark({
                   )
                 })}
               </div>
-              <p className="text-app-text-muted text-xs">Larger test files are more accurate but take more time.</p>
+              <p className="text-app-text-muted text-sm">Larger test files are more accurate but take more time.</p>
               {insufficientSpace ? (
                 <p className="text-xs text-red-400">
                   Insufficient space: selected test size is larger than free space (
@@ -137,58 +155,45 @@ export function StoragePoolBenchmark({
             </div>
           )}
 
-          <div className="bg-app-surface border-app-border space-y-1.5 rounded-lg border p-3">
-            <div className="text-app-text-muted text-xs">Stage: {stageLabel}</div>
+          <div className="bg-app-hover/20 border-app-border space-y-3 rounded-lg border p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-app-text-muted text-[11px] font-medium uppercase">Stage</div>
+                <div className="text-app-text mt-1 text-sm font-semibold">{stageLabel}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-app-text-muted text-[11px] font-medium uppercase">Elapsed</div>
+                <div className="text-app-text mt-1 font-mono text-sm font-semibold tabular-nums">
+                  {state.elapsedSeconds ? `${state.elapsedSeconds.toFixed(1)} s` : '-'}
+                </div>
+              </div>
+            </div>
 
             <Progress value={progressPercent} showLabel={false} className="bg-blue-500" />
-            <div className="text-app-text-muted flex items-center justify-between text-xs">
-              <span>
-                {bytesFormat(state.completedBytes, {
-                  standard: 's',
-                  decimalPlaces: 2,
-                })}{' '}
-                /{' '}
-                {bytesFormat(state.totalBytes, {
-                  standard: 's',
-                  decimalPlaces: 2,
-                })}{' '}
-                <span>({Math.round(progressPercent)}%)</span>
+            <div className="text-app-text-muted flex items-center justify-between gap-4 text-xs">
+              <span>{Math.round(progressPercent)}%</span>
+              <span className="text-app-text shrink-0 font-mono font-semibold tabular-nums">
+                {formatSpeed(state.currentSpeedBytesPerSec)}
               </span>
-              <span>
-                {state.currentSpeedBytesPerSec
-                  ? `${bytesFormat(state.currentSpeedBytesPerSec, {
-                      standard: 's',
-                      decimalPlaces: 2,
-                    })}/s`
-                  : '-'}
-              </span>
-            </div>
-            <div className="text-app-text-muted text-xs">
-              Elapsed:
-              {state.elapsedSeconds ? `${state.elapsedSeconds.toFixed(1)}s` : '-'}
             </div>
           </div>
 
           {state.stage === 'completed' ? (
-            <div className="bg-app-surface border-app-border rounded-lg border p-3">
-              <div className="text-app-text text-xs font-semibold uppercase">Final Result</div>
-              <div className="text-app-text-muted mt-2 text-xs">
-                Read:{' '}
-                {state.readSpeedBytesPerSec || pool.readSpeedBytesPerSec
-                  ? `${bytesFormat((state.readSpeedBytesPerSec || pool.readSpeedBytesPerSec) ?? 0, {
-                      standard: 's',
-                      decimalPlaces: 2,
-                    })}/s`
-                  : '-'}
-              </div>
-              <div className="text-app-text-muted text-xs">
-                Write:{' '}
-                {state.writeSpeedBytesPerSec || pool.writeSpeedBytesPerSec
-                  ? `${bytesFormat((state.writeSpeedBytesPerSec || pool.writeSpeedBytesPerSec) ?? 0, {
-                      standard: 's',
-                      decimalPlaces: 2,
-                    })}/s`
-                  : '-'}
+            <div className="bg-app-surface border-app-border rounded-lg border p-4">
+              <div className="text-app-text-muted text-[11px] font-semibold uppercase">Final Result</div>
+              <div className="divide-app-border mt-3 grid grid-cols-2 divide-x">
+                <div className="pr-4">
+                  <div className="text-app-text-muted text-xs">Read</div>
+                  <div className="text-app-text mt-1.5 font-mono text-base font-semibold tabular-nums">
+                    {formatSpeed((state.readSpeedBytesPerSec || pool.readSpeedBytesPerSec) ?? 0)}
+                  </div>
+                </div>
+                <div className="pl-4">
+                  <div className="text-app-text-muted text-xs">Write</div>
+                  <div className="text-app-text mt-1.5 font-mono text-base font-semibold tabular-nums">
+                    {formatSpeed((state.writeSpeedBytesPerSec || pool.writeSpeedBytesPerSec) ?? 0)}
+                  </div>
+                </div>
               </div>
             </div>
           ) : null}

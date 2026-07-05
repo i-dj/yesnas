@@ -7,8 +7,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { ToggleButton } from '@/components/ui'
 
 const ranges = ['24h', '7d', '30d', '90d', '1y'] as const
-export type LogTimeRange = LogHeatmapRange | 'custom'
-const rangeOptions: readonly LogTimeRange[] = ranges
+const rangeOptions: readonly LogHeatmapRange[] = ranges
 const intensityClasses = [
   'bg-app-hover/45',
   'bg-sky-500/15',
@@ -32,25 +31,25 @@ export function LogHeatmap({
   selectedBucket,
   rangeEnd,
   timeZone,
-  onRangeChange,
-  onBucketClick,
+  onRangeChangeAction,
+  onBucketClickAction,
 }: {
   data: LogHeatmapResponse
-  range: LogTimeRange
+  range: LogHeatmapRange
   loading: boolean
   total: number
   selectedBucket?: string
   rangeEnd: string
   timeZone: string
-  onRangeChange: (range: LogTimeRange) => void
-  onBucketClick: (time: string, bucket: LogHeatmapResponse['bucket']) => void
+  onRangeChangeAction: (range: LogHeatmapRange) => void
+  onBucketClickAction: (time: string, bucket: LogHeatmapResponse['bucket']) => void
 }) {
   const t = useTranslations('Logs')
   const locale = useLocale()
   const buckets = fillHeatmapBuckets(data, rangeEnd)
   const max = Math.max(...buckets.map((bucket) => bucket.count), 1)
   const columns = getHeatmapColumns(data.range)
-  const items: Array<{ value: LogTimeRange; label: string }> = rangeOptions.map((value) => ({
+  const items: Array<{ value: LogHeatmapRange; label: string }> = rangeOptions.map((value) => ({
     value,
     label: t(`ranges.${value}`),
   }))
@@ -58,18 +57,10 @@ export function LogHeatmap({
   return (
     <section className="border-app-border/60 border-b pb-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <ToggleButton
-          items={items}
-          value={range}
-          onChange={onRangeChange}
-          showSeparator={false}
-          shape="rounded"
-          className="h-8 border-none bg-transparent"
-          itemClassName="px-2"
-        />
+        <ToggleButton items={items} value={range} onChange={onRangeChangeAction} allowReselect shape="pill" />
         <div className="flex items-baseline gap-1.5">
           <span className="text-app-text font-semibold">{total}</span>
-          <span className="app-caption text-app-text-muted">{t('total')}</span>
+          <span className="text-app-text-muted text-sm">{t('total')}</span>
         </div>
       </div>
 
@@ -78,6 +69,11 @@ export function LogHeatmap({
           {buckets.map((bucket) => {
             const intensity = bucket.count === 0 ? 0 : Math.max(1, Math.ceil((bucket.count / max) * 4))
             const colors = bucket.failedCount ? failedIntensityClasses : intensityClasses
+            const selectedClass = bucket.failedCount
+              ? 'ring-1 ring-red-400/65 ring-offset-1 ring-offset-transparent'
+              : bucket.count > 0
+                ? 'ring-1 ring-sky-400/65 ring-offset-1 ring-offset-transparent'
+                : 'ring-app-border-strong ring-1 ring-offset-1 ring-offset-transparent'
             return (
               <button
                 type="button"
@@ -87,17 +83,17 @@ export function LogHeatmap({
                   count: bucket.count,
                   failed: bucket.failedCount ?? 0,
                 })}
-                onClick={() => onBucketClick(bucket.time, data.bucket)}
+                onClick={() => onBucketClickAction(bucket.time, data.bucket)}
                 className={cn(
                   'h-5 min-w-0 rounded-[3px] transition-all outline-none',
                   colors[intensity],
-                  selectedBucket === bucket.time && 'ring-app-text ring-offset-app-bg ring-1 ring-offset-1',
+                  selectedBucket === bucket.time && selectedClass,
                 )}
               />
             )
           })}
         </div>
-        <div className="app-micro-label text-app-text-muted mt-1.5 flex w-full justify-between">
+        <div className="text-app-text-muted mt-2.5 flex w-full justify-between text-xs">
           <span>{formatHeatmapTime(buckets.at(0)?.time, data.bucket, locale, timeZone)}</span>
           <span>{formatHeatmapTime(buckets.at(-1)?.time, data.bucket, locale, timeZone)}</span>
         </div>

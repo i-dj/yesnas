@@ -21,6 +21,12 @@ export interface Log {
   actorDisplayName: string
 
   ipAddress: string
+  ipType: string
+
+  country: string
+  city: string
+  content: string
+
   userAgent: string
   method: string
   path: string

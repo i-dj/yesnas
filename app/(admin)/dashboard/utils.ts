@@ -4,18 +4,11 @@ import {
   NetworkPoint,
   SystemState,
 } from '@/types/models/dashboard'
-import { formatBytes } from '@/lib/utils'
+import { formatBytesPerSecond } from '@/lib/utils'
 
 export const statusLabelMap: Record<SystemState, string> = {
   healthy: '运行正常',
   warning: '需要关注',
-  error: '异常',
-  unknown: '未知',
-}
-
-export const healthLabelMap: Record<SystemState, string> = {
-  healthy: '健康',
-  warning: '警告',
   error: '异常',
   unknown: '未知',
 }
@@ -50,9 +43,7 @@ export function formatChartTime(timestamp?: string) {
   })
 }
 
-export function formatSpeed(bytesPerSec: number) {
-  return `${formatBytes(bytesPerSec)}/s`
-}
+export const formatSpeed = formatBytesPerSecond
 
 export function formatCheckedAt(checkedAt: string) {
   const time = checkedAt.match(/T(\d{2}:\d{2}:\d{2})/)

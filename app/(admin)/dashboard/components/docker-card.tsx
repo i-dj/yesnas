@@ -1,8 +1,12 @@
 'use client'
 
-import { Card, MetricStat } from '@/components/ui'
+import { Boxes, Play, Square, type LucideIcon } from 'lucide-react'
+
+import { Card, InlineStat } from '@/components/ui'
 import { useSse } from '@/hooks/use-sse'
 import { getDockerContainersStreamUrl } from '@/lib/file-api'
+import { formatStatValue } from '@/lib/utils'
+import { OverviewCardHeader } from './overview-card-header'
 
 type DockerContainerSnapshot = {
   id: string
@@ -27,25 +31,46 @@ export function DockerCard() {
   const loading = !snapshot
 
   return (
-    <Card className="flex h-full min-h-36 flex-col p-0 xl:col-span-3">
-      <div className="border-app-border flex h-17 shrink-0 items-center justify-between gap-3 border-b p-3">
-        <div className="min-w-0">
-          <h2 className="text-app-text text-sm font-semibold">Docker 容器</h2>
-          <p className="text-app-text-muted mt-1 truncate text-xs">镜像与容器运行状态</p>
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <MetricStat label="镜像" value={statValue(imageCount, loading)} />
-          <MetricStat label="容器" value={statValue(containers.length, loading)} />
-        </div>
-      </div>
-      <div className="grid flex-1 grid-cols-2 gap-2 p-2.5">
-        <MetricStat label="运行中" value={statValue(runningCount, loading)} variant="panel" />
-        <MetricStat label="已停止" value={statValue(stoppedCount, loading)} variant="panel" />
+    <Card className="flex min-h-44 flex-col overflow-hidden p-0 xl:col-span-3">
+      <OverviewCardHeader icon={Boxes} title="Docker 容器">
+        <InlineStat label="镜像" value={formatStatValue(imageCount, loading)} />
+        <InlineStat label="容器" value={formatStatValue(containers.length, loading)} divided />
+      </OverviewCardHeader>
+
+      <div className="grid flex-1 grid-cols-2">
+        <ContainerMetric icon={Play} label="运行中" value={formatStatValue(runningCount, loading)} active />
+        <ContainerMetric icon={Square} label="已停止" value={formatStatValue(stoppedCount, loading)} divided />
       </div>
     </Card>
   )
 }
 
-function statValue(value: number, loading: boolean) {
-  return loading ? '-' : String(value)
+function ContainerMetric({
+  icon: Icon,
+  label,
+  value,
+  active = false,
+  divided = false,
+}: {
+  icon: LucideIcon
+  label: string
+  value: string
+  active?: boolean
+  divided?: boolean
+}) {
+  return (
+    <div className={`flex items-center gap-3 px-4 py-4 ${divided ? 'border-app-border border-l' : ''}`}>
+      <span
+        className={`grid size-5 shrink-0 place-items-center ${
+          active ? 'text-emerald-500' : 'text-app-text-muted'
+        }`}
+      >
+        <Icon className="size-3.5" strokeWidth={1.75} />
+      </span>
+      <div className="min-w-0">
+        <div className="text-app-text text-lg leading-none font-semibold">{value}</div>
+        <div className="text-app-text-muted mt-1.5 truncate text-xs">{label}</div>
+      </div>
+    </div>
+  )
 }

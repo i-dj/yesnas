@@ -4,11 +4,11 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
-import { FiSearch, FiUser } from 'react-icons/fi'
+import { FiUser } from 'react-icons/fi'
 import { menuGroups } from './menu'
 import Image from 'next/image'
 import { ChevronDown, ChevronLeft, ImageUp, KeyRound, LogOut, MessageCircleMore, Upload } from 'lucide-react'
-import { ActionMenu, Button, SideDrawer, ThemeToggle, ToastStack } from '../ui'
+import { ActionMenu, Button, SearchInput, SideDrawer, ThemeToggle, ToastStack } from '../ui'
 import { GlobalUpload } from './global-upload'
 import { useUploadStore } from '@/store/use-upload-store'
 import { useToastStore } from '@/store/use-toast-store'
@@ -18,6 +18,15 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const tLayout = useTranslations('Layout')
   const tCommon = useTranslations('Common')
   const pathname = usePathname()
+  const usePageScroll =
+    pathname === '/logs' ||
+    pathname.startsWith('/logs/') ||
+    pathname === '/storage' ||
+    pathname.startsWith('/storage/') ||
+    pathname === '/file' ||
+    pathname.startsWith('/file/') ||
+    pathname === '/docker' ||
+    pathname.startsWith('/docker/')
   const router = useRouter()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [uploadDrawer, setUploadDrawer] = useState<boolean>(false)
@@ -27,19 +36,20 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const removeToast = useToastStore((state) => state.remove)
   const uploadFileList = Object.values(uploadFiles)
   const hasUploadingFiles = uploadFileList.some((file) => file.status === 'uploading')
+  const activePathname = pathname === '/file' || pathname.startsWith('/file/') ? '/storage' : pathname
   const pageTitle =
     menuGroups
       .flatMap((group) => group.sub)
-      .find((item) => pathname === item.href || pathname.startsWith(item.href + '/'))?.nameKey ?? null
+      .find((item) => activePathname === item.href || activePathname.startsWith(item.href + '/'))?.nameKey ?? null
 
   // Shared active-route matcher
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
+  const isActive = (href: string) => activePathname === href || activePathname.startsWith(href + '/')
 
   const userMenuItems = [
     {
       render: () => (
         <div className="flex items-center justify-between gap-4 px-1 py-1">
-          <span className="text-app-text text-[13px]">{tCommon('theme.label')}</span>
+          <span className="text-app-text text-sm">{tCommon('theme.label')}</span>
           <ThemeToggle />
         </div>
       ),
@@ -155,11 +165,11 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                       <Link
                         href={item.href}
                         className={cn(
-                          'group relative flex cursor-pointer items-center rounded-lg py-2 text-sm transition-all',
+                          'group relative flex cursor-pointer items-center rounded-lg py-2 text-[15px] font-normal transition-all duration-200',
                           sidebarCollapsed ? 'justify-center px-2' : 'px-4',
                           active
-                            ? 'bg-app-active text-app-text hover:bg-app-hover font-medium'
-                            : 'text-app-text hover:bg-app-active',
+                            ? 'text-app-text bg-blue-500/8 font-semibold hover:bg-blue-500/12'
+                            : 'text-app-text/70 hover:bg-app-active hover:text-app-text',
                         )}
                         title={sidebarCollapsed ? itemLabel : undefined}
                       >
@@ -168,7 +178,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                           className={cn(
                             'shrink-0 transition-colors',
                             sidebarCollapsed ? 'mr-0' : 'mr-5',
-                            active ? 'text-app-text' : 'text-app-text group-hover:text-app-text',
+                            active ? 'text-blue-500' : 'text-app-text-muted group-hover:text-app-text',
                           )}
                         />
                         {!sidebarCollapsed && <span>{itemLabel}</span>}
@@ -190,14 +200,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             {pageTitle ? tLayout(`nav.${pageTitle}`) : tCommon('brand')}
           </div>
           <div className="flex flex-row gap-5">
-            <div className="relative ml-4 flex max-w-md flex-1 items-center">
-              <FiSearch className="absolute top-1/2 left-3 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder={tCommon('searchPlaceholder')}
-                className="bg-app-active/50 text-app-text w-full rounded-full border border-none px-10 py-1.5 text-sm focus:outline-none"
-              />
-            </div>
+            <SearchInput wrapperClassName="ml-4 max-w-md flex-1" placeholder={tCommon('searchPlaceholder')} />
             <div className="flex flex-col items-center">
               <Button
                 icon={Upload}
@@ -235,7 +238,14 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         </header>
 
         {/* Scrollable content area **/}
-        <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-8">{children}</main>
+        <main
+          className={cn(
+            'flex min-h-0 flex-1 flex-col px-8',
+            usePageScroll ? 'overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable]' : 'overflow-hidden',
+          )}
+        >
+          {children}
+        </main>
       </div>
 
       <SideDrawer
@@ -253,7 +263,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         }}
         title="Upload"
       >
-        <GlobalUpload />
+        <GlobalUpload isOpen={uploadDrawer} />
       </SideDrawer>
 
       <ToastStack toasts={toasts} onClose={removeToast} />

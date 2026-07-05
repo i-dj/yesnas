@@ -5,7 +5,7 @@ import { ProtocolItem, SharedFolder } from '@/types'
 export const fileShareApi = {
   ...createCrudApi<SharedFolder>('/file-shares'),
 
-  protocols: () => request<ProtocolItem[]>('/file-shares/protocols'),
+  protocols: () => request<{ items: ProtocolItem[] }>('/file-shares/protocols'),
 
   actionProtocol: (key: string, action: 'start' | 'stop') =>
     request(`/file-shares/protocols/${key}/action`, {

@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { Upload, FolderUp, FileUp, X, AlertCircle, CheckCircle2, FileIcon, Image as ImageIcon } from 'lucide-react'
 import { Button, EmptyState, UploadTargetDropdown, type UploadTargetValue } from '@/components/ui'
 import { uppy } from '@/lib/uppy'
 import { useUploadStore } from '@/store/use-upload-store'
 import { toast } from '@/store/use-toast-store'
-import { bytesFormat } from '@/lib/utils'
 import { getFileConfig } from '@/lib/file-utils'
 import { getStoragePoolsUrl } from '@/lib/file-api'
 import type { StoragePoolModel } from '@/types/models/storage'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 const getUploadIconMeta = (name: string) => {
   const ext = name.split('.').pop()?.toLowerCase() || ''
@@ -18,7 +18,65 @@ const getUploadIconMeta = (name: string) => {
   return config
 }
 
-export const GlobalUpload = () => {
+const formatStableBytes = (bytes: number) => {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let value = Math.max(0, bytes)
+  let unitIndex = 0
+
+  while (value >= 1000 && unitIndex < units.length - 1) {
+    value /= 1000
+    unitIndex += 1
+  }
+
+  return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`
+}
+
+const decodeFileIdPath = (id: string) => {
+  if (!id || typeof window === 'undefined') return ''
+  try {
+    const normalized = id.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=')
+    const binary = window.atob(padded)
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
+    return new TextDecoder().decode(bytes)
+  } catch {
+    return ''
+  }
+}
+
+const splitParentPathNames = (parentId: string, storageId: string, pool?: StoragePoolModel) => {
+  const decodedPath = decodeFileIdPath(parentId)
+  if (!decodedPath) return []
+
+  const normalizedPath = decodedPath.replace(/\\/g, '/').replace(/\/+/g, '/')
+  const prefixes = [pool?.dataPath, pool?.mountPath]
+    .filter((item): item is string => Boolean(item))
+    .map((item) => item.replace(/\\/g, '/').replace(/\/+/g, '/').replace(/\/$/, ''))
+
+  const matchedPrefix = prefixes.find((prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`))
+  if (matchedPrefix) {
+    return normalizedPath.slice(matchedPrefix.length).split('/').filter(Boolean)
+  }
+
+  const parts = normalizedPath.split('/').filter(Boolean)
+  const storageMarkerIndex = parts.findIndex((part) => part.includes(storageId))
+  if (storageMarkerIndex >= 0) return parts.slice(storageMarkerIndex + 1)
+
+  const dataIndex = parts.lastIndexOf('data')
+  if (dataIndex >= 0) return parts.slice(dataIndex + 1)
+
+  return parts
+}
+
+const normalizeUploadTarget = (value: UploadTargetValue, storagePools: StoragePoolModel[]): UploadTargetValue => {
+  const pool = storagePools.find((item) => item.id === value.storagePoolId || item.storageId === value.storagePoolId)
+  return pool ? { ...value, storagePoolId: pool.id } : value
+}
+
+export const GlobalUpload = ({ isOpen }: { isOpen: boolean }) => {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [dragActive, setDragActive] = useState(false)
   const [storagePools, setStoragePools] = useState<StoragePoolModel[]>([])
   const [targetError, setTargetError] = useState<string | null>(null)
@@ -30,9 +88,44 @@ export const GlobalUpload = () => {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const folderInputRef = useRef<HTMLInputElement | null>(null)
+  const storagePoolsRequestRef = useRef<Promise<StoragePoolModel[]> | null>(null)
+  const refreshTimerRef = useRef<number | null>(null)
   const filesMap = useUploadStore((state) => state.files)
   const removeFile = useUploadStore((state) => state.removeFile)
   const clearCompleted = useUploadStore((state) => state.clearCompleted)
+
+  const currentFileTarget = useMemo<UploadTargetValue | null>(() => {
+    const match = pathname.match(/^\/file\/([^/]+)$/)
+    if (!match?.[1]) return null
+    const storageId = decodeURIComponent(match[1])
+    const pool = storagePools.find((item) => item.id === storageId || item.storageId === storageId)
+    const folderId = searchParams.get('parentId') || ''
+    const pathNames = splitParentPathNames(folderId, storageId, pool)
+    return {
+      storagePoolId: pool?.id || storageId,
+      folderId,
+      pathNames,
+    }
+  }, [pathname, searchParams, storagePools])
+
+  const currentFilePageKey = useMemo(() => {
+    if (!currentFileTarget) return ''
+    const query = searchParams.toString()
+    return query ? `${pathname}?${query}` : pathname
+  }, [currentFileTarget, pathname, searchParams])
+
+  useEffect(() => {
+    if (!currentFileTarget) return
+    setTarget((current) => {
+      if (
+        current.storagePoolId === currentFileTarget.storagePoolId &&
+        current.folderId === currentFileTarget.folderId
+      ) {
+        return current
+      }
+      return currentFileTarget
+    })
+  }, [currentFileTarget])
 
   const recentFiles = useMemo(
     () => Object.values(filesMap).sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()),
@@ -65,6 +158,13 @@ export const GlobalUpload = () => {
     at: Date.now(),
     speed: 0,
   })
+  const uploadedBytesRef = useRef(uploadedBytes)
+  const totalBytesRef = useRef(totalBytes)
+
+  useEffect(() => {
+    uploadedBytesRef.current = uploadedBytes
+    totalBytesRef.current = totalBytes
+  }, [totalBytes, uploadedBytes])
 
   useEffect(() => {
     if (!hasFiles || !allCompleted) {
@@ -86,44 +186,98 @@ export const GlobalUpload = () => {
       return
     }
 
-    const now = Date.now()
-    const prev = speedSnapshotRef.current
-    const deltaBytes = uploadedBytes - prev.bytes
-    const deltaSec = Math.max((now - prev.at) / 1000, 0.001)
-    const instantSpeed = deltaBytes > 0 ? deltaBytes / deltaSec : 0
-    const alpha = 0.22
-    const blendedSpeed = prev.speed > 0 ? prev.speed * (1 - alpha) + instantSpeed * alpha : instantSpeed
-    const speed = Math.max(blendedSpeed, 0)
-    const remain = Math.max(totalBytes - uploadedBytes, 0)
+    speedSnapshotRef.current = {
+      bytes: uploadedBytesRef.current,
+      at: Date.now(),
+      speed: speedSnapshotRef.current.speed,
+    }
 
-    setSpeedBytesPerSec(speed)
-    setEtaSeconds(speed > 0 ? Math.ceil(remain / speed) : null)
-    speedSnapshotRef.current = { bytes: uploadedBytes, at: now, speed }
-  }, [hasUploadingFiles, totalBytes, uploadedBytes])
+    const updateSpeed = () => {
+      const now = Date.now()
+      const prev = speedSnapshotRef.current
+      const currentBytes = uploadedBytesRef.current
+      const deltaBytes = Math.max(currentBytes - prev.bytes, 0)
+      const deltaSec = Math.max((now - prev.at) / 1000, 0.5)
+      const instantSpeed = deltaBytes / deltaSec
+      const alpha = 0.14
+      const speed = prev.speed > 0 ? prev.speed * (1 - alpha) + instantSpeed * alpha : instantSpeed
+      const remain = Math.max(totalBytesRef.current - currentBytes, 0)
 
-  useEffect(() => {
-    let cancelled = false
-    const loadPools = async () => {
+      setSpeedBytesPerSec(speed)
+      setEtaSeconds(speed > 0 ? Math.ceil(remain / speed) : null)
+      speedSnapshotRef.current = { bytes: currentBytes, at: now, speed }
+    }
+
+    updateSpeed()
+    const timer = window.setInterval(updateSpeed, 1000)
+    return () => window.clearInterval(timer)
+  }, [hasUploadingFiles])
+
+  const ensureStoragePoolsLoaded = useCallback(async () => {
+    if (storagePools.length > 0) return storagePools
+    if (storagePoolsRequestRef.current) return storagePoolsRequestRef.current
+
+    const request = (async () => {
       try {
+        setTargetError(null)
         const res = await fetch(getStoragePoolsUrl())
         if (!res.ok) throw new Error(`Load storage pools failed: ${res.status}`)
         const payload = (await res.json()) as StoragePoolModel[]
-        if (cancelled) return
         setStoragePools(payload)
+        return payload
       } catch (error) {
-        if (cancelled) return
         const message = error instanceof Error ? error.message : 'Failed to load storage pools'
         setTargetError(message)
         toast.error(`Load upload targets failed: ${message}`, 5000)
+        return []
+      } finally {
+        storagePoolsRequestRef.current = null
+      }
+    })()
+
+    storagePoolsRequestRef.current = request
+    return request
+  }, [storagePools])
+
+  useEffect(() => {
+    if (!currentFileTarget) return
+    void ensureStoragePoolsLoaded()
+  }, [currentFileTarget, ensureStoragePoolsLoaded])
+
+  useEffect(() => {
+    return () => {
+      if (refreshTimerRef.current) {
+        window.clearTimeout(refreshTimerRef.current)
+        refreshTimerRef.current = null
       }
     }
-    loadPools()
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  }, [currentFilePageKey, isOpen])
 
-  const addFilesToUppy = (files: File[]) => {
+  useEffect(() => {
+    const handleUploadSuccess = (file?: { meta?: Record<string, unknown> } | null) => {
+      if (!isOpen || !currentFileTarget || !currentFilePageKey) return
+
+      const meta = file?.meta ?? {}
+      if (meta.uploadPageKey !== currentFilePageKey) return
+      if (String(meta.storagePoolId ?? '') !== currentFileTarget.storagePoolId) return
+      if (String(meta.parentId ?? '') !== currentFileTarget.folderId) return
+
+      if (refreshTimerRef.current) {
+        window.clearTimeout(refreshTimerRef.current)
+      }
+      refreshTimerRef.current = window.setTimeout(() => {
+        refreshTimerRef.current = null
+        router.refresh()
+      }, 650)
+    }
+
+    uppy.on('upload-success', handleUploadSuccess)
+    return () => {
+      uppy.off('upload-success', handleUploadSuccess)
+    }
+  }, [currentFilePageKey, currentFileTarget, isOpen, router])
+
+  const addFilesToUppy = (files: File[], uploadTarget: UploadTargetValue) => {
     for (const file of files) {
       try {
         uppy.addFile({
@@ -133,8 +287,9 @@ export const GlobalUpload = () => {
           source: 'global-upload',
           meta: {
             relativePath: (file as File & { webkitRelativePath?: string }).webkitRelativePath || '',
-            storagePoolId: target.storagePoolId,
-            parentId: target.folderId,
+            storagePoolId: uploadTarget.storagePoolId,
+            parentId: uploadTarget.folderId,
+            uploadPageKey: currentFilePageKey,
           },
         })
       } catch (error) {
@@ -143,12 +298,17 @@ export const GlobalUpload = () => {
     }
   }
 
-  const uploadFiles = (files: File[]) => {
-    if (!target.storagePoolId) {
+  const uploadFiles = async (files: File[]) => {
+    const loadedStoragePools = await ensureStoragePoolsLoaded()
+    const uploadTarget = normalizeUploadTarget(
+      target.storagePoolId ? target : currentFileTarget || target,
+      loadedStoragePools,
+    )
+    if (!uploadTarget.storagePoolId) {
       toast.error('Upload failed: Please select upload target.')
       return
     }
-    addFilesToUppy(files)
+    addFilesToUppy(files, uploadTarget)
   }
 
   const handleFilePick = (event: ChangeEvent<HTMLInputElement>) => {
@@ -186,23 +346,23 @@ export const GlobalUpload = () => {
     if (allCompleted && batchStartAt && batchCompletedAt && totalBytes > 0) {
       const totalSeconds = Math.max((batchCompletedAt - batchStartAt) / 1000, 1)
       const avgSpeed = totalBytes / totalSeconds
-      return `${bytesFormat(avgSpeed, {
-        standard: 'm',
-        decimalPlaces: 2,
-      })}/s`
+      return `${formatStableBytes(avgSpeed)}/s`
     }
     if (speedBytesPerSec > 0) {
-      return `${bytesFormat(speedBytesPerSec, {
-        standard: 'm',
-        decimalPlaces: 2,
-      })}/s`
+      return `${formatStableBytes(speedBytesPerSec)}/s`
     }
     return '-'
   })()
 
   return (
     <div className="flex flex-col gap-5 text-sm">
-      <UploadTargetDropdown storagePools={storagePools} value={target} onChange={setTarget} onError={setTargetError} />
+      <UploadTargetDropdown
+        storagePools={storagePools}
+        value={target}
+        onChange={setTarget}
+        onBeforeOpen={ensureStoragePoolsLoaded}
+        onError={setTargetError}
+      />
       {targetError ? <div className="mt-2 text-xs text-red-400">{targetError}</div> : null}
 
       <div
@@ -230,10 +390,26 @@ export const GlobalUpload = () => {
         <p className="text-app-text-muted mt-1 text-xs">Choose from your device.</p>
 
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-          <Button variant="primary" icon={FileUp} size="sm" onClick={() => fileInputRef.current?.click()}>
+          <Button
+            variant="primary"
+            icon={FileUp}
+            size="sm"
+            onClick={async () => {
+              await ensureStoragePoolsLoaded()
+              fileInputRef.current?.click()
+            }}
+          >
             Upload Files
           </Button>
-          <Button variant="secondary" icon={FolderUp} size="sm" onClick={() => folderInputRef.current?.click()}>
+          <Button
+            variant="secondary"
+            icon={FolderUp}
+            size="sm"
+            onClick={async () => {
+              await ensureStoragePoolsLoaded()
+              folderInputRef.current?.click()
+            }}
+          >
             Upload Folder
           </Button>
         </div>
@@ -261,13 +437,9 @@ export const GlobalUpload = () => {
 
         {recentFiles.length > 0 ? (
           <div className="bg-app-hover/35 mb-3 rounded-xl px-3 py-2.5">
-            <div className="text-app-text mb-1 flex items-center justify-between text-xs">
-              <span>
-                {bytesFormat(uploadedBytes, {
-                  standard: 'm',
-                  decimalPlaces: 2,
-                })}{' '}
-                of {bytesFormat(totalBytes, { standard: 'm', decimalPlaces: 2 })}
+            <div className="text-app-text mb-1 flex items-center justify-between text-sm tabular-nums">
+              <span className="inline-block min-w-52 whitespace-nowrap">
+                {formatStableBytes(uploadedBytes)} of {formatStableBytes(totalBytes)}
               </span>
               <span>
                 {totalPercent >= 100 ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : `${totalPercent}%`}
@@ -281,9 +453,9 @@ export const GlobalUpload = () => {
                 />
               </div>
             )}
-            <div className="text-app-text-muted mt-1.5 flex items-center justify-between text-[11px]">
-              <span>Speed: {summarySpeedText}</span>
-              <span>
+            <div className="text-app-text-muted mt-1.5 flex items-center justify-between text-sm tabular-nums">
+              <span className="inline-block min-w-40 whitespace-nowrap">Speed: {summarySpeedText}</span>
+              <span className="inline-block min-w-24 text-right whitespace-nowrap">
                 {allCompleted ? 'Total' : 'ETA'}: {etaText}
               </span>
             </div>
@@ -308,16 +480,11 @@ export const GlobalUpload = () => {
                     })()}
                     <div className="min-w-0 flex-1">
                       <div className="text-app-text truncate text-xs font-medium">{file.name}</div>
-                      <div className="text-app-text-muted mt-0.5 text-[11px]">
-                        {bytesFormat(
+                      <div className="text-app-text-muted mt-0.5 min-w-52 text-sm tabular-nums">
+                        {formatStableBytes(
                           file.status === 'complete' ? file.size : Math.min(file.bytesUploaded || 0, file.size || 0),
-                          { standard: 'm', decimalPlaces: 2 },
                         )}{' '}
-                        of{' '}
-                        {bytesFormat(file.size, {
-                          standard: 'm',
-                          decimalPlaces: 2,
-                        })}{' '}
+                        of {formatStableBytes(file.size)}{' '}
                         {file.status === 'uploading'
                           ? `· ${file.progress}%`
                           : file.status === 'queued'

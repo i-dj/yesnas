@@ -9,6 +9,7 @@
       "open": "Open",
       "copy": "Copy",
       "move": "Move",
+      "clearInput": "Clear input",
       "logout": "Log out",
       "feedback": "Feedback",
       "changeAvatar": "Change avatar",
@@ -37,7 +38,8 @@
       "hardware": "Hardware",
       "jobs": "Tasks",
       "users": "Users",
-      "logs": "Logs"
+      "logs": "Logs",
+      "docker": "Docker"
     },
     "aria": {
       "expandSidebar": "Expand sidebar",
@@ -50,8 +52,6 @@
     "total": "logs",
     "empty": "No logs match the current filters",
     "activity": {
-      "title": "Activity heatmap",
-      "summary": "{count} logs grouped by {bucket}",
       "tooltip": "{time}: {count} logs, {failed} failed"
     },
     "ranges": {
@@ -59,38 +59,17 @@
       "7d": "7 days",
       "30d": "30 days",
       "90d": "90 days",
-      "1y": "1 year",
-      "custom": "Custom"
-    },
-    "buckets": {
-      "hour": "hour",
-      "day": "day",
-      "month": "month"
+      "1y": "1 year"
     },
     "filters": {
       "search": "Search logs, events, or messages",
-      "allCategories": "All categories",
-      "allSeverities": "All levels",
-      "allResults": "All results",
-      "more": "More filters",
-      "reset": "Reset filters",
-      "source": "Source, e.g. api",
-      "event": "Event type",
-      "ipAddress": "IP address",
-      "from": "Start time",
-      "to": "End time"
+      "allSeverities": "All levels"
     },
     "columns": {
       "time": "Time",
       "actor": "Actor",
       "event": "Event",
-      "source": "Source",
-      "ipAddress": "IP address",
-      "result": "Result"
-    },
-    "categories": {
-      "user": "User",
-      "system": "System"
+      "ipAddress": "IP address"
     },
     "severities": {
       "info": "Info",
@@ -100,26 +79,13 @@
     "values": {
       "system": "System",
       "success": "Success",
-      "failed": "Failed"
+      "failed": "Failed",
+      "privateNetwork": "Local network",
+      "localMachine": "This device"
     },
     "pagination": {
       "pageSize": "{count} per page",
       "summary": "Page {page} / {totalPages}"
-    },
-    "detail": {
-      "title": "Log details",
-      "time": "Occurred at",
-      "category": "Category",
-      "severity": "Severity",
-      "source": "Source",
-      "event": "Event",
-      "action": "Action",
-      "actor": "Actor",
-      "ipAddress": "IP address",
-      "request": "Request",
-      "resource": "Resource",
-      "userAgent": "User agent",
-      "details": "Details"
     },
     "messages": {
       "loadFailed": "Failed to load logs",
@@ -260,9 +226,29 @@
     }
   },
   "Jobs": {
+    "title": "Pending tasks",
+    "subtitle": "{total} execution records · {scheduled} scheduled tasks",
     "loading": "Loading tasks...",
     "empty": "No tasks yet",
+    "emptySearch": "No tasks match the current filters",
+    "searchPlaceholder": "Search tasks, messages, or status",
     "selectJob": "Select {name}",
+    "overview": {
+      "running": "Running",
+      "success": "Completed",
+      "paused": "Paused",
+      "failed": "Needs attention"
+    },
+    "scheduled": {
+      "title": "Scheduled tasks",
+      "target": "Target: {target}",
+      "systemTarget": "System",
+      "schedule": "Schedule: {schedule}",
+      "nextRun": "Next run: {time}",
+      "waiting": "Waiting to be scheduled",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
     "statuses": {
       "all": "All",
       "running": "Running",
@@ -283,6 +269,16 @@
       "resume": "Resume",
       "cancel": "Cancel",
       "delete": "Delete"
+    },
+    "pagination": {
+      "pageSize": "{count} per page",
+      "summary": "Page {page} / {totalPages}"
+    },
+    "messages": {
+      "loadFailed": "Failed to load tasks",
+      "scheduledLoadFailed": "Failed to load scheduled tasks",
+      "actionCompleted": "Task action completed",
+      "actionFailed": "Task action failed"
     },
     "columns": {
       "name": "Name",
@@ -374,10 +370,12 @@
       "username": "Username",
       "displayName": "Display name",
       "isAdmin": "Administrator",
+      "role": "Account role",
       "avatar": "Avatar",
       "avatarCustom": "Custom avatar URL, data URI, or preset name",
       "avatarPreset": "Choose {preset} avatar",
       "avatarUpload": "Upload custom avatar",
+      "avatarHint": "Choose a preset avatar or upload a custom image.",
       "avatarZoom": "Zoom",
       "avatarZoomIn": "Zoom in",
       "avatarZoomOut": "Zoom out",
@@ -386,7 +384,14 @@
       "setAvatar": "Set Avatar",
       "password": "Password",
       "newPassword": "New password",
-      "status": "Status"
+      "passwordCreateHint": "Set a secure sign-in password for the new user.",
+      "passwordEditHint": "Leave blank to keep the current password.",
+      "status": "Status",
+      "sections": {
+        "profile": "Profile",
+        "access": "Access and status",
+        "security": "Account security"
+      }
     },
     "messages": {
       "created": "User created",
@@ -413,26 +418,26 @@
     "sharesTitle": "Shared Folders",
     "sharesSubtitle": "See which protocols are exposed for each shared folder.",
     "empty": "No shared folders yet",
-    "linkInfo": "Connection",
-    "disabledHint": "Enable this protocol to show its access link and port.",
-    "port": "Port {port}",
-    "shareCount": "{count} shares",
     "protocols": {
       "smb": {
         "name": "SMB",
-        "description": "LAN file access"
+        "description": "LAN file access",
+        "connectionHint": "Open this address in Windows File Explorer or macOS Finder."
       },
       "ftp": {
         "name": "FTP",
-        "description": "Legacy client access"
+        "description": "Legacy client access",
+        "connectionHint": "Open this address in an FTP client and sign in with a NAS user."
       },
       "webdav": {
         "name": "WebDAV",
-        "description": "HTTP remote mount"
+        "description": "HTTP remote mount",
+        "connectionHint": "Open the address in a browser or add it as a network location."
       },
       "nfs": {
         "name": "NFS",
-        "description": "Linux / server mount"
+        "description": "Linux / server mount",
+        "connectionHint": "Mount this address to a local directory on Linux or a server."
       }
     },
     "columns": {
@@ -474,8 +479,6 @@
       "status": "Status"
     },
     "messages": {
-      "loadOptionsFailed": "Load sharing options failed",
-      "loadProtocolsFailed": "Load protocol status failed",
       "saveFailed": "Save file share failed",
       "deleteFailed": "Delete file share failed",
       "protocolActionFailed": "Protocol action failed",

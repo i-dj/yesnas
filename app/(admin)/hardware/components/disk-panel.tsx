@@ -22,20 +22,15 @@ export function DiskPanel({ disk }: { disk: HardwareDisk }) {
       status={
         <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
           <StatusPill
-            color={passed ? 'success' : 'warning'}
-            content={passed ? t('statuses.passed') : disk.health || t('statuses.unknown')}
-          />
-          <StatusPill
             color={disk.inUse ? 'success' : 'neutral'}
             content={disk.inUse ? t('statuses.inUse') : t('statuses.unused')}
           />
         </div>
       }
     >
-      <div className="grid min-w-0 gap-x-6 gap-y-2 sm:grid-cols-2">
+      <div className="grid min-w-0 gap-x-6 gap-y-2">
         <DetailValue label={t('fields.devicePath')} value={disk.path || '-'} />
         <DetailValue label={t('fields.serial')} value={disk.serial || '-'} />
-        <DetailValue label={t('fields.vendor')} value={disk.vendor || '-'} />
         <DetailValue
           label={t('fields.capacity')}
           value={bytesFormat(disk.sizeBytes, { standard: 'm', decimalPlaces: 0 })}

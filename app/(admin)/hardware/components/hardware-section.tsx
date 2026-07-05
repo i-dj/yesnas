@@ -23,7 +23,7 @@ export function HardwareSection({
   children: ReactNode
 }) {
   return (
-    <Card className={cn('min-w-0 rounded-none border-b bg-transparent p-3', className)}>
+    <Card className={cn('bg-app-hover/20 min-w-0 rounded-lg p-3', className)}>
       <div
         className={cn(
           'mb-3 flex min-h-8 min-w-0 flex-wrap justify-between gap-2',
@@ -35,7 +35,7 @@ export function HardwareSection({
             <Icon className="size-4" />
           </span>
           <div className="min-w-0">
-            <h2 className="text-app-text text-sm font-semibold">{title}</h2>
+            <h2 className="text-app-text text-base font-semibold">{title}</h2>
           </div>
         </div>
         {summary}

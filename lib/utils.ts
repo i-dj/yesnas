@@ -74,42 +74,36 @@ export function performSort<T>(data: T[], key: keyof T, direction: SortDirection
 /**
  * Converts a Date object into a human-readable relative time string.
  * @param createdAt The date to compare against the current time.
+ * @param locale Locale used to format the relative time.
  * @returns A string representing the time difference in a human-readable format.
  */
-export const getTimestamp = (createdAt: Date): string => {
-  const now = new Date()
-  const timeDifference = now.getTime() - createdAt.getTime()
+export const getTimestamp = (createdAt: Date, locale = 'en', timeZone?: string): string => {
+  if (Number.isNaN(createdAt.getTime())) return '-'
 
-  // Define time intervals in milliseconds
-  const minute = 60 * 1000
-  const hour = 60 * minute
-  const day = 24 * hour
-  const week = 7 * day
-  const month = 30 * day
-  const year = 365 * day
-
-  if (timeDifference < minute) {
-    const seconds = Math.floor(timeDifference / 1000)
-    return `${seconds} ${seconds === 1 ? 'second' : 'seconds'} ago`
-  } else if (timeDifference < hour) {
-    const minutes = Math.floor(timeDifference / minute)
-    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`
-  } else if (timeDifference < day) {
-    const hours = Math.floor(timeDifference / hour)
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`
-  } else if (timeDifference < week) {
-    const days = Math.floor(timeDifference / day)
-    return `${days} ${days === 1 ? 'day' : 'days'} ago`
-  } else if (timeDifference < month) {
-    const weeks = Math.floor(timeDifference / week)
-    return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`
-  } else if (timeDifference < year) {
-    const months = Math.floor(timeDifference / month)
-    return `${months} ${months === 1 ? 'month' : 'months'} ago`
-  } else {
-    const years = Math.floor(timeDifference / year)
-    return `${years} ${years === 1 ? 'year' : 'years'} ago`
+  const elapsedSeconds = (createdAt.getTime() - Date.now()) / 1000
+  const weekInSeconds = 7 * 24 * 60 * 60
+  if (Math.abs(elapsedSeconds) >= weekInSeconds) {
+    return new Intl.DateTimeFormat(locale, {
+      timeZone,
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).format(createdAt)
   }
+
+  const intervals: Array<{ unit: Intl.RelativeTimeFormatUnit; seconds: number }> = [
+    { unit: 'day', seconds: 24 * 60 * 60 },
+    { unit: 'hour', seconds: 60 * 60 },
+    { unit: 'minute', seconds: 60 },
+    { unit: 'second', seconds: 1 },
+  ]
+  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'always' })
+  const interval = intervals.find((item) => Math.abs(elapsedSeconds) >= item.seconds) ?? intervals.at(-1)!
+
+  return formatter.format(Math.trunc(elapsedSeconds / interval.seconds), interval.unit)
 }
 
 /**
@@ -167,12 +161,21 @@ export function formatBytes(bytes: number): string {
   return `${value.toFixed(digits)} ${units[unitIndex]}`
 }
 
+export function formatBytesPerSecond(bytesPerSecond?: number | null): string {
+  const value = typeof bytesPerSecond === 'number' && Number.isFinite(bytesPerSecond) ? bytesPerSecond : 0
+  return `${formatBytes(value)}/s`
+}
+
+export function formatStatValue(value: string | number, loading: boolean, placeholder = '-'): string {
+  return loading ? placeholder : String(value)
+}
+
 export function formatPercent(value: number): string {
   return `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}%`
 }
 
-export function formatOptionalNumber(value: number | undefined, suffix: string): string {
-  if (value === undefined || !Number.isFinite(value)) return '-'
+export function formatOptionalNumber(value: number | null | undefined, suffix: string): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return '-'
 
   const formatted = Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)
   return `${formatted}${suffix}`
@@ -396,13 +399,18 @@ function calendarDayNumber(parts: Pick<DateParts, 'year' | 'month' | 'day'>): nu
  * Formats timestamps for compact activity lists.
  * Examples: just now, 5 minutes ago, 2 hours ago, 昨天 23:10, 前天 09:30, 2026/5/20 18:08:12.
  */
-export function formatSmartTime(dateStr: Date | string | number | null | undefined, timeZone?: string): string {
-  return formatSmartTimeInfo(dateStr, timeZone).text
+export function formatSmartTime(
+  dateStr: Date | string | number | null | undefined,
+  timeZone?: string,
+  locale = 'en',
+): string {
+  return formatSmartTimeInfo(dateStr, timeZone, locale).text
 }
 
 export function formatSmartTimeInfo(
   dateStr: Date | string | number | null | undefined,
   timeZone?: string,
+  locale = 'en',
 ): { text: string; fullText: string; showTooltip: boolean } {
   if (!dateStr) return { text: '--', fullText: '--', showTooltip: false }
 
@@ -413,15 +421,17 @@ export function formatSmartTimeInfo(
 
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
+  const relativeFormatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
   if (diffMs >= 0) {
     const threshold = SMART_TIME_THRESHOLDS.find((item) => diffMs < item.maxMs)
     if (threshold) {
-      const value = Math.max(1, Math.floor(diffMs / threshold.unitMs))
-      if (threshold.unit === 'second' && value < 10) {
-        return { text: 'just now', fullText, showTooltip: true }
+      const value =
+        threshold.unit === 'second' && diffMs < 10_000 ? 0 : -Math.max(1, Math.floor(diffMs / threshold.unitMs))
+      return {
+        text: relativeFormatter.format(value, threshold.unit as Intl.RelativeTimeFormatUnit),
+        fullText,
+        showTooltip: true,
       }
-      const suffix = value === 1 ? threshold.unit : `${threshold.unit}s`
-      return { text: `${value} ${suffix} ago`, fullText, showTooltip: true }
     }
   }
 
@@ -431,8 +441,13 @@ export function formatSmartTimeInfo(
     const dayDiff = calendarDayNumber(currentParts) - calendarDayNumber(targetParts)
     const timeText = `${targetParts.hour}:${targetParts.minute}`
 
-    if (dayDiff === 1) return { text: `昨天 ${timeText}`, fullText, showTooltip: true }
-    if (dayDiff === 2) return { text: `前天 ${timeText}`, fullText, showTooltip: true }
+    if (dayDiff === 1 || dayDiff === 2) {
+      return {
+        text: `${relativeFormatter.format(-dayDiff, 'day')} ${timeText}`,
+        fullText,
+        showTooltip: true,
+      }
+    }
     return { text: fullText, fullText, showTooltip: false }
   } catch {
     return { text: fullText, fullText, showTooltip: false }

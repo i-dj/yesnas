@@ -1,11 +1,11 @@
 import type { JobStatus, JobType, TaskStatus } from '@/types'
 import { ArrowRightLeft, Camera, Cloud, CloudUpload, Joystick, type LucideIcon } from 'lucide-react'
 
-
 interface JobStatusMeta {
   statuses: readonly JobStatus[] | null
   color: string
 }
+export type JobAction = 'pause' | 'resume' | 'cancel' | 'delete'
 
 export const JOB_STATUS_META = {
   all: {

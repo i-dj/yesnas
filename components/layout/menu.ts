@@ -1,6 +1,6 @@
 import {
+  Boxes,
   CircuitBoard,
-  Files,
   HardDrive,
   LayoutDashboard,
   ListTodo,
@@ -30,13 +30,13 @@ export const menuGroups: MenuGroup[] = [
     nameKey: 'FILE',
     sub: [
       { nameKey: 'storage', href: '/storage', icon: HardDrive },
-      { nameKey: 'file', href: '/file', icon: Files },
       { nameKey: 'fileSharing', href: '/file-sharing', icon: Share2 },
     ],
   },
   {
     nameKey: 'SYSTEM',
     sub: [
+      { nameKey: 'docker', href: '/docker', icon: Boxes },
       { nameKey: 'hardware', href: '/hardware', icon: CircuitBoard },
       { nameKey: 'jobs', href: '/jobs', icon: ListTodo },
       { nameKey: 'users', href: '/users', icon: Users },

@@ -27,6 +27,7 @@ interface StorageLocationPickerProps {
   storagePools: StoragePoolModel[]
   value: StorageLocationValue
   onChange: (value: StorageLocationValue) => void
+  onBeforeOpen?: () => Promise<StoragePoolModel[] | void>
   placeholder?: string
   allowCreateFolder?: boolean
   onError?: (message: string | null) => void
@@ -73,6 +74,7 @@ export function StorageLocationPicker({
   storagePools,
   value,
   onChange,
+  onBeforeOpen,
   placeholder = 'Select location',
   allowCreateFolder = false,
   onError,
@@ -92,11 +94,16 @@ export function StorageLocationPicker({
     [storagePools, value.storagePoolId],
   )
   const selectedStorageId = selectedPool ? getPoolStorageId(selectedPool) : value.storagePoolId
+  const fallbackDisplayText = value.storagePoolId
+    ? value.pathNames.length > 0
+      ? `${shortenMiddle(value.storagePoolId)}/${value.pathNames.join('/')}`
+      : `${shortenMiddle(value.storagePoolId)}/`
+    : placeholder
   const displayText = selectedPool
     ? value.pathNames.length > 0
       ? `${selectedPool.name}/${value.pathNames.join('/')}`
       : `${selectedPool.name}/`
-    : placeholder
+    : fallbackDisplayText
 
   const loadFolders = async (storageId: string, parentId = '') => {
     try {
@@ -272,8 +279,9 @@ export function StorageLocationPicker({
         type="button"
         onClick={async () => {
           if (preparing) return
-          const currentPool = selectedPool
-          const fallbackPool = storagePools[0]
+          const nextStoragePools = (await onBeforeOpen?.()) || storagePools
+          const currentPool = findPoolByTargetId(nextStoragePools, value.storagePoolId)
+          const fallbackPool = nextStoragePools[0]
           const pool = currentPool || fallbackPool
           if (!pool) return
 
@@ -292,7 +300,7 @@ export function StorageLocationPicker({
           setPreparing(false)
           setOpen(true)
         }}
-        className="bg-app-bg border-app-border text-app-text hover:border-app-border-strong flex h-9 w-full min-w-0 items-center justify-between rounded-md border px-2 text-xs"
+        className="bg-app-bg border-app-border text-app-text hover:border-app-border-strong flex h-9 w-full min-w-0 items-center justify-between rounded-md border px-2 text-sm"
       >
         <span className="inline-flex min-w-0 items-center gap-1.5">
           <Database className="text-app-text-muted h-3.5 w-3.5 shrink-0" />
@@ -344,7 +352,7 @@ export function StorageLocationPicker({
                         <span className="flex items-center gap-2">
                           <span>{pool.name}</span>
                           <span className="text-app-text-muted text-[11px]">
-                            {bytesFormat(getPoolAvailableBytes(pool), { standard: 'm', decimalPlaces: 2 })}
+                            {bytesFormat(getPoolAvailableBytes(pool), { standard: 's', decimalPlaces: 2 })}
                           </span>
                         </span>
                       </button>

@@ -1,74 +1,49 @@
 'use client'
 
-import {
-  Button,
-  ConfirmModal,
-  DataTable,
-  EmptyState,
-  Input,
-  SectionTitle,
-  SideDrawer,
-  ToggleButton,
-} from '@/components/ui'
-import { PageWrapper } from '@/components/layout/page-wrapper'
 import { useMemo } from 'react'
-import type { DiskModel, StoragePoolModel } from '@/types/models/storage'
 import { useRouter } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { PageWrapper } from '@/components/layout/page-wrapper'
 import { toast } from '@/store/use-toast-store'
 import { bytesFormat } from '@/lib/utils'
 import { useDrawerGroup } from '@/hooks/use-drawer-group'
-import { useStorageBenchmark, type BenchmarkSizeGiB } from './hooks/useStorageBenchmark'
+import type { DiskModel, StoragePoolModel } from '@/types/models/storage'
+import { usePoolSource } from './hooks/usePoolSource'
 import { useStorageActions } from './hooks/useStorageActions'
+import { useStorageBenchmark, type BenchmarkSizeGiB } from './hooks/useStorageBenchmark'
+import { useStorageConfirmActions } from './hooks/useStorageConfirmActions'
 import { useStorageModal } from './hooks/useStorageModal'
-import { storageTabItems, useStorageTable } from './hooks/useStorageTable'
-import {
-  getStoragePoolColumns,
-  getDiskColumns,
-  DiskDetailDrawer,
-  StoragePoolDetail,
-  StoragePoolCreator,
-  StoragePoolBenchmark,
-} from './components'
+import { useStorageTable } from './hooks/useStorageTable'
+import type { PoolSource, StorageDrawerKey } from './types'
+import { toNetworkStoragePool } from './utils'
+import { getStoragePoolColumns, StorageContent, StorageDrawers, StorageHeader, StorageModals } from './components'
 
 interface StorageClientProps {
   diskList: DiskModel[]
   storagePools: StoragePoolModel[]
+  initialPoolSource: PoolSource
 }
 
-export function StorageClient({ diskList, storagePools }: StorageClientProps) {
+export function StorageClient({ diskList, storagePools, initialPoolSource }: StorageClientProps) {
   const router = useRouter()
-  const drawers = useDrawerGroup(['disk', 'creator', 'poolDetail'] as const)
-  const {
-    activeTab,
-    setActiveTab,
-    diskRows,
-    diskStats,
-    poolList,
-    replaceCandidates,
-    removePool,
-    updatePool,
-    updatePoolBenchmark,
-  } = useStorageTable({ diskList, storagePools })
+  const { poolSource, changePoolSource, handlePoolSourceAnchorClick } = usePoolSource(initialPoolSource)
+  const drawers = useDrawerGroup<StorageDrawerKey>([
+    'disk',
+    'creator',
+    'poolDetail',
+    'snapshotManager',
+    'networkCreator',
+  ])
+  const { poolList, replaceCandidates, removePool, updatePool, upsertPool, updatePoolBenchmark } = useStorageTable({
+    diskList,
+    storagePools,
+  })
   const storageModal = useStorageModal()
-  const {
-    creatorSession,
-    bumpCreatorSession,
-    quickDelete,
-    setDeleteOpen,
-    setDeletePassword,
-    setDeleting,
-    poolAction,
-    snapshotPayload,
-    setSnapshotPayload,
-    formatPassword,
-    setFormatPassword,
-  } = storageModal
   const storageActions = useStorageActions({
     onPoolDeleted: removePool,
     onPoolFormatted: updatePool,
     onPoolUpdated: updatePool,
   })
+  const storageConfirmActions = useStorageConfirmActions(storageActions)
 
   const benchmark = useStorageBenchmark({
     onCompleted: (poolId, data) => {
@@ -76,7 +51,7 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
       storageModal.setBenchmarkOpen(false)
       toast.success(
         data.writeSpeedBytesPerSec && data.readSpeedBytesPerSec
-          ? `Benchmark completed: Read ${bytesFormat(data.readSpeedBytesPerSec)} · Write ${bytesFormat(data.writeSpeedBytesPerSec)}`
+          ? `Benchmark completed: Read ${bytesFormat(data.readSpeedBytesPerSec, { standard: 'm', decimalPlaces: 2 })} · Write ${bytesFormat(data.writeSpeedBytesPerSec, { standard: 'm', decimalPlaces: 2 })}`
           : 'Benchmark completed: Read/Write speed updated.',
         5000,
       )
@@ -86,300 +61,119 @@ export function StorageClient({ diskList, storagePools }: StorageClientProps) {
 
   const detailDisk = drawers.getPayload<DiskModel>('disk') ?? null
   const activePoolId = drawers.getPayload<string>('poolDetail') ?? null
+  const snapshotPoolId = drawers.getPayload<string>('snapshotManager') ?? null
   const activePool = useMemo(() => poolList.find((pool) => pool.id === activePoolId) ?? null, [poolList, activePoolId])
+  const snapshotPool = useMemo(
+    () => poolList.find((pool) => pool.id === snapshotPoolId) ?? null,
+    [poolList, snapshotPoolId],
+  )
   const benchmarkPool = useMemo(
-    () => poolList.find((pool) => pool.id === poolAction.poolId) ?? null,
-    [poolList, poolAction.poolId],
+    () => poolList.find((pool) => pool.id === storageModal.poolAction.poolId) ?? null,
+    [poolList, storageModal.poolAction.poolId],
   )
   const benchmarkState = useMemo(() => {
-    if (!poolAction.poolId) return benchmark.createInitialBenchmarkState()
-    return benchmark.benchmarkByPoolId[poolAction.poolId] ?? benchmark.createInitialBenchmarkState()
-  }, [benchmark, poolAction.poolId])
-  const activeBenchmarkPoolId = poolAction.poolId
+    const poolId = storageModal.poolAction.poolId
+    if (!poolId) return benchmark.createInitialBenchmarkState()
+    return benchmark.benchmarkByPoolId[poolId] ?? benchmark.createInitialBenchmarkState()
+  }, [benchmark, storageModal.poolAction.poolId])
 
-  const handleOpenDiskDetail = (disk: DiskModel) => {
-    drawers.open('disk', disk)
+  const handleNetworkStorageConnected = (storageId: string, storage?: Record<string, unknown>) => {
+    changePoolSource('network', 'replace')
+    upsertPool(toNetworkStoragePool(storageId, storage))
+    router.refresh()
   }
-  const handleOpenPoolDetail = (pool: StoragePoolModel) => {
-    drawers.open('poolDetail', pool.id)
-  }
-  const handleOpenPoolDetailPage = (pool: StoragePoolModel) => {
-    router.push(`/storage/pools/${encodeURIComponent(pool.id)}`)
-  }
-  const handleOpenCreator = () => drawers.open('creator')
-  const handleOpenQuickDelete = storageModal.openDelete
-  const handleOpenBenchmark = (pool: StoragePoolModel) => {
-    storageModal.openBenchmark(pool)
-    benchmark.ensurePoolState(pool.id)
-  }
-  const handleOpenSnapshot = storageModal.openSnapshot
-  const handleOpenFormat = storageModal.openFormat
 
-  const handleRestoreSnapshot = storageActions.restoreSnapshot
-  const handleUpdateSnapshotPolicy = storageActions.updateSnapshotPolicy
-  const handleReplaceDisk = storageActions.replaceDisk
+  const handleAddStorage = () => {
+    if (poolSource === 'local') {
+      drawers.open('creator')
+      return
+    }
+
+    drawers.open('networkCreator')
+  }
+
+  const handleOpenPoolFiles = (pool: StoragePoolModel) => {
+    router.push(`/file/${encodeURIComponent(pool.storageId || pool.id)}`)
+  }
+
   const handleCreateStoragePool = async (payload: Parameters<typeof storageActions.createPool>[0]) => {
     const ok = await storageActions.createPool(payload)
     if (!ok) return
     drawers.close('creator')
-    bumpCreatorSession()
+    storageModal.bumpCreatorSession()
   }
 
-  const handleConfirmQuickDelete = async () => {
-    if (quickDelete.password !== '123') {
-      toast.error('Delete pool failed: Invalid admin password.', 5000)
-      return
-    }
-    setDeleting(true)
-    const ok = await storageActions.deletePool(quickDelete.poolId, quickDelete.poolName)
-    if (ok) {
-      storageModal.closeDelete()
-      return
-    }
-    setDeleting(false, 'Delete pool failed')
-  }
-
-  const handleConfirmSnapshot = async () => {
-    if (!benchmarkPool) return
-
-    storageModal.setSubmitting(true)
-    const ok = await storageActions.createSnapshot(benchmarkPool, snapshotPayload)
-    storageModal.setSubmitting(false)
-    if (!ok) return
-    storageModal.setSnapshotOpen(false)
-  }
-
-  const handleConfirmFormat = async () => {
-    if (!benchmarkPool) return
-
-    storageModal.setSubmitting(true)
-    const ok = await storageActions.formatPool(benchmarkPool, formatPassword)
-    storageModal.setSubmitting(false)
-    if (!ok) return
-    storageModal.setFormatOpen(false)
-  }
-
-  const selectedIds = useMemo(() => new Set<string>(), [])
-  const diskColumns = useMemo(() => getDiskColumns(selectedIds, handleOpenDiskDetail), [selectedIds])
   const poolColumns = useMemo(
     () =>
       getStoragePoolColumns(
-        handleOpenPoolDetail,
-        handleOpenPoolDetailPage,
-        handleOpenQuickDelete,
-        handleOpenBenchmark,
-        handleOpenSnapshot,
-        handleOpenFormat,
+        (pool) => drawers.open('poolDetail', pool.id),
+        storageConfirmActions.confirmDeletePool,
+        (pool) => {
+          storageModal.openBenchmark(pool)
+          benchmark.ensurePoolState(pool.id)
+        },
+        (pool) => drawers.open('snapshotManager', pool.id),
+        storageConfirmActions.confirmFormatPool,
       ),
-    [],
+    [benchmark, drawers, router, storageConfirmActions, storageModal],
   )
 
   return (
-    <PageWrapper className="flex h-full min-h-0 flex-col">
-      <SectionTitle
-        title="Disks"
-        subTitle={`Total devices: ${diskStats.total} · Available: ${diskStats.available} · In use: ${diskStats.inUse}`}
-      />
+    <PageWrapper className="overflow-visible">
+      <section className="space-y-6 pb-4">
+        <StorageHeader
+          poolSource={poolSource}
+          onSourceClick={handlePoolSourceAnchorClick}
+          onAddStorage={handleAddStorage}
+        />
 
-      <ToggleButton
-        className="gap-6 rounded-none"
-        itemClassName="text-sm"
-        variant="segmented"
-        items={storageTabItems}
-        value={activeTab}
-        onChange={(value) => setActiveTab(value as typeof activeTab)}
-      />
+        <StorageContent
+          source={poolSource}
+          pools={poolList}
+          disks={diskList}
+          poolColumns={poolColumns}
+          onDiskClick={(disk) => drawers.open('disk', disk)}
+          onPoolOpenFiles={handleOpenPoolFiles}
+        />
+      </section>
 
-      <div className="min-h-0 flex-1 overflow-auto">
-        <DataTable showHeader={false} headers={diskColumns} data={diskRows} variant="primary" />
-
-        <section className="mt-10 space-y-3 pb-4">
-          <div className="flex items-center justify-between">
-            <SectionTitle level="section" title="Storage Pools" subTitle={`Existing pools and usage overview.`} />
-            <Button type="button" icon={Plus} size="sm" variant="borderghost" onClick={handleOpenCreator}>
-              Add Pool
-            </Button>
-          </div>
-
-          {poolList.length === 0 ? (
-            <EmptyState message="No storage pools found." />
-          ) : (
-            <DataTable showHeader={false} headers={poolColumns} data={poolList} variant="primary" />
-          )}
-        </section>
-      </div>
-
-      <DiskDetailDrawer
-        disk={detailDisk}
-        storagePools={poolList}
-        open={drawers.activeKey === 'disk'}
-        onOpenChange={(open) => {
-          if (open) {
-            drawers.open('disk')
-            return
-          }
-          drawers.close('disk')
-          drawers.clearPayload('disk')
-        }}
-      />
-
-      <SideDrawer
-        open={drawers.activeKey === 'creator'}
-        onOpenChange={(open) => {
-          if (open) {
-            drawers.open('creator')
-            return
-          }
-          drawers.close('creator')
-          bumpCreatorSession()
-        }}
-        title="Create Storage Pool"
-        onAfterOpen={() => {
-          document.getElementById('storage-pool-name')?.focus()
-        }}
-        className="p-0"
-      >
-        <StoragePoolCreator key={creatorSession} disks={diskList} onSubmit={handleCreateStoragePool} />
-      </SideDrawer>
-
-      <StoragePoolDetail
-        open={drawers.activeKey === 'poolDetail'}
+      <StorageDrawers
+        drawers={drawers}
+        detailDisk={detailDisk}
         activePool={activePool}
+        snapshotPool={snapshotPool}
+        diskList={diskList}
+        poolList={poolList}
         replaceCandidates={replaceCandidates}
-        onOpenChange={(open) => {
-          if (open) {
-            drawers.open('poolDetail')
-            return
-          }
-          drawers.close('poolDetail')
-          drawers.clearPayload('poolDetail')
-        }}
-        onRestoreSnapshot={handleRestoreSnapshot}
-        onUpdateSnapshotPolicy={handleUpdateSnapshotPolicy}
-        onReplaceDisk={handleReplaceDisk}
+        creatorSession={storageModal.creatorSession}
+        onCreatorSessionBump={storageModal.bumpCreatorSession}
+        onCreateStoragePool={handleCreateStoragePool}
+        onNetworkStorageConnected={handleNetworkStorageConnected}
+        onCreateSnapshot={storageConfirmActions.confirmCreateSnapshot}
+        onRestoreSnapshot={storageActions.restoreSnapshot}
+        onUpdateSnapshotPolicy={storageActions.updateSnapshotPolicy}
+        onReplaceDisk={storageActions.replaceDisk}
       />
 
-      <StoragePoolBenchmark
-        open={poolAction.modal.benchmark}
-        pool={benchmarkPool}
-        state={benchmarkState}
-        onOpenChange={(open) => {
-          if (!open && activeBenchmarkPoolId) {
-            benchmark.stop(activeBenchmarkPoolId)
-          }
-          storageModal.setBenchmarkOpen(open)
+      <StorageModals
+        storageModal={storageModal}
+        benchmarkPool={benchmarkPool}
+        benchmarkState={benchmarkState}
+        activeBenchmarkPoolId={storageModal.poolAction.poolId}
+        onBenchmarkOpenChange={storageModal.setBenchmarkOpen}
+        onBenchmarkSizeChange={(size) => {
+          const poolId = storageModal.poolAction.poolId
+          if (poolId) benchmark.setSize(poolId, size as BenchmarkSizeGiB)
         }}
-        onSizeChange={(size) => {
-          if (activeBenchmarkPoolId) benchmark.setSize(activeBenchmarkPoolId, size as BenchmarkSizeGiB)
+        onBenchmarkStart={() => {
+          const poolId = storageModal.poolAction.poolId
+          if (poolId) benchmark.start(poolId)
         }}
-        onStart={() => {
-          if (activeBenchmarkPoolId) benchmark.start(activeBenchmarkPoolId)
-        }}
-        onStop={() => {
-          if (activeBenchmarkPoolId) benchmark.stop(activeBenchmarkPoolId)
+        onBenchmarkStop={() => {
+          const poolId = storageModal.poolAction.poolId
+          if (poolId) benchmark.stop(poolId)
         }}
       />
-
-      <ConfirmModal
-        open={poolAction.modal.deletePool}
-        focusFirstInput
-        onOpenChange={setDeleteOpen}
-        title="Delete Storage Pool"
-        description={
-          <>
-            This action will permanently remove
-            <strong className="px-2 text-red-400">{quickDelete.poolName}</strong>, Enter admin password to continue.
-          </>
-        }
-        confirmText="Confirm Delete"
-        loading={quickDelete.deleting}
-        onConfirm={handleConfirmQuickDelete}
-      >
-        <div className="px-6">
-          <Input
-            type="password"
-            value={quickDelete.password}
-            onChange={(event) => setDeletePassword(event.target.value)}
-            placeholder="Admin password (123)"
-          />
-          {quickDelete.error && <p className="mt-2 text-xs text-red-400">{quickDelete.error}</p>}
-        </div>
-      </ConfirmModal>
-
-      <ConfirmModal
-        open={poolAction.modal.createSnapshot}
-        focusFirstInput
-        onOpenChange={storageModal.setSnapshotOpen}
-        title="Create Snapshot"
-        description={`Create snapshot for ${benchmarkPool?.name}.`}
-        confirmText="Create Snapshot"
-        cancelText="Cancel"
-        loading={poolAction.submitting && poolAction.modal.createSnapshot}
-        isDestructive={false}
-        onConfirm={handleConfirmSnapshot}
-      >
-        <div className="space-y-2 px-6">
-          <Input
-            value={snapshotPayload.name}
-            onChange={(event) =>
-              setSnapshotPayload((prev) => ({
-                ...prev,
-                name: event.target.value,
-              }))
-            }
-            placeholder="Snapshot name"
-          />
-          <Input
-            value={snapshotPayload.description ?? ''}
-            onChange={(event) =>
-              setSnapshotPayload((prev) => ({
-                ...prev,
-                description: event.target.value,
-              }))
-            }
-            placeholder="Description (optional)"
-          />
-          <label className="text-app-text-muted flex items-center gap-2 text-xs">
-            <input
-              type="checkbox"
-              checked={snapshotPayload.readOnly ?? true}
-              onChange={(event) =>
-                setSnapshotPayload((prev) => ({
-                  ...prev,
-                  readOnly: event.target.checked,
-                }))
-              }
-            />
-            Read only
-          </label>
-        </div>
-      </ConfirmModal>
-
-      <ConfirmModal
-        open={poolAction.modal.formatPool}
-        focusFirstInput
-        onOpenChange={storageModal.setFormatOpen}
-        title="Format Storage Pool"
-        description={
-          <>
-            This action will format
-            <strong className="px-2 text-red-400">{benchmarkPool?.name}</strong>, Enter admin password to continue.
-          </>
-        }
-        confirmText="Format Pool"
-        cancelText="Cancel"
-        loading={poolAction.submitting && poolAction.modal.formatPool}
-        onConfirm={handleConfirmFormat}
-      >
-        <div className="px-6">
-          <Input
-            type="password"
-            value={formatPassword}
-            onChange={(event) => setFormatPassword(event.target.value)}
-            placeholder="Admin password"
-          />
-        </div>
-      </ConfirmModal>
     </PageWrapper>
   )
 }

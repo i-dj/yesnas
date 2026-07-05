@@ -79,15 +79,15 @@ export function SideDrawer({ open, onOpenChange, title, children, onAfterOpen, c
 
       <aside
         className={cn(
-          'bg-app-bg border-app-border absolute top-0 right-0 flex h-full w-full max-w-xl flex-col border-l shadow-2xl transition-transform duration-200',
+          'bg-app-bg border-app-border absolute top-0 right-0 flex h-full w-full max-w-xl flex-col overflow-x-hidden overflow-y-auto [overscroll-behavior:contain] border-l shadow-2xl transition-transform duration-200',
           open ? 'translate-x-0' : 'translate-x-full',
         )}
         role="dialog"
         aria-modal="true"
         aria-label={title}
       >
-        <div className="border-app-border flex h-12.5 shrink-0 items-center justify-between border-b px-4 text-center">
-          <h2 className="app-section-title text-app-text">{title}</h2>
+        <div className="bg-app-bg border-app-border sticky top-0 z-10 flex h-12.5 shrink-0 items-center justify-between border-b px-4 text-center">
+          <h2 className="app-page-title text-app-text">{title}</h2>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
@@ -98,14 +98,7 @@ export function SideDrawer({ open, onOpenChange, title, children, onAfterOpen, c
           </button>
         </div>
 
-        <div
-          className={cn(
-            'min-h-0 flex-1 overflow-x-hidden overflow-y-auto [overscroll-behavior:contain] p-4 [scrollbar-gutter:stable]',
-            className,
-          )}
-        >
-          {children}
-        </div>
+        <div className={cn('min-h-0 flex-1 p-4', className)}>{children}</div>
       </aside>
     </div>,
     document.body,

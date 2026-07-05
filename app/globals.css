@@ -7,11 +7,12 @@
 @theme {
   /* Typography */
   --font-sans:
-    Roboto, 'Arial', sans-serif, 'Inter', 'SF Pro Text', 'SF Pro SC', 'Helvetica Neue', 'PingFang SC',
-    'Microsoft YaHei UI', 'Noto Sans SC', sans-serif;
-
+    var(--font-harmony-sc), 'PingFang SC', 'Hiragino Sans', 'Yu Gothic', Meiryo, 'Apple SD Gothic Neo', 'Malgun Gothic',
+    'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Noto Sans CJK JP', 'Noto Sans CJK KR',
+    'Helvetica Neue', Arial, sans-serif;
   /* Semantic app tokens */
   --color-app-bg: var(--app-bg);
+  --color-app-bg-highlight: var(--app-bg-highlight);
   --color-app-aside-bg: var(--app-aside-bg);
   --color-app-surface: var(--app-surface);
 
@@ -25,12 +26,46 @@
 
   --color-app-hover: var(--app-hover);
   --color-app-active: var(--app-active);
+  --color-theme: var(--theme-color);
+}
+:lang(zh) {
+  --font-sans:
+    var(--font-harmony-sc), 'PingFang SC', 'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC',
+    'Helvetica Neue', Arial, sans-serif;
 }
 
+:lang(ja) {
+  --font-sans:
+    'Hiragino Sans', 'Yu Gothic', Meiryo, 'Noto Sans CJK JP', 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+}
+
+:lang(ko) {
+  --font-sans:
+    'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans CJK KR', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
+}
+
+*,
+::before,
+::after,
+:root,
+.radix-themes {
+  font-family: var(--font-sans) !important;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+:root,
+.radix-themes {
+  --default-font-family: var(--font-sans) !important;
+}
 @layer base {
   /* Light theme */
   :root {
+    --theme-color: #058def;
+
     --app-bg: #ffffff;
+    --app-bg-highlight: #000;
     --app-aside-bg: #ffffff;
     --app-surface: #f9f9f9;
     --app-item-bg: #f3f4f6;
@@ -39,8 +74,8 @@
     --app-text-muted: #656565;
     --app-text-sub: #525252;
 
-    --app-border: #e5e5e5;
-    --app-border-strong: rgb(101 101 101 / 0.5);
+    --app-border: #efefef;
+    --app-border-strong: #e5e5e5;
 
     --app-hover: #e6e6e6;
     --app-active: #f2f2f2;
@@ -49,6 +84,8 @@
   /* Dark theme */
   .dark {
     --app-bg: #1c1d21;
+    --app-bg-highlight: #fff;
+
     --app-aside-bg: #1c1d21;
     --app-surface: rgb(48 52 61 / 0.45);
     --app-item-bg: #30343d;
@@ -57,8 +94,8 @@
     --app-text-muted: #a3a3a3;
     --app-text-sub: #525252;
 
-    --app-border: #252728;
-    --app-border-strong: #a3a3a3;
+    --app-border: #292a2c;
+    --app-border-strong: #4a4a4a;
 
     --app-hover: #333438;
     --app-active: #333438;
@@ -109,6 +146,23 @@
     min-height: 0;
     height: 100% !important;
   }
+
+  /* Let the file route use the app page scrollbar instead of FileExplorer's inner scrollbar. */
+  .yesnas-file-explorer-page .fe-theme,
+  .yesnas-file-explorer-page .fe-theme > div {
+    height: auto !important;
+    min-height: 100%;
+    overflow: visible !important;
+  }
+
+  .yesnas-file-explorer-page .fe-theme > div > div {
+    overflow: visible !important;
+  }
+
+  .yesnas-file-explorer-page .fe-theme > div > div > div {
+    height: auto !important;
+    overflow-y: visible !important;
+  }
 }
 
 @utility app-page-title {
@@ -126,8 +180,8 @@
 }
 
 @utility app-body-text {
-  font-size: 0.75rem;
-  line-height: 1.125rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
 @utility app-caption {

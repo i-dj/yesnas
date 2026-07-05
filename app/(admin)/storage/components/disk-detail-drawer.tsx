@@ -4,24 +4,15 @@ import { SideDrawer, StatusPill } from '@/components/ui'
 import { bytesFormat, hoursFormat } from '@/lib/utils'
 import type { DiskModel, StoragePoolModel } from '@/types/models/storage'
 import { Activity, HardDrive, Layers3 } from 'lucide-react'
+import { displayNumber, displayPercent, displayTemperature, displayValue, toUpperDisplay } from '../utils'
 import { StorageDetailList, StorageDetailSection } from './storage-detail-section'
+import { StorageSummaryHeader } from './summary/storage-summary-header'
 
 interface DiskDetailDrawerProps {
   disk: DiskModel | null
   storagePools?: StoragePoolModel[]
   open: boolean
   onOpenChange: (open: boolean) => void
-}
-
-const prettyValue = (value: unknown): string => {
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-  if (value === null || value === undefined || value === '') return '-'
-  return String(value)
-}
-
-const prettyNumber = (value: unknown): string => {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return '-'
-  return value.toLocaleString()
 }
 
 const getBytes = (value?: number): number => (typeof value === 'number' && Number.isFinite(value) ? value : 0)
@@ -71,7 +62,7 @@ export function DiskDetailDrawer({ disk, storagePools = [], open, onOpenChange }
             }`,
             sizeText: disk.sizeBytes
               ? bytesFormat(disk.sizeBytes, {
-                  decimalPlaces: 0,
+                  decimalPlaces: 2,
                 })
               : disk.size || '-',
             bytes: getBytes(disk.sizeBytes),
@@ -112,39 +103,21 @@ export function DiskDetailDrawer({ disk, storagePools = [], open, onOpenChange }
         <div className="app-body-text text-app-text-muted">No disk selected.</div>
       ) : (
         <div className="space-y-5">
-          <section className="bg-app-surface rounded-lg p-3">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex items-center gap-3">
-                  <div className="bg-app-hover flex size-10 shrink-0 items-center justify-center rounded-md">
-                    <HardDrive className="text-app-text-muted size-5" />
-                  </div>
-
-                  <div className="min-w-0">
-                    <h2 className="text-app-text truncate text-base font-semibold">{disk.model || disk.name}</h2>
-                    <div className="app-body-text text-app-text-muted mt-0.5 truncate">SN: {disk.serial || '-'}</div>
-                  </div>
-                </div>
-
-                <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  <StatusPill color="success" content={prettyValue(disk.health).toUpperCase()} />
-                  <StatusPill color="neutral" content={disk.temperatureC ? `${disk.temperatureC}°C` : '-'} />
-                  <StatusPill color="neutral" content={disk.inUse ? 'In Use' : 'Unused'} />
-                </div>
-              </div>
-
-              <div className="shrink-0 text-right">
-                <div className="text-app-text text-base font-semibold">
-                  {bytesFormat(disk.sizeBytes, {
-                    decimalPlaces: 0,
-                    standard: 'm',
-                  }) || '-'}
-                </div>
-
-                <div className="app-caption text-app-text-muted mt-0.5">{disk.transport?.toUpperCase?.() || '-'}</div>
-              </div>
-            </div>
-          </section>
+          <StorageSummaryHeader
+            title={disk.model || disk.name}
+            subtitle={`SN: ${displayValue(disk.serial)}`}
+            icon={HardDrive}
+            metrics={[
+              {
+                label: 'Capacity',
+                value:
+                  bytesFormat(disk.sizeBytes, {
+                    decimalPlaces: 2,
+                    standard: 's',
+                  }) || '-',
+              },
+            ]}
+          />
 
           <StorageDetailSection icon={Layers3} title="Partition Layout">
             <div className="bg-app-hover flex h-2 w-full overflow-hidden rounded-full">
@@ -176,24 +149,30 @@ export function DiskDetailDrawer({ disk, storagePools = [], open, onOpenChange }
           <StorageDetailSection icon={HardDrive} title="Disk Information">
             <StorageDetailList
               items={[
-                { label: 'Path', value: prettyValue(disk.path) },
+                { label: 'Model', value: disk.model, fullWidth: true },
+                { label: 'Serial Number', value: displayValue(disk.serial), fullWidth: true },
+                {
+                  label: 'Capacity',
+                  value: bytesFormat(disk.sizeBytes, {
+                    decimalPlaces: 2,
+                    standard: 's',
+                  }),
+                },
+                { label: 'Transport', value: toUpperDisplay(disk.transport) },
+                { label: 'Path', value: displayValue(disk.path) },
                 {
                   label: 'Storage Pool',
                   value:
                     relatedStoragePools.length > 0 ? (
                       <span className="flex flex-wrap gap-1">
                         {relatedStoragePools.map((item) => (
-                          <StatusPill key={item} content={item} color="neutral" />
+                          <span key={item}>{item}</span>
                         ))}
                       </span>
                     ) : (
                       'None'
                     ),
                 },
-                { label: 'Health', value: prettyValue(disk.health).toUpperCase() },
-                { label: 'Power On', value: hoursFormat(disk.powerOnHours) },
-                { label: 'Power Cycles', value: prettyNumber(disk.powerCycleCount) },
-                { label: 'Serial Number', value: prettyValue(disk.serial), fullWidth: true },
               ]}
             />
           </StorageDetailSection>
@@ -201,12 +180,17 @@ export function DiskDetailDrawer({ disk, storagePools = [], open, onOpenChange }
           <StorageDetailSection icon={Activity} title="SMART & Lifetime Activity">
             <StorageDetailList
               items={[
-                { label: 'SMART Available', value: prettyValue(disk.smartAvailable) },
-                { label: 'SMART Passed', value: prettyValue(disk.smartPassed) },
+                { label: 'SMART Available', value: displayValue(disk.smartAvailable) },
+                { label: 'SMART Passed', value: displayValue(disk.smartPassed) },
+                { label: 'Power On', value: hoursFormat(disk.powerOnHours) },
+                { label: 'Power Cycles', value: displayNumber(disk.powerCycleCount) },
                 { label: 'Read Total', value: bytesFormat(disk.readBytesTotal, { decimalPlaces: 0 }) },
                 { label: 'Write Total', value: bytesFormat(disk.writeBytesTotal, { decimalPlaces: 0 }) },
-                { label: 'Read Ops', value: prettyNumber(disk.readOpsTotal) },
-                { label: 'Write Ops', value: prettyNumber(disk.writeOpsTotal) },
+                { label: 'Read Ops', value: displayNumber(disk.readOpsTotal) },
+                { label: 'Write Ops', value: displayNumber(disk.writeOpsTotal) },
+                { label: 'Power Losses', value: displayNumber(disk.unsafeShutdownCount) },
+                { label: 'Health', value: displayPercent(disk.healthPercent) },
+                { label: 'Temperature', value: displayTemperature(disk.temperatureC) },
               ]}
             />
           </StorageDetailSection>

@@ -22,7 +22,7 @@ export function StatusPill({ color, content, className, icon: Icon }: StatusPill
   return (
     <span
       className={cn(
-        'bg-app-hover/50 inline-flex w-fit items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium',
+        'bg-app-hover/70 inline-flex w-fit shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px]',
         colorClassMap[color],
         className,
       )}

@@ -12,16 +12,24 @@ interface UploadTargetDropdownProps {
   storagePools: StoragePoolModel[]
   value: UploadTargetValue
   onChange: (value: UploadTargetValue) => void
+  onBeforeOpen?: () => Promise<StoragePoolModel[] | void>
   onError?: (message: string | null) => void
 }
 
 const DEFAULT_UPLOAD_TARGET_KEY = 'yesnas.upload.default-target'
 
-export function UploadTargetDropdown({ storagePools, value, onChange, onError }: UploadTargetDropdownProps) {
+export function UploadTargetDropdown({
+  storagePools,
+  value,
+  onChange,
+  onBeforeOpen,
+  onError,
+}: UploadTargetDropdownProps) {
   const t = useTranslations('Upload')
   const defaultRawRef = useRef<UploadTargetValue | null>(null)
 
   useEffect(() => {
+    if (value.storagePoolId) return
     try {
       const raw = window.localStorage.getItem(DEFAULT_UPLOAD_TARGET_KEY)
       if (!raw) return
@@ -38,7 +46,7 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
     } catch {
       defaultRawRef.current = null
     }
-  }, [onChange])
+  }, [onChange, value.storagePoolId])
 
   useEffect(() => {
     if (!value.storagePoolId || storagePools.length === 0) return
@@ -70,7 +78,7 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
   return (
     <div className="bg-app-bg">
       <div className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="text-app-text mb-2 text-xs font-semibold uppercase">{t('target')}</span>
+        <span className="text-app-text mb-2 text-sm font-semibold uppercase">{t('target')}</span>
       </div>
 
       <div className="relative flex items-center gap-2">
@@ -78,6 +86,7 @@ export function UploadTargetDropdown({ storagePools, value, onChange, onError }:
           storagePools={storagePools}
           value={value}
           onChange={onChange}
+          onBeforeOpen={onBeforeOpen}
           onError={onError}
           allowCreateFolder
           placeholder={t('selectTarget')}

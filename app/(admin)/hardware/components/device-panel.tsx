@@ -1,3 +1,4 @@
+import { Tooltip } from '@/components/ui'
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -11,7 +12,7 @@ export function DeviceGrid<T>({
   renderItem: (item: T) => ReactNode
 }) {
   return (
-    <div className="grid gap-2 lg:grid-cols-2">
+    <div className="grid gap-2 lg:grid-cols-4">
       {items.map((item) => (
         <div key={getKey(item)} className="min-w-0">
           {renderItem(item)}
@@ -35,17 +36,17 @@ export function DevicePanel({
   children: ReactNode
 }) {
   return (
-    <article className="border-app-border min-w-0 rounded-md border p-3">
+    <article className="border-app-border bg-app-bg min-w-0 rounded-md p-3">
       <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <span className="grid shrink-0 place-items-center">
             <Icon className="text-app-text-muted size-3.5" />
           </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-app-text text-xs font-semibold wrap-break-word">{title || '-'}</p>
-          </div>
+          <Tooltip content={title || '-'} triggerClassName="min-w-0 flex-1">
+            <p className="text-app-text block w-full truncate text-sm font-semibold">{title || '-'}</p>
+          </Tooltip>
         </div>
-        {status}
+        {status ? <div className="shrink-0">{status}</div> : null}
       </div>
       {children}
     </article>

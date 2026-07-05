@@ -27,7 +27,7 @@ export const ThemeToggle = () => {
   ] as const
 
   return (
-    <div className="border-app-border inline-flex items-center rounded-full border">
+    <div className="border-app-border-strong inline-flex items-center rounded-full border">
       {options.map((option) => {
         const Icon = option.icon
         const active = theme === option.value
@@ -39,8 +39,9 @@ export const ThemeToggle = () => {
             onClick={() => setTheme(option.value)}
             aria-label={option.label}
             className={cn(
-              'text-app-text-muted hover:bg-app-hover hover:text-app-text flex h-7 w-7 items-center justify-center rounded-full transition-colors duration-200 ease-out',
-              active && 'bg-app-active border-app-border-strong text-app-text',
+              'text-app-text-muted flex h-7 w-7 items-center justify-center rounded-full transition-colors duration-200 ease-out',
+              active && 'bg-app-bg-highlight border-app-border-strong text-app-bg',
+              !active && 'hover:bg-app-hover hover:text-app-text',
             )}
           >
             <Icon size={16} />
