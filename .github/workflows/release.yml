@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version, for example v1.2.3. Leave empty to auto-generate.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve release version
+        id: version
+        shell: bash
+        run: |
+          INPUT_VERSION="${{ inputs.version }}"
+
+          if [ -n "$INPUT_VERSION" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+            VERSION="v${PACKAGE_VERSION}-build.${GITHUB_RUN_NUMBER}"
+          fi
+
+          if [[ "$VERSION" != v* ]]; then
+            VERSION="v$VERSION"
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Release version: $VERSION"
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Package release artifact
+        shell: bash
+        run: |
+          mkdir -p release
+          tar \
+            --exclude='.next/cache' \
+            --exclude='release' \
+            -czf "release/yesnas-web-${{ steps.version.outputs.version }}.tar.gz" \
+            .next \
+            public \
+            package.json \
+            pnpm-lock.yaml \
+            pnpm-workspace.yaml \
+            next.config.ts
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yesnas-web-${{ steps.version.outputs.version }}
+          path: release/*.tar.gz
+          if-no-files-found: error
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: YesNAS Web ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: release/*.tar.gz
