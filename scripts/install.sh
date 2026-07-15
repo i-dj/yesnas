@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-REPO="${YESNAS_WEB_REPO:-i-dj/yesnas-web}"
+REPO="${YESNAS_WEB_REPO:-i-dj/yesnas}"
 VERSION="${YESNAS_WEB_VERSION:-latest}"
 INSTALL_DIR="${YESNAS_WEB_INSTALL_DIR:-/opt/yesnas-web}"
 CONFIG_DIR="${YESNAS_WEB_CONFIG_DIR:-/etc/yesnas-web}"
@@ -16,6 +16,7 @@ warn() { printf '\033[1;33m[YesNAS Web][WARN]\033[0m %s\n' "$*" >&2; }
 fail() { printf '\033[1;31m[YesNAS Web][ERROR]\033[0m %s\n' "$*" >&2; exit 1; }
 step() { STEP=$((STEP + 1)); printf '\n\033[1;34m[%02d/%02d]\033[0m %s\n' "$STEP" "$TOTAL_STEPS" "$*"; }
 run_root() { if [[ "$EUID" -eq 0 ]]; then "$@"; else sudo "$@"; fi; }
+run_as_user() { if [[ "$EUID" -eq 0 ]]; then runuser -u "$1" -- "${@:2}"; else sudo -u "$1" -- "${@:2}"; fi; }
 require_command() { command -v "$1" >/dev/null 2>&1 || fail "Missing command: $1"; }
 
 resolve_release_urls() {
@@ -30,7 +31,7 @@ import json, sys
 release = json.load(sys.stdin)
 assets = release.get("assets", [])
 archives = [a for a in assets if a.get("name", "").endswith(".tar.gz") and not a.get("name", "").endswith(".sha256")]
-preferred = [a for a in archives if a.get("name", "").startswith("yesnas-web")]
+preferred = [a for a in archives if a.get("name", "").startswith("yesnas-")]
 if not (preferred or archives):
     raise SystemExit("Release does not contain a .tar.gz asset")
 archive = (preferred or archives)[0]
@@ -65,10 +66,11 @@ main() {
   step "Install runtime dependencies"
   export DEBIAN_FRONTEND=noninteractive
   run_root apt-get update
-  run_root apt-get install -y ca-certificates curl tar gzip nodejs python3
+  run_root apt-get install -y ca-certificates curl tar gzip nodejs npm python3 util-linux
   local node_major
   node_major="$(node -p 'Number(process.versions.node.split(".")[0])' 2>/dev/null || echo 0)"
   [[ "$node_major" -ge 20 ]] || fail "Node.js 20 or newer is required. Install a current Node.js LTS release and rerun this script."
+  if ! command -v pnpm >/dev/null 2>&1; then run_root npm install -g pnpm@10; fi
 
   step "Create application directories"
   run_root mkdir -p "$INSTALL_DIR" "$CONFIG_DIR"
@@ -98,10 +100,16 @@ main() {
   run_root rm -rf "$INSTALL_DIR.next"
   mkdir -p "$tmp_dir/package"
   tar -xzf "$archive" -C "$tmp_dir/package"
-  [[ -f "$tmp_dir/package/server.js" ]] || fail "Release package does not contain server.js."
+  if [[ ! -f "$tmp_dir/package/server.js" && ! -f "$tmp_dir/package/package.json" ]]; then
+    fail "Release package must contain server.js or package.json."
+  fi
   run_root mkdir -p "$INSTALL_DIR.next"
   run_root cp -a "$tmp_dir/package/." "$INSTALL_DIR.next/"
   run_root chown -R "$install_user:$install_group" "$INSTALL_DIR.next"
+  if [[ ! -f "$INSTALL_DIR.next/server.js" ]]; then
+    [[ -d "$INSTALL_DIR.next/.next" ]] || fail "Release package does not contain a production .next build."
+    run_as_user "$install_user" pnpm --dir "$INSTALL_DIR.next" install --prod --frozen-lockfile
+  fi
   if [[ -d "$INSTALL_DIR" ]]; then run_root rm -rf "$INSTALL_DIR.previous"; run_root mv "$INSTALL_DIR" "$INSTALL_DIR.previous"; fi
   run_root mv "$INSTALL_DIR.next" "$INSTALL_DIR"
 
@@ -117,6 +125,10 @@ EOF
   step "Create systemd service"
   local node_path
   node_path="$(command -v node)"
+  local exec_start="$node_path $INSTALL_DIR/server.js"
+  if [[ ! -f "$INSTALL_DIR/server.js" ]]; then
+    exec_start="$node_path $INSTALL_DIR/node_modules/next/dist/bin/next start"
+  fi
   cat <<EOF | run_root tee "/etc/systemd/system/$SERVICE_NAME.service" >/dev/null
 [Unit]
 Description=YesNAS Web
@@ -129,7 +141,7 @@ User=$install_user
 Group=$install_group
 WorkingDirectory=$INSTALL_DIR
 EnvironmentFile=$CONFIG_DIR/yesnas-web.env
-ExecStart=$node_path $INSTALL_DIR/server.js
+ExecStart=$exec_start
 Restart=always
 RestartSec=3
 
