@@ -31,7 +31,8 @@ export default function LoginPage() {
     try {
       setSubmitting(true)
       await auth.login({ username, password }, remember)
-      router.replace('/dashboard')
+      const nextPath = new URLSearchParams(window.location.search).get('next')
+      router.replace(nextPath?.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/dashboard')
       router.refresh()
     } catch (error) {
       const message = error instanceof Error ? error.message : ''
@@ -83,8 +84,8 @@ export default function LoginPage() {
                 onChange={(event) => setRemember(event.target.checked)}
                 className="peer sr-only"
               />
-              <span className="peer-checked:border-theme peer-checked:bg-theme grid size-4 place-items-center rounded border border-white/20 bg-white/5 text-white transition">
-                <Check className="size-3" strokeWidth={3} />
+              <span className="peer-checked:border-theme peer-checked:bg-theme grid size-4 place-items-center rounded border border-white/25 bg-transparent text-white transition-colors peer-checked:[&>svg]:scale-100 peer-checked:[&>svg]:opacity-100">
+                <Check className="size-3 scale-75 opacity-0 transition-all" strokeWidth={3} />
               </span>
               <span>{t('remember')}</span>
             </label>

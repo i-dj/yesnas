@@ -1,4 +1,5 @@
-import { getFilesByPath, getStorageById } from '@/lib/server/file-service'
+import { fileManagementApi } from '@/lib/api/file-management.api'
+import { storageApi } from '@/lib/api/storage.api'
 import { notFound } from 'next/navigation'
 
 import { FilesClient } from './FilesClient'
@@ -13,10 +14,11 @@ export default async function Page({ params, searchParams }: StoragePageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const parentId = resolvedSearchParams?.parentId
 
-  const [storage, explorerData] = await Promise.all([
-    getStorageById(id),
-    getFilesByPath(id, { parentId }),
+  const [storages, explorerData] = await Promise.all([
+    storageApi.listStorages(),
+    fileManagementApi.filesByPath(id, { parentId }),
   ])
+  const storage = storages.find((item) => item.id === id)
 
   if (!storage) {
     notFound()

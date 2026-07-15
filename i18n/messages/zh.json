@@ -26,6 +26,11 @@
     "language": {
       "label": "语言"
     },
+    "deviceStatus": {
+      "online": "在线",
+      "connecting": "正在连接",
+      "uptime": "已运行 {value}"
+    },
     "profile": {
       "name": "可爱的小王子",
       "editProfile": "修改资料",
@@ -64,6 +69,9 @@
     }
   },
   "Auth": {
+    "session": {
+      "expired": "登录已过期，请重新登录。"
+    },
     "login": {
       "title": "欢迎回来",
       "description": "欢迎回来！请输入您的登录信息。",

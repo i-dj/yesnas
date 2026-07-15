@@ -1,5 +1,5 @@
 'use client'
-import { cn } from '@/lib/utils'
+import { cn, formatBytesPerSecond, formatUptime } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useState } from 'react'
@@ -7,16 +7,21 @@ import { useTranslations } from 'next-intl'
 import { FiUser } from 'react-icons/fi'
 import { menuGroups } from './menu'
 import Image from 'next/image'
-import { ChevronDown, ChevronLeft, KeyRound, LogOut, MessageCircleMore, Upload, UserRound } from 'lucide-react'
-import { ActionMenu, Button, SearchInput, SideDrawer, ThemeToggle } from '../ui'
+import { ArrowDown, ArrowUp, ChevronDown, ChevronLeft, KeyRound, LogOut, MessageCircleMore, Upload, UserRound } from 'lucide-react'
+import { ActionMenu, Button, SideDrawer, ThemeToggle } from '../ui'
 import { GlobalUpload } from './global-upload'
 import { useUploadStore } from '@/store/use-upload-store'
 import { useAuth } from './auth-context'
 import { PasswordDrawer, ProfileDrawer } from './account-drawers'
+import { useSse } from '@/hooks/use-sse'
+import { systemApi } from '@/lib/api/system.api'
+import type { SystemStatusSnapshot } from '@/types'
+import { useRealtimeNetwork } from './realtime-network-context'
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
   const tLayout = useTranslations('Layout')
   const tCommon = useTranslations('Common')
+  const tHardware = useTranslations('Hardware')
   const pathname = usePathname()
   const usePageScroll =
     pathname === '/logs' ||
@@ -37,11 +42,10 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const clearCompletedUploads = useUploadStore((state) => state.clearCompleted)
   const uploadFileList = Object.values(uploadFiles)
   const hasUploadingFiles = uploadFileList.some((file) => file.status === 'uploading')
+  const { data: systemStatus } = useSse<SystemStatusSnapshot>(systemApi.statusStreamUrl(2), {
+    events: ['system-status'],
+  })
   const activePathname = pathname === '/file' || pathname.startsWith('/file/') ? '/storage' : pathname
-  const pageTitle =
-    menuGroups
-      .flatMap((group) => group.sub)
-      .find((item) => activePathname === item.href || activePathname.startsWith(item.href + '/'))?.nameKey ?? null
 
   // Shared active-route matcher
   const isActive = (href: string) => activePathname === href || activePathname.startsWith(href + '/')
@@ -200,11 +204,19 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       <div className="bg-app-bg flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
         <header className="border-app-border flex h-12.5 shrink-0 items-center justify-between border-b px-4">
-          <div className="flex flex-row items-center gap-5 text-base font-semibold">
-            {pageTitle ? tLayout(`nav.${pageTitle}`) : tCommon('brand')}
-          </div>
-          <div className="flex flex-row gap-5">
-            <SearchInput wrapperClassName="ml-4 max-w-md flex-1" placeholder={tCommon('searchPlaceholder')} />
+          <DeviceStatus
+            snapshot={systemStatus}
+            onlineLabel={tCommon('deviceStatus.online')}
+            connectingLabel={tCommon('deviceStatus.connecting')}
+            uptimeLabel={(value) => tCommon('deviceStatus.uptime', { value })}
+            formatDuration={(seconds) =>
+              formatUptime(seconds, {
+                daysHours: (days, hours) => tHardware('values.daysHours', { days, hours }),
+                hours: (hours) => tHardware('values.hours', { value: hours }),
+              })
+            }
+          />
+          <div className="flex flex-row items-center gap-4">
             <div className="flex flex-col items-center">
               <Button
                 icon={Upload}
@@ -213,6 +225,10 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                 onClick={() => setUploadDrawer(true)}
               />
             </div>
+            <GlobalNetworkSpeed
+              receiveLabel={tHardware('fields.receiveSpeed')}
+              sendLabel={tHardware('fields.sendSpeed')}
+            />
             <div className="ml-auto flex items-center gap-4">
               <ActionMenu
                 mode="left-click"
@@ -281,6 +297,94 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       />
       <PasswordDrawer open={passwordDrawer} onOpenChange={setPasswordDrawer} />
     </div>
+  )
+}
+
+function DeviceStatus({
+  snapshot,
+  onlineLabel,
+  connectingLabel,
+  uptimeLabel,
+  formatDuration,
+}: {
+  snapshot: SystemStatusSnapshot | null
+  onlineLabel: string
+  connectingLabel: string
+  uptimeLabel: (value: string) => string
+  formatDuration: (seconds: number) => string
+}) {
+  const state = snapshot?.status.state
+
+  return (
+    <div className="flex min-w-0 items-center gap-2 text-sm">
+      <span
+        className={cn(
+          'size-2 shrink-0 rounded-full',
+          state === 'healthy'
+            ? 'bg-emerald-500'
+            : state === 'warning'
+              ? 'bg-amber-500'
+              : state === 'error'
+                ? 'bg-red-500'
+                : 'bg-app-text-muted/40 animate-pulse',
+        )}
+      />
+      <span className="text-app-text font-semibold">yesnas</span>
+      <span className="text-app-text-muted hidden sm:inline">{snapshot ? onlineLabel : connectingLabel}</span>
+      {snapshot ? (
+        <span className="text-app-text-muted hidden border-l border-app-border pl-2 md:inline">
+          {uptimeLabel(formatDuration(snapshot.status.uptimeSeconds))}
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
+function GlobalNetworkSpeed({ receiveLabel, sendLabel }: { receiveLabel: string; sendLabel: string }) {
+  const data = useRealtimeNetwork()
+  const totals = (data?.interfaces ?? []).reduce(
+    (current, networkInterface) => ({
+      receive: current.receive + (networkInterface.speed?.rxBytesPerSec ?? 0),
+      send: current.send + (networkInterface.speed?.txBytesPerSec ?? 0),
+    }),
+    { receive: 0, send: 0 },
+  )
+
+  return (
+    <div className="border-app-border flex h-8 items-center gap-3 border-x px-3">
+      <NetworkSpeedItem
+        icon={ArrowDown}
+        label={receiveLabel}
+        value={formatBytesPerSecond(totals.receive)}
+        className="text-cyan-500"
+      />
+      <NetworkSpeedItem
+        icon={ArrowUp}
+        label={sendLabel}
+        value={formatBytesPerSecond(totals.send)}
+        className="text-violet-500"
+      />
+    </div>
+  )
+}
+
+function NetworkSpeedItem({
+  icon: Icon,
+  label,
+  value,
+  className,
+}: {
+  icon: typeof ArrowDown
+  label: string
+  value: string
+  className: string
+}) {
+  return (
+    <span className="flex items-center gap-1.5" title={`${label}`}>
+      <Icon className={cn('size-3.5', className)} />
+      {/*<span className="text-app-text-muted hidden text-sm lg:inline">{label}</span>*/}
+      <span className="text-app-text min-w-16 text-sm font-semibold tabular-nums">{value}</span>
+    </span>
   )
 }
 

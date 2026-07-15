@@ -1,5 +1,7 @@
 import Uppy from '@uppy/core'
 import Tus, { type TusOptions } from '@uppy/tus'
+import { getClientAuthToken } from '@/lib/auth-session'
+import { handleUnauthorized } from '@/lib/api/unauthorized'
 
 const TUS_ENDPOINT = 'http://yesnas:8080/api/v1/uploads/tus'
 const TUS_CHUNK_SIZE = 1 * 1024 * 1024
@@ -26,7 +28,15 @@ const tusOptions: TusOptions<any, any> = {
   retryDelays: [0, 1000, 3000, 5000, 10000, 20000, 30000],
   chunkSize: TUS_CHUNK_SIZE,
   removeFingerprintOnSuccess: true,
+  headers: (): Record<string, string> => {
+    const token = getClientAuthToken()
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  },
   onShouldRetry: (error, _retryAttempt, _options, next) => {
+    if (error.originalResponse?.getStatus?.() === 401) {
+      handleUnauthorized()
+      return false
+    }
     if (isTargetAlreadyExistsError(error)) return false
     return next(error)
   },

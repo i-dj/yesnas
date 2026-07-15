@@ -98,7 +98,6 @@ The frontend currently sends API requests to `http://yesnas:8080/api/v1` by defa
 
 - `lib/api/base.ts`
 - `lib/api/request.ts`
-- `lib/file-api.ts`
 - `lib/uppy.ts`
 
 ### Available Scripts

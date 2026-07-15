@@ -1,4 +1,4 @@
-import { getServerTimeZone } from '@/lib/server/file-service'
+import { getRequestTimeZone } from '@/lib/server/request-context'
 import { JobsClient } from './JobsClient'
 import { jobApi } from '@/lib/api/job.api'
 
@@ -7,7 +7,7 @@ export default async function JobsPage() {
   const [jobsResult, scheduledJobs, timeZone] = await Promise.all([
     jobApi.listJobs({ page: 1, pageSize: 20, status: 'all' }),
     jobApi.scheduledJobs(),
-    getServerTimeZone(),
+    getRequestTimeZone(),
   ])
 
   return (

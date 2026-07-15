@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { openAuthenticatedSse } from '@/lib/api/sse'
 
 export type SseStatus = 'idle' | 'connecting' | 'ready' | 'error'
 
@@ -60,9 +61,10 @@ export function useSse<T>(
       return
     }
 
-    const source = new EventSource(url)
     const dataEvents = eventsKey ? eventsKey.split('\u0000') : []
     const connectionEvents = readyEventsKey ? readyEventsKey.split('\u0000') : []
+    let reconnectTimer: ReturnType<typeof setTimeout> | undefined
+    let closed = false
     setStatus('connecting')
     setError(null)
 
@@ -70,9 +72,9 @@ export function useSse<T>(
       setStatus('ready')
     }
 
-    const handleMessage = (event: MessageEvent<string>) => {
+    const handleMessage = (raw: string) => {
       try {
-        const next = callbacksRef.current.parser(event.data)
+        const next = callbacksRef.current.parser(raw)
         setData((current) => callbacksRef.current.reducer?.(current, next) ?? next)
         setStatus('ready')
         setError(null)
@@ -83,22 +85,30 @@ export function useSse<T>(
       }
     }
 
-    source.onopen = handleReady
-    source.onerror = (nextError) => {
-      setStatus('error')
-      setError(nextError)
-    }
-
-    connectionEvents.forEach((eventName) => source.addEventListener(eventName, handleReady))
-    dataEvents.forEach((eventName) => source.addEventListener(eventName, handleMessage as EventListener))
-    if (listenToMessage || dataEvents.length === 0) source.onmessage = handleMessage
+    const source = openAuthenticatedSse(url, {
+      onOpen: handleReady,
+      onEvent: (eventName, raw) => {
+        if (connectionEvents.includes(eventName)) handleReady()
+        if (dataEvents.includes(eventName) || (eventName === 'message' && (listenToMessage || dataEvents.length === 0))) {
+          handleMessage(raw)
+        }
+      },
+      onError: (nextError) => {
+        setStatus('error')
+        setError(nextError)
+        if (!closed && nextError.message !== 'Unauthorized') reconnectTimer = setTimeout(reconnect, 2000)
+      },
+      onClose: () => {
+        if (!closed) reconnectTimer = setTimeout(reconnect, 2000)
+      },
+    })
 
     return () => {
-      connectionEvents.forEach((eventName) => source.removeEventListener(eventName, handleReady))
-      dataEvents.forEach((eventName) => source.removeEventListener(eventName, handleMessage as EventListener))
+      closed = true
+      if (reconnectTimer) clearTimeout(reconnectTimer)
       source.close()
     }
-  }, [enabled, eventsKey, listenToMessage, readyEventsKey, url, version])
+  }, [enabled, eventsKey, listenToMessage, readyEventsKey, reconnect, url, version])
 
   return { data, status, error, reconnect }
 }

@@ -1,24 +1,18 @@
 import { request } from '@/lib/api/request'
 import { createCrudApi } from './crud'
 import {
+  CreateStoragePoolPayload,
   CreateStoragePoolSnapshotPayload,
+  FormatStoragePoolPayload,
+  FormatStoragePoolResponse,
+  ReplaceStoragePoolDevicePayload,
+  RestoreStoragePoolSnapshotResponse,
   RestoreStoragePoolSnapshotPayload,
   StoragePoolModel,
+  UpdateStoragePoolSnapshotPolicyPayload,
 } from '@/types/models/storage'
-import type { RaidLevel } from '@/types/models/_constants'
-
-export interface CreateStoragePoolPayload {
-  name: string
-  raidLevel: RaidLevel
-  paths: string[]
-  autoSnapshotEnabled?: boolean
-  autoSnapshotSchedule?: string
-}
-
-export interface UpdateStoragePoolSnapshotPolicyPayload {
-  autoSnapshotEnabled: boolean
-  autoSnapshotSchedule?: string
-}
+import type { StorageDrive } from '@/types'
+import { BASE } from './base'
 
 export const storageApi = {
   ...createCrudApi<StoragePoolModel>('/system/storage-pools'),
@@ -26,6 +20,18 @@ export const storageApi = {
   listSilently: () =>
     request<StoragePoolModel[]>('/system/storage-pools', {
       unwrapList: true,
+      silentNetworkLoading: true,
+    }),
+
+  listStorages: () => request<StorageDrive[]>('/storages', { unwrapList: true }),
+
+  benchmarkStreamUrl: (poolId: string, sizeGiB?: number) => {
+    const query = sizeGiB ? `?sizeGiB=${sizeGiB}` : ''
+    return `${BASE}/system/storage-pools/${poolId}/benchmark/stream${query}`
+  },
+
+  probeBenchmark: (poolId: string, sizeGiB?: number) =>
+    request<unknown>(`/system/storage-pools/${poolId}/benchmark/stream${sizeGiB ? `?sizeGiB=${sizeGiB}` : ''}`, {
       silentNetworkLoading: true,
     }),
 
@@ -52,22 +58,22 @@ export const storageApi = {
     }),
 
   // pool format
-  formatPool: (poolId: string, payload: { password: string }) =>
-    request<{ pool?: StoragePoolModel }>(`/system/storage-pools/${poolId}/format`, {
+  formatPool: (poolId: string, payload: FormatStoragePoolPayload) =>
+    request<FormatStoragePoolResponse>(`/system/storage-pools/${poolId}/format`, {
       method: 'POST',
       body: payload,
     }),
 
   // disk replace
-  replaceDisk: (poolId: string, payload: { oldDevicePath: string; newDevicePath: string; password: string }) =>
-    request<void>(`/system/storage-pools/${poolId}/replace-disk`, {
+  replaceDisk: (poolId: string, payload: ReplaceStoragePoolDevicePayload) =>
+    request<void>(`/system/storage-pools/${poolId}/devices/replace`, {
       method: 'POST',
       body: payload,
     }),
 
   // restore snapshot
   restoreSnapshot: (poolId: string, snapshotId: string, payload: RestoreStoragePoolSnapshotPayload) =>
-    request<{ name?: string }>(`/system/storage-pools/${poolId}/snapshots/${snapshotId}/restore`, {
+    request<RestoreStoragePoolSnapshotResponse>(`/system/storage-pools/${poolId}/snapshots/${snapshotId}/restore`, {
       method: 'POST',
       body: {
         password: payload.password,

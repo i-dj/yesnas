@@ -1,6 +1,6 @@
 import { fileShareApi } from '@/lib/api/file-share.api'
 import { userApi } from '@/lib/api/user.api'
-import { FileSharingClient } from './file-sharing-client'
+import { FileSharingClient } from './FileSharingClient'
 import { storageApi } from '@/lib/api/storage.api'
 
 async function getInitialData() {

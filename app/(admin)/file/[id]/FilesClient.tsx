@@ -1,13 +1,13 @@
 'use client'
 
-import type { StorageDrive } from '@/types'
+import type { FileConflictPolicy, StorageDrive } from '@/types'
 import {
   FileExplorer,
   type FileExplorerData,
   type FileExplorerLocale,
   type FileNode,
 } from '@nextdj/file-explorer'
-import { fileManagementApi, type FileConflictPolicy } from '@/lib/api/file-management.api'
+import { fileManagementApi } from '@/lib/api/file-management.api'
 import { useConfirmModal } from '@/hooks/use-confirm-modal'
 import { toast } from '@/store/use-toast-store'
 import { useLocale } from 'next-intl'

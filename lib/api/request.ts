@@ -1,4 +1,5 @@
-import { toast } from '@/store/use-toast-store'
+import { AUTH_TOKEN_COOKIE, getClientAuthToken } from '@/lib/auth-session'
+import { handleUnauthorized } from './unauthorized'
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
@@ -51,13 +52,12 @@ function parseErrorMessage(raw: string, fallback: string) {
 
 async function getAuthToken() {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('yesnas-auth-token') ?? sessionStorage.getItem('yesnas-auth-token')
+    return getClientAuthToken()
   }
 
   try {
-    const importServerModule = new Function('specifier', 'return import(specifier)') as <T>(specifier: string) => Promise<T>
-    const { cookies } = await importServerModule<typeof import('next/headers')>('next/headers')
-    return (await cookies()).get('yesnas-auth-token')?.value ?? null
+    const { cookies } = await import('next/headers')
+    return (await cookies()).get(AUTH_TOKEN_COOKIE)?.value ?? null
   } catch {
     return null
   }
@@ -82,6 +82,9 @@ export async function request<T>(url: string, options: ApiOptions = {}): Promise
   const res = await fetch(BASE_URL + url, init)
 
   if (!res.ok) {
+    if (res.status === 401 && url !== '/auth/login' && url !== '/auth/logout') {
+      handleUnauthorized()
+    }
     const text = await res.text()
     const message = parseErrorMessage(text, `${options.method || 'GET'} ${url} failed`)
     throw new Error(message)

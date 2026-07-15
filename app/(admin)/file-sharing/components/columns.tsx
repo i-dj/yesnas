@@ -2,7 +2,7 @@ import { Button, type DataTableHeader } from '@/components/ui'
 import { cn, formatDateTime } from '@/lib/utils'
 import { Edit3, FolderInput, Globe2, HardDriveDownload, Network, UploadCloud, type LucideIcon } from 'lucide-react'
 
-import type { ProtocolKey, SharedFolder } from '../_types'
+import type { ProtocolKey, SharedFolder } from '../types'
 
 type Translate = (key: string, values?: Record<string, string | number>) => string
 

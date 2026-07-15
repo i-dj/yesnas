@@ -1,4 +1,54 @@
 import { DriveStatus, StorageType } from './_constants'
+import type { BreadcrumbItem, FileNode } from '@nextdj/file-explorer'
+
+export type FileConflictPolicy = 'error' | 'overwrite' | 'rename'
+
+export interface FileConflictResult {
+  hasConflict: boolean
+  name: string
+  parentId: string
+  targetId?: string
+  targetType?: FileNode['type']
+}
+
+export interface FileConflictPayload {
+  parentId: string
+  name?: string
+}
+
+export interface FileTransferPayload extends FileConflictPayload {
+  conflictPolicy?: FileConflictPolicy
+}
+
+export interface FileResponseData {
+  breadcrumbs: BreadcrumbItem[]
+  files: FileNode[]
+}
+
+export type FileQueryType = 'recent' | 'trash' | 'tag'
+
+export interface GetFilesOptions {
+  parentId?: string
+  type?: FileQueryType
+}
+
+export interface TrashFileResponse {
+  id: string
+  storageId: string
+  name: string
+  type: FileNode['type']
+  parentId?: string
+  originalPath?: string
+  recyclePath?: string
+  deletedAt: string
+  expiresAt?: string
+  size?: number
+  extension?: string
+  isHidden?: boolean
+  mimeType?: string
+  mediaType?: string
+  tagColors?: FileNode['tagColors']
+}
 
 export interface StorageDrive {
   id: string

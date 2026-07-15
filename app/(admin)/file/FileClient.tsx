@@ -9,15 +9,13 @@ import { useLocale, useTranslations } from 'next-intl'
 import { FileExplorer, type CategoryColor, type FileListColumn, type FileNode } from '@nextdj/file-explorer'
 import { Copy, FolderInput, Eye, Trash2 } from 'lucide-react'
 
-import type { QuickFilterType, StorageLocation } from './_types'
-import { QUICK_FILTERS, STORAGE_LOCATIONS } from './_constants'
-import { getStoragesIoStatsStreamUrl } from '@/lib/file-api'
+import type { QuickFilterType, StorageLocation } from './types'
+import { QUICK_FILTERS, STORAGE_LOCATIONS } from './constants'
+import { fileManagementApi } from '@/lib/api/file-management.api'
 import { StorageDrive } from '@/types'
 import Link from 'next/link'
 import { cn, formatDateTime } from '@/lib/utils'
-import { StorageCard, type StorageIoStats } from './_components/StorageCard'
-import { TrashFileDetail } from './_components/TrashFileDetail'
-import { ColorFilterSelect } from './_components/ColorFilterSelect'
+import { ColorFilterSelect, StorageCard, TrashFileDetail, type StorageIoStats } from './components'
 
 interface FileClientProps {
   files: Record<QuickFilterType, FileNode[]>
@@ -72,7 +70,7 @@ export function FileClient({ files, storages }: FileClientProps) {
     [tFile],
   )
 
-  const { data: storagesIoStats } = useSse<StoragesIoStatsPayload>(getStoragesIoStatsStreamUrl(1), {
+  const { data: storagesIoStats } = useSse<StoragesIoStatsPayload>(fileManagementApi.storagesIoStatsStreamUrl(1), {
     event: 'io-stats',
     parser: (raw) => JSON.parse(raw) as StoragesIoStatsPayload,
   })
@@ -343,7 +341,6 @@ export function FileClient({ files, storages }: FileClientProps) {
           showBreadcrumbs={false}
           showToolbar={false}
           fontSize="sm"
-          theme="auto"
           viewControls={{
             showDisplayButton: false,
             showViewToggleButton: false,

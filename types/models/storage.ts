@@ -157,3 +157,27 @@ export interface ReplaceStoragePoolDevicePayload {
   oldDevicePath: string
   newDevicePath: string
 }
+
+export interface UpdateStoragePoolSnapshotPolicyPayload {
+  autoSnapshotEnabled: boolean
+  autoSnapshotSchedule?: string
+}
+
+export interface RestoreStoragePoolSnapshotResponse {
+  id: string
+  restored: boolean
+  name?: string
+  targetPath?: string
+  backupPath?: string
+}
+
+export interface FormatStoragePoolPayload {
+  password: string
+}
+
+export interface FormatStoragePoolResponse {
+  id: string
+  formatted: boolean
+  formattedAt?: string
+  pool?: StoragePoolModel
+}

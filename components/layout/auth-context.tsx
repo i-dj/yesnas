@@ -5,11 +5,17 @@ import {
   AUTH_EXPIRES_KEY,
   AUTH_TOKEN_COOKIE,
   AUTH_TOKEN_KEY,
+  AUTH_UNAUTHORIZED_EVENT,
   AUTH_USER_COOKIE,
   AUTH_USER_KEY,
+  clearClientAuth,
+  getClientAuthToken,
   serializeAuthUser,
 } from '@/lib/auth-session'
 import type { AuthUser, LoginPayload } from '@/types'
+import { toast } from '@/store/use-toast-store'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
 interface AuthState {
@@ -41,16 +47,9 @@ function readStoredUser() {
   }
 }
 
-function clearStoredAuth() {
-  localStorage.removeItem(AUTH_TOKEN_KEY)
-  localStorage.removeItem(AUTH_USER_KEY)
-  localStorage.removeItem(AUTH_EXPIRES_KEY)
-  sessionStorage.removeItem(AUTH_TOKEN_KEY)
-  sessionStorage.removeItem(AUTH_USER_KEY)
-  sessionStorage.removeItem(AUTH_EXPIRES_KEY)
-}
-
 export function AuthProvider({ children, initialUser }: { children: ReactNode; initialUser: AuthUser | null }) {
+  const router = useRouter()
+  const t = useTranslations('Auth.session')
   const [token, setToken] = useState<string | null>(null)
   const [user, setUser] = useState<AuthUser | null>(initialUser)
   const [loading, setLoading] = useState(!initialUser)
@@ -77,6 +76,22 @@ export function AuthProvider({ children, initialUser }: { children: ReactNode; i
     setLoading(false)
   }, [])
 
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setToken(null)
+      setUser(null)
+      setLoading(false)
+      toast.error(t('expired'), 5000)
+      if (window.location.pathname !== '/login') {
+        router.replace('/login')
+        router.refresh()
+      }
+    }
+
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, handleSessionExpired)
+    return () => window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, handleSessionExpired)
+  }, [router, t])
+
   const updateUser = (nextUser: AuthUser) => {
     setUser(nextUser)
     const remember = Boolean(localStorage.getItem(AUTH_TOKEN_KEY))
@@ -88,7 +103,7 @@ export function AuthProvider({ children, initialUser }: { children: ReactNode; i
 
   const login = async (payload: LoginPayload, remember = false) => {
     const response = await authApi.login(payload)
-    clearStoredAuth()
+    clearClientAuth()
     const storage = remember ? localStorage : sessionStorage
     storage.setItem(AUTH_TOKEN_KEY, response.token)
     storage.setItem(AUTH_USER_KEY, JSON.stringify(response.user))
@@ -102,13 +117,11 @@ export function AuthProvider({ children, initialUser }: { children: ReactNode; i
 
   const logout = async () => {
     try {
-      if (localStorage.getItem(AUTH_TOKEN_KEY) ?? sessionStorage.getItem(AUTH_TOKEN_KEY)) {
+      if (getClientAuthToken()) {
         await authApi.logout()
       }
     } finally {
-      clearStoredAuth()
-      clearCookie(AUTH_TOKEN_COOKIE)
-      clearCookie(AUTH_USER_COOKIE)
+      clearClientAuth()
       setToken(null)
       setUser(null)
     }
@@ -136,6 +149,5 @@ export function useAuth() {
 }
 
 export function getStoredAuthToken() {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem(AUTH_TOKEN_KEY) ?? sessionStorage.getItem(AUTH_TOKEN_KEY)
+  return getClientAuthToken()
 }

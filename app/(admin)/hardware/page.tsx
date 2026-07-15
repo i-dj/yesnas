@@ -6,14 +6,14 @@ import { useTranslations } from 'next-intl'
 import { PageWrapper } from '@/components/layout/page-wrapper'
 import { EmptyState, StatusPill } from '@/components/ui'
 import { useSse } from '@/hooks/use-sse'
-import { getSystemHardwareStreamUrl } from '@/lib/file-api'
+import { systemApi } from '@/lib/api/system.api'
 import { formatDateTime } from '@/lib/utils'
 import type { HardwareSnapshot } from '@/types'
 import { HardwareDetails, HardwareSummaryCards } from './components'
 
 export default function HardwarePage() {
   const t = useTranslations('Hardware')
-  const { data: snapshot, status: streamState } = useSse<HardwareSnapshot>(getSystemHardwareStreamUrl(1), {
+  const { data: snapshot, status: streamState } = useSse<HardwareSnapshot>(systemApi.hardwareStreamUrl(1), {
     events: ['hardware-status', 'hardware', 'hardware-info', 'system-hardware'],
     listenToMessage: true,
   })

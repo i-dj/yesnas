@@ -5,7 +5,7 @@ import { bytesFormat, cn } from '@/lib/utils'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import type { StorageDrive } from '@/types/models/file'
 
-import { STORAGE_TYPE_META } from '../_constants'
+import { STORAGE_TYPE_META } from '../constants'
 
 export interface StorageIoStats {
   storageId: string

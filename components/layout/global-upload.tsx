@@ -5,7 +5,7 @@ import { uppy } from '@/lib/uppy'
 import { useUploadStore } from '@/store/use-upload-store'
 import { toast } from '@/store/use-toast-store'
 import { getFileConfig } from '@/lib/file-utils'
-import { getStoragePoolsUrl } from '@/lib/file-api'
+import { storageApi } from '@/lib/api/storage.api'
 import type { StoragePoolModel } from '@/types/models/storage'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
@@ -220,9 +220,7 @@ export const GlobalUpload = ({ isOpen }: { isOpen: boolean }) => {
     const request = (async () => {
       try {
         setTargetError(null)
-        const res = await fetch(getStoragePoolsUrl())
-        if (!res.ok) throw new Error(`Load storage pools failed: ${res.status}`)
-        const payload = (await res.json()) as StoragePoolModel[]
+        const payload = await storageApi.listSilently()
         setStoragePools(payload)
         return payload
       } catch (error) {

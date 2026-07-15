@@ -1,6 +1,6 @@
 import { logApi } from '@/lib/api/log.api'
 import { getDateRange, getZonedDateTime } from '@/lib/date-utils'
-import { getServerTimeZone } from '@/lib/server/file-service'
+import { getRequestTimeZone } from '@/lib/server/request-context'
 
 import { LogsClient } from './LogsClient'
 import { parsePage, parsePageSize, parseRange, parseSeverity, parseSuccess } from './utils'
@@ -18,7 +18,7 @@ export default async function LogsPage({
     return Array.isArray(value) ? value[0] : value ?? null
   }
   const now = new Date().toISOString()
-  const timeZone = await getServerTimeZone()
+  const timeZone = await getRequestTimeZone()
   const range = parseRange(getParam('range'))
   const initialRange = getDateRange(range, timeZone)
   const period = {

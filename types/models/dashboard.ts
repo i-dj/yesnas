@@ -103,3 +103,14 @@ export type NetworkInterfacesSnapshot = {
   interfaces: NetworkInterfaceSnapshot[]
   checkedAt: string
 }
+
+export interface DockerContainerSnapshot {
+  id: string
+  image: string
+  running: boolean
+}
+
+export interface DockerContainersSnapshot {
+  items: DockerContainerSnapshot[]
+  checkedAt: string
+}

@@ -26,6 +26,11 @@
     "language": {
       "label": "Language"
     },
+    "deviceStatus": {
+      "online": "Online",
+      "connecting": "Connecting",
+      "uptime": "Up for {value}"
+    },
     "profile": {
       "name": "Cute Little Prince",
       "editProfile": "Edit profile",
@@ -64,6 +69,9 @@
     }
   },
   "Auth": {
+    "session": {
+      "expired": "Your session has expired. Please sign in again."
+    },
     "login": {
       "title": "Welcome back",
       "description": "Welcome back! Please enter your details.",

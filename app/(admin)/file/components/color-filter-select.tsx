@@ -5,9 +5,9 @@ import { useTranslations } from 'next-intl'
 import * as Popover from '@radix-ui/react-popover'
 import { Check, ChevronDown } from 'lucide-react'
 import type { CategoryColor } from '@nextdj/file-explorer'
-import { FILE_CATEGORY_COLORS } from '../_constants'
+import { FILE_CATEGORY_COLORS } from '../constants'
 import { cn } from '@/lib/utils'
-import { ColorTags } from './ColorTags'
+import { ColorTags } from './color-tags'
 
 interface ColorFilterSelectProps {
   selectedColors: CategoryColor[]

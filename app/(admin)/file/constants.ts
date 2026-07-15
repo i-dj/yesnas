@@ -2,7 +2,7 @@ import { STORAGE_TYPES } from '@/types/models/_constants'
 import type { CategoryColor } from '@nextdj/file-explorer'
 
 import { Cloud, HardDrive, Network, Server, Star, Trash2 } from 'lucide-react'
-import { FileCategoryColor, QuickFilterType, StorageLocation } from './_types'
+import type { FileCategoryColor, QuickFilterType, StorageLocation } from './types'
 
 export const STORAGE_TYPE_META = {
   [STORAGE_TYPES.LOCAL]: { icon: HardDrive, color: 'gray' },

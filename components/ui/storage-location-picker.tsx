@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { ChevronDown, ChevronRight, ChevronsUpDown, Database, Folder, FolderOpen, Loader2, Plus } from 'lucide-react'
-import { getFileApiHost, getStorageFilesUrl } from '@/lib/file-api'
+import { fileManagementApi } from '@/lib/api/file-management.api'
 import { bytesFormat, cn } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
 import type { StoragePoolModel } from '@/types/models/storage'
@@ -40,16 +40,6 @@ interface StorageLocationPickerProps {
     createFolderFailed: string
     folderCreated: string
   }>
-}
-
-const parseApiErrorMessage = (raw: string, fallback: string) => {
-  if (!raw) return fallback
-  try {
-    const parsed = JSON.parse(raw) as { message?: string; error?: string }
-    return parsed.message || parsed.error || raw
-  } catch {
-    return raw
-  }
 }
 
 const shortenMiddle = (value: string, max = 42) => {
@@ -108,14 +98,7 @@ export function StorageLocationPicker({
   const loadFolders = async (storageId: string, parentId = '') => {
     try {
       onError?.(null)
-      const params = new URLSearchParams()
-      if (parentId) params.set('parentId', parentId)
-      const res = await fetch(getStorageFilesUrl(storageId, params))
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(parseApiErrorMessage(text, `Load folders failed: ${res.status}`))
-      }
-      const data = (await res.json()) as { files?: Array<{ id: string; name: string; type: string }> }
+      const data = await fileManagementApi.list(storageId, { parentId: parentId || undefined })
       return (data.files ?? [])
         .filter((file) => file.type === 'folder' && file.name !== '.uploads' && !String(file.name).startsWith('.'))
         .map((file) => ({ id: file.id, name: file.name }))
@@ -242,16 +225,7 @@ export function StorageLocationPicker({
     if (!name) return
     try {
       onError?.(null)
-      const res = await fetch(`${getFileApiHost()}/storages/${storageId}/folders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, parentId }),
-      })
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(parseApiErrorMessage(text, `Create folder failed: ${res.status}`))
-      }
-      const created = (await res.json()) as { id?: string; name?: string }
+      const created = await fileManagementApi.createFolder(storageId, { name, parentId: parentId || undefined })
       const createdName = created.name || name
       const pool = findPoolByTargetId(storagePools, storageId)
       setCreateParentId(null)

@@ -21,7 +21,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { PageWrapper } from '@/components/layout/page-wrapper'
 import { Card, Select } from '@/components/ui'
 import { useSse } from '@/hooks/use-sse'
-import { getSystemNetworkStreamUrl, getSystemNetworkUrl, getSystemStatusStreamUrl } from '@/lib/file-api'
+import { useRealtimeNetwork } from '@/components/layout/realtime-network-context'
+import { systemApi } from '@/lib/api/system.api'
 import { cn, formatBytes, formatOptionalNumber, formatPercent, formatUptime } from '@/lib/utils'
 import { healthLabelMap } from '@/lib/health'
 import { CompactResourceCard, FileSharingOverview, NetworkChart } from './components'
@@ -30,7 +31,6 @@ import {
   formatCheckedAt,
   formatInterfaceOption,
   formatSpeed,
-  mergeRealtimeNetworkSnapshot,
   statusLabelMap,
 } from './utils'
 import { NetworkInterfacesSnapshot, SystemStatusSnapshot } from '@/types/models/dashboard'
@@ -51,17 +51,13 @@ const toneClassMap = {
 }
 
 export default function DashboardPage() {
-  const { data: snapshot } = useSse<SystemStatusSnapshot>(getSystemStatusStreamUrl(1), {
+  const { data: snapshot } = useSse<SystemStatusSnapshot>(systemApi.statusStreamUrl(1), {
     events: ['system-status'],
   })
   const [historicalNetworkSnapshot, setHistoricalNetworkSnapshot] = useState<NetworkInterfacesSnapshot | null>(null)
   const [networkRange, setNetworkRange] = useState<NetworkRange>('realtime')
   const [selectedNetwork, setSelectedNetwork] = useState('all')
-  const { data: realtimeNetworkSnapshot } = useSse<NetworkInterfacesSnapshot>(getSystemNetworkStreamUrl(1), {
-    enabled: networkRange === 'realtime',
-    events: ['network-interfaces'],
-    reducer: mergeRealtimeNetworkSnapshot,
-  })
+  const realtimeNetworkSnapshot = useRealtimeNetwork()
   const networkSnapshot = networkRange === 'realtime' ? realtimeNetworkSnapshot : historicalNetworkSnapshot
 
   useEffect(() => {
@@ -69,14 +65,8 @@ export default function DashboardPage() {
 
     if (networkRange === 'realtime') return
 
-    fetch(getSystemNetworkUrl(networkRange))
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to fetch network status: ${response.status}`)
-        }
-
-        return response.json() as Promise<NetworkInterfacesSnapshot>
-      })
+    systemApi
+      .network(networkRange)
       .then((nextSnapshot) => {
         if (!disposed) setHistoricalNetworkSnapshot(nextSnapshot)
       })

@@ -1,7 +1,5 @@
 import {
   NetworkInterfaceSnapshot,
-  NetworkInterfacesSnapshot,
-  NetworkPoint,
   SystemState,
 } from '@/types/models/dashboard'
 import { formatBytesPerSecond } from '@/lib/utils'
@@ -51,30 +49,6 @@ export function formatCheckedAt(checkedAt: string) {
   if (time?.[1]) return time[1]
 
   return '--:--:--'
-}
-
-export function mergeRealtimeNetworkSnapshot(
-  currentSnapshot: NetworkInterfacesSnapshot | null,
-  nextSnapshot: NetworkInterfacesSnapshot,
-): NetworkInterfacesSnapshot {
-  return {
-    ...nextSnapshot,
-    range: 'realtime',
-    interfaces: nextSnapshot.interfaces.map((networkInterface) => {
-      const previousInterface = currentSnapshot?.interfaces.find((item) => item.name === networkInterface.name)
-      const previousPoints = previousInterface?.points ?? []
-      const nextPoint: NetworkPoint = {
-        timestamp: nextSnapshot.checkedAt,
-        rxBytesPerSec: networkInterface.speed.rxBytesPerSec,
-        txBytesPerSec: networkInterface.speed.txBytesPerSec,
-      }
-
-      return {
-        ...networkInterface,
-        points: [...previousPoints, nextPoint].slice(-20),
-      }
-    }),
-  }
 }
 
 function formatLinkSpeedNumber(value: number) {

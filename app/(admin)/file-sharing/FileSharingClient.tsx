@@ -14,12 +14,7 @@ import {
   Tooltip,
   type StorageLocationValue,
 } from '@/components/ui'
-import {
-  getFileShareProtocolActionUrl,
-  getFileShareProtocolsUrl,
-  getFileShareUrl,
-  getFileSharesUrl,
-} from '@/lib/file-api'
+import { fileShareApi } from '@/lib/api/file-share.api'
 import { cn } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
 import type { User } from '@/types'
@@ -28,9 +23,8 @@ import { Copy, ExternalLink, Globe2, HardDriveDownload, Network, Plus, UploadClo
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 
-import { getFileSharingColumns } from './_columns/file-sharing-columns'
-import type { FileShareProtocolItem, ProtocolItem, ProtocolKey, ShareStatus, SharedFolder } from './_types'
-import { UserPicker } from './_components/user-picker'
+import { getFileSharingColumns, UserPicker } from './components'
+import type { FileShareProtocolItem, ProtocolItem, ProtocolKey, ShareStatus, SharedFolder } from './types'
 
 const protocolIcons: Record<ProtocolKey, LucideIcon> = {
   smb: HardDriveDownload,
@@ -60,16 +54,6 @@ const getPathNames = (pool: StoragePoolModel | undefined, path: string) => {
   const root = getPoolRootPath(pool)
   if (!root || !path.startsWith(root)) return []
   return path.slice(root.length).replace(/^\/+/, '').split('/').filter(Boolean)
-}
-
-const parseApiErrorMessage = (raw: string, fallback: string) => {
-  if (!raw) return fallback
-  try {
-    const parsed = JSON.parse(raw) as { message?: string; error?: string; code?: string }
-    return parsed.message || parsed.error || parsed.code || raw
-  } catch {
-    return raw
-  }
 }
 
 const parseClientNetworks = (value: string) =>
@@ -126,13 +110,7 @@ export function FileSharingClient({
   }, [form.path, form.storagePoolId, poolById])
 
   const refreshProtocols = async () => {
-    const response = await fetch(getFileShareProtocolsUrl(), { cache: 'no-store' })
-    if (!response.ok) {
-      const text = await response.text()
-      throw new Error(parseApiErrorMessage(text, `Load file share protocols failed: ${response.status}`))
-    }
-
-    const payload = (await response.json()) as { items?: FileShareProtocolItem[] }
+    const payload = await fileShareApi.protocols()
     setProtocols(toProtocolItems(payload.items))
   }
 
@@ -140,19 +118,7 @@ export function FileSharingClient({
     const action = protocol.active ? 'stop' : 'start'
 
     try {
-      const response = await fetch(getFileShareProtocolActionUrl(protocol.key), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action }),
-      })
-
-      if (!response.ok) {
-        const text = await response.text()
-        throw new Error(parseApiErrorMessage(text, `Update protocol failed: ${response.status}`))
-      }
-
+      await fileShareApi.actionProtocol(protocol.key, action)
       await refreshProtocols()
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Update protocol failed'
@@ -162,12 +128,7 @@ export function FileSharingClient({
 
   const deleteShare = async (share: SharedFolder) => {
     try {
-      const response = await fetch(getFileShareUrl(share.id), { method: 'DELETE' })
-      if (!response.ok) {
-        const text = await response.text()
-        throw new Error(parseApiErrorMessage(text, `Delete file share failed: ${response.status}`))
-      }
-
+      await fileShareApi.remove(share.id)
       setShares((current) => current.filter((item) => item.id !== share.id))
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Delete file share failed'
@@ -205,10 +166,7 @@ export function FileSharingClient({
     let nextShare = share
 
     try {
-      const response = await fetch(getFileShareUrl(share.id), { cache: 'no-store' })
-      if (response.ok) {
-        nextShare = normalizeShare((await response.json()) as SharedFolder)
-      }
+      nextShare = normalizeShare((await fileShareApi.get(share.id)) as SharedFolder)
     } catch {
       nextShare = share
     }
@@ -260,20 +218,10 @@ export function FileSharingClient({
     }
 
     try {
-      const response = await fetch(editingShare ? getFileShareUrl(editingShare.id) : getFileSharesUrl(), {
-        method: editingShare ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) {
-        const text = await response.text()
-        throw new Error(parseApiErrorMessage(text, `Save file share failed: ${response.status}`))
-      }
-
-      const savedShare = normalizeShare((await response.json()) as SharedFolder)
+      const saved = editingShare
+        ? await fileShareApi.update(editingShare.id, payload)
+        : await fileShareApi.create(payload)
+      const savedShare = normalizeShare(saved as SharedFolder)
 
       if (editingShare) {
         setShares((current) => current.map((share) => (share.id === editingShare.id ? savedShare : share)))

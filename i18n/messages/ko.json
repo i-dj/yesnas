@@ -26,6 +26,11 @@
     "language": {
       "label": "언어"
     },
+    "deviceStatus": {
+      "online": "온라인",
+      "connecting": "연결 중",
+      "uptime": "가동 시간 {value}"
+    },
     "profile": {
       "name": "귀여운 어린 왕자",
       "editProfile": "프로필 수정",
@@ -64,6 +69,9 @@
     }
   },
   "Auth": {
+    "session": {
+      "expired": "로그인 세션이 만료되었습니다. 다시 로그인해 주세요."
+    },
     "login": {
       "title": "다시 오신 것을 환영합니다",
       "description": "로그인 정보를 입력해 주세요.",

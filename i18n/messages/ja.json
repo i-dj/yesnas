@@ -26,6 +26,11 @@
     "language": {
       "label": "言語"
     },
+    "deviceStatus": {
+      "online": "オンライン",
+      "connecting": "接続中",
+      "uptime": "稼働時間 {value}"
+    },
     "profile": {
       "name": "かわいい王子さま",
       "editProfile": "プロフィールを編集",
@@ -64,6 +69,9 @@
     }
   },
   "Auth": {
+    "session": {
+      "expired": "セッションの有効期限が切れました。もう一度ログインしてください。"
+    },
     "login": {
       "title": "おかえりなさい",
       "description": "ログイン情報を入力してください。",

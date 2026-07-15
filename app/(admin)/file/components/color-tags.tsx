@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import type { CategoryColor } from '@nextdj/file-explorer'
-import { FILE_CATEGORY_COLORS } from '../_constants'
+import { FILE_CATEGORY_COLORS } from '../constants'
 
 interface ColorTagsProps {
   colors: CategoryColor[]

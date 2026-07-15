@@ -4,23 +4,14 @@ import { Boxes, Play, Square, type LucideIcon } from 'lucide-react'
 
 import { Card, InlineStat } from '@/components/ui'
 import { useSse } from '@/hooks/use-sse'
-import { getDockerContainersStreamUrl } from '@/lib/file-api'
+import { dockerApi } from '@/lib/api/docker.api'
 import { formatStatValue } from '@/lib/utils'
 import { OverviewCardHeader } from './overview-card-header'
 
-type DockerContainerSnapshot = {
-  id: string
-  image: string
-  running: boolean
-}
-
-type DockerContainersSnapshot = {
-  items: DockerContainerSnapshot[]
-  checkedAt: string
-}
+import type { DockerContainersSnapshot } from '@/types'
 
 export function DockerCard() {
-  const { data: snapshot } = useSse<DockerContainersSnapshot>(getDockerContainersStreamUrl(1), {
+  const { data: snapshot } = useSse<DockerContainersSnapshot>(dockerApi.containersStreamUrl(1), {
     events: ['docker-containers'],
   })
 

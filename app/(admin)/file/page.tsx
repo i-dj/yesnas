@@ -1,15 +1,12 @@
-import {
-  getAllStorages,
-  getAllTaggedFiles,
-  getAllTrashFiles,
-} from '@/lib/server/file-service'
+import { fileManagementApi } from '@/lib/api/file-management.api'
+import { storageApi } from '@/lib/api/storage.api'
 import { FileClient } from './FileClient'
 
 export default async function Page() {
   const [storages, taggedFiles, trashFiles] = await Promise.all([
-    getAllStorages(),
-    getAllTaggedFiles(),
-    getAllTrashFiles(),
+    storageApi.listStorages(),
+    fileManagementApi.taggedFiles(),
+    fileManagementApi.trashFiles(),
   ])
   return (
     <FileClient
