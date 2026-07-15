@@ -6,6 +6,7 @@ import './globals.css'
 
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
+import { getRequestAuthUser, getRequestTimeZone } from '@/lib/server/request-context'
 
 const harmonySansSC = localFont({
   src: './fonts/HarmonyOS_Sans_SC.ttf',
@@ -29,14 +30,20 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const locale = await getLocale()
-  const messages = await getMessages()
+  const [locale, messages, initialUser, initialTimeZone] = await Promise.all([
+    getLocale(),
+    getMessages(),
+    getRequestAuthUser(),
+    getRequestTimeZone(),
+  ])
 
   return (
     <html lang={locale} className={harmonySansSC.variable} suppressHydrationWarning>
       <body className="font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Providers>{children}</Providers>
+          <Providers initialUser={initialUser} initialTimeZone={initialTimeZone}>
+            {children}
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

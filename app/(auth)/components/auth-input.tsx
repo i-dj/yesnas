@@ -9,8 +9,8 @@ export function AuthInput({ className, ...props }: AuthInputProps) {
   return (
     <input
       className={cn(
-        'h-14 w-full rounded-lg border border-[#e2e5ec] bg-white px-5 text-base text-[#242733] outline-none transition',
-        'placeholder:text-[#a2a5ad] hover:border-[#cbd0db] focus:border-theme focus:ring-4 focus:ring-theme/15',
+        'h-12 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-base text-white outline-none transition',
+        'placeholder:text-white/35 hover:border-white/20 hover:bg-white/7 focus:border-theme focus:ring-4 focus:ring-theme/20',
         className,
       )}
       {...props}

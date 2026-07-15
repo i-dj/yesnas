@@ -1,5 +1,5 @@
-import { ActionMenu, Button, Progress, Tooltip, type ActionMenuConfig, type DataTableHeader } from '@/components/ui'
-import { cn, formatSmartTimeInfo } from '@/lib/utils'
+import { ActionMenu, Button, Progress, RelativeTime, type ActionMenuConfig, type DataTableHeader } from '@/components/ui'
+import { cn } from '@/lib/utils'
 import type { Job } from '@/types'
 import { MoreVertical, Pause, Play, Trash2, XCircle } from 'lucide-react'
 
@@ -30,11 +30,13 @@ function getJobActions(job: Job, t: Translate): ActionMenuConfig[] {
 export function getJobColumns({
   t,
   timeZone,
+  now,
   locale,
   onJobAction,
 }: {
   t: Translate
   timeZone: string
+  now?: string
   locale: string
   onJobAction: (job: Job, action: JobAction) => void
 }): DataTableHeader<Job>[] {
@@ -91,16 +93,15 @@ export function getJobColumns({
       key: 'updatedAt',
       label: t('columns.updatedAt'),
       width: '18%',
-      render: (_, job) => {
-        const updated = formatSmartTimeInfo(job.updatedAt || job.createdAt, timeZone, locale)
-        return (
-          <Tooltip content={updated.fullText} disabled={!updated.showTooltip} triggerClassName="w-fit">
-            <span className="text-app-text-muted text-sm" suppressHydrationWarning>
-              {updated.text}
-            </span>
-          </Tooltip>
-        )
-      },
+      render: (_, job) => (
+        <RelativeTime
+          value={job.updatedAt || job.createdAt}
+          locale={locale}
+          timeZone={timeZone}
+          now={now}
+          className="text-app-text-muted text-sm"
+        />
+      ),
     },
     {
       key: '__actions__',

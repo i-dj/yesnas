@@ -1,7 +1,7 @@
 ﻿'use client'
 
-import { Button, EmptyState, Input, SideDrawer, StatusPill } from '@/components/ui'
-import { bytesFormat, formatSmartTime } from '@/lib/utils'
+import { Button, EmptyState, Input, RelativeTime, SideDrawer, StatusPill } from '@/components/ui'
+import { bytesFormat } from '@/lib/utils'
 import type { StoragePoolModel } from '@/types/models/storage'
 import {
   AlertTriangle,
@@ -193,8 +193,8 @@ export function StoragePoolDetail({
                     </span>
                   ),
                 },
-                { label: 'Created At', value: formatSmartTime(activePool.createdAt) },
-                { label: 'Last Checked', value: formatSmartTime(activePool.lastCheckedAt) },
+                { label: 'Created At', value: <RelativeTime value={activePool.createdAt} /> },
+                { label: 'Last Checked', value: <RelativeTime value={activePool.lastCheckedAt} /> },
               ]}
             />
           </StorageDetailSection>

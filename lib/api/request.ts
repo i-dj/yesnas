@@ -35,10 +35,31 @@ function unwrapList<T>(json: unknown): T[] {
 function parseErrorMessage(raw: string, fallback: string) {
   if (!raw) return fallback
   try {
-    const parsed = JSON.parse(raw) as { message?: string; error?: string; code?: string }
+    const parsed = JSON.parse(raw) as {
+      message?: string
+      error?: string | { message?: string; code?: string }
+      code?: string
+    }
+    if (typeof parsed.error === 'object' && parsed.error) {
+      return parsed.error.message || parsed.error.code || fallback
+    }
     return parsed.message || parsed.error || parsed.code || raw
   } catch {
     return raw
+  }
+}
+
+async function getAuthToken() {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('yesnas-auth-token') ?? sessionStorage.getItem('yesnas-auth-token')
+  }
+
+  try {
+    const importServerModule = new Function('specifier', 'return import(specifier)') as <T>(specifier: string) => Promise<T>
+    const { cookies } = await importServerModule<typeof import('next/headers')>('next/headers')
+    return (await cookies()).get('yesnas-auth-token')?.value ?? null
+  } catch {
+    return null
   }
 }
 
@@ -46,11 +67,13 @@ function parseErrorMessage(raw: string, fallback: string) {
  * 通用 request
  */
 export async function request<T>(url: string, options: ApiOptions = {}): Promise<T> {
+  const token = await getAuthToken()
   const init: YesNasRequestInit = {
     method: options.method || 'GET',
     cache: options.cache || 'no-store',
     headers: {
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
     body: options.body ? JSON.stringify(options.body) : undefined,

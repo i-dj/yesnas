@@ -1,5 +1,4 @@
-import { Tooltip, type DataTableHeader } from '@/components/ui'
-import { formatDateTime, getTimestamp } from '@/lib/utils'
+import { RelativeTime, Tooltip, type DataTableHeader } from '@/components/ui'
 import type { Log } from '@/types'
 import { CheckCircle2, CircleAlert, CircleX, UserRound } from 'lucide-react'
 import type { useTranslations } from 'next-intl'
@@ -7,10 +6,12 @@ import type { useTranslations } from 'next-intl'
 export function getLogColumns({
   t,
   timeZone,
+  now,
   locale,
 }: {
   t: ReturnType<typeof useTranslations>
   timeZone: string
+  now?: string
   locale: string
 }): DataTableHeader<Log>[] {
   return [
@@ -45,11 +46,14 @@ export function getLogColumns({
       label: t('columns.time'),
       width: '180px',
       render: (_, record) => (
-        <Tooltip content={formatDateTime(record.occurredAt, timeZone)}>
-          <span className="text-app-text-muted" suppressHydrationWarning>
-            {getTimestamp(new Date(record.occurredAt), locale, timeZone)}
-          </span>
-        </Tooltip>
+        <RelativeTime
+          value={record.occurredAt}
+          locale={locale}
+          timeZone={timeZone}
+          now={now}
+          mode="timestamp"
+          className="text-app-text-muted"
+        />
       ),
     },
     {

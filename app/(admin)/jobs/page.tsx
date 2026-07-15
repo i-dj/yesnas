@@ -3,11 +3,19 @@ import { JobsClient } from './JobsClient'
 import { jobApi } from '@/lib/api/job.api'
 
 export default async function JobsPage() {
-  const [jobsResult, scheduledJobs] = await Promise.all([
+  const now = new Date().toISOString()
+  const [jobsResult, scheduledJobs, timeZone] = await Promise.all([
     jobApi.listJobs({ page: 1, pageSize: 20, status: 'all' }),
     jobApi.scheduledJobs(),
+    getServerTimeZone(),
   ])
-  const timeZone = getServerTimeZone()
 
-  return <JobsClient initialJobsResult={jobsResult} initialScheduledJobs={scheduledJobs} timeZone={timeZone} />
+  return (
+    <JobsClient
+      initialJobsResult={jobsResult}
+      initialScheduledJobs={scheduledJobs}
+      timeZone={timeZone}
+      now={now}
+    />
+  )
 }

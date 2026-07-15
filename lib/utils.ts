@@ -77,10 +77,17 @@ export function performSort<T>(data: T[], key: keyof T, direction: SortDirection
  * @param locale Locale used to format the relative time.
  * @returns A string representing the time difference in a human-readable format.
  */
-export const getTimestamp = (createdAt: Date, locale = 'en', timeZone?: string): string => {
+export const getTimestamp = (
+  createdAt: Date,
+  locale = 'en',
+  timeZone?: string,
+  now: Date | string | number = Date.now(),
+): string => {
   if (Number.isNaN(createdAt.getTime())) return '-'
 
-  const elapsedSeconds = (createdAt.getTime() - Date.now()) / 1000
+  const nowDate = parseApiDate(now)
+  const nowMs = Number.isNaN(nowDate.getTime()) ? Date.now() : nowDate.getTime()
+  const elapsedSeconds = (createdAt.getTime() - nowMs) / 1000
   const weekInSeconds = 7 * 24 * 60 * 60
   if (Math.abs(elapsedSeconds) >= weekInSeconds) {
     return new Intl.DateTimeFormat(locale, {
@@ -288,6 +295,23 @@ export const getNanoid = (len = 16): string => {
   return nanoid(len)
 }
 
+export function parseApiDate(dateStr: Date | string | number | null | undefined): Date {
+  if (!dateStr) return new Date(Number.NaN)
+  if (dateStr instanceof Date) return dateStr
+
+  if (typeof dateStr === 'string') {
+    const value = dateStr.trim()
+    const hasExplicitTimeZone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value)
+    const looksLikeDateTime = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(value)
+
+    if (looksLikeDateTime && !hasExplicitTimeZone) {
+      return new Date(`${value.replace(' ', 'T')}Z`)
+    }
+  }
+
+  return new Date(dateStr)
+}
+
 /**
  * Formats a date like: 2023/2/2 22:11:33
  * @param date Accepts a Date object, ISO string, or timestamp
@@ -299,7 +323,7 @@ export const getNanoid = (len = 16): string => {
 export function formatDateTime(dateStr: Date | string | number | null | undefined, timeZone?: string): string {
   if (!dateStr) return '--'
 
-  const d = new Date(dateStr)
+  const d = parseApiDate(dateStr)
 
   // Guard against invalid dates
   if (isNaN(d.getTime())) return '--'
@@ -403,24 +427,26 @@ export function formatSmartTime(
   dateStr: Date | string | number | null | undefined,
   timeZone?: string,
   locale = 'en',
+  now?: Date | string | number,
 ): string {
-  return formatSmartTimeInfo(dateStr, timeZone, locale).text
+  return formatSmartTimeInfo(dateStr, timeZone, locale, now).text
 }
 
 export function formatSmartTimeInfo(
   dateStr: Date | string | number | null | undefined,
   timeZone?: string,
   locale = 'en',
+  now?: Date | string | number,
 ): { text: string; fullText: string; showTooltip: boolean } {
   if (!dateStr) return { text: '--', fullText: '--', showTooltip: false }
 
-  const date = new Date(dateStr)
+  const date = parseApiDate(dateStr)
   if (isNaN(date.getTime())) return { text: '--', fullText: '--', showTooltip: false }
 
   const fullText = formatDateTime(date, timeZone)
 
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
+  const nowDate = now ? parseApiDate(now) : new Date()
+  const diffMs = (Number.isNaN(nowDate.getTime()) ? Date.now() : nowDate.getTime()) - date.getTime()
   const relativeFormatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
   if (diffMs >= 0) {
     const threshold = SMART_TIME_THRESHOLDS.find((item) => diffMs < item.maxMs)
@@ -436,7 +462,7 @@ export function formatSmartTimeInfo(
   }
 
   try {
-    const currentParts = getDateParts(now, timeZone)
+    const currentParts = getDateParts(Number.isNaN(nowDate.getTime()) ? new Date() : nowDate, timeZone)
     const targetParts = getDateParts(date, timeZone)
     const dayDiff = calendarDayNumber(currentParts) - calendarDayNumber(targetParts)
     const timeText = `${targetParts.hour}:${targetParts.minute}`
@@ -458,7 +484,8 @@ export function formatSmartTimeInfo(
  * Use this when you need a zero-padded format like 2023/02/02 22:11:33
  */
 export function formatDateTimePadded(date: Date | string | number): string {
-  const d = new Date(date)
+  const d = parseApiDate(date)
+  if (Number.isNaN(d.getTime())) return '--'
   const pad = (n: number) => n.toString().padStart(2, '0')
 
   return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`

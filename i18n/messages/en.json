@@ -9,6 +9,7 @@
       "open": "Open",
       "copy": "Copy",
       "move": "Move",
+      "save": "Save",
       "clearInput": "Clear input",
       "logout": "Log out",
       "feedback": "Feedback",
@@ -26,7 +27,58 @@
       "label": "Language"
     },
     "profile": {
-      "name": "Cute Little Prince"
+      "name": "Cute Little Prince",
+      "editProfile": "Edit profile",
+      "displayName": "Display name",
+      "avatar": "Avatar",
+      "profileHint": "Update the avatar and display name for the signed-in user.",
+      "invalidAvatar": "Please choose an image file.",
+      "displayNameRequired": "Please enter a display name.",
+      "profileSaved": "Profile updated.",
+      "profileSaveFailed": "Failed to save profile.",
+      "setAvatar": "Set avatar",
+      "avatarZoom": "Zoom",
+      "avatarZoomIn": "Zoom in",
+      "avatarZoomOut": "Zoom out",
+      "avatarRotateLeft": "Rotate left",
+      "avatarRotateRight": "Rotate right",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "passwordHint": "Enter your current password before changing it.",
+      "passwordRequired": "Please enter the current password and new password.",
+      "passwordMismatch": "The new passwords do not match.",
+      "passwordSaved": "Password updated.",
+      "passwordSaveFailed": "Failed to change password."
+    },
+    "forgotPassword": {
+      "eyebrow": "Password recovery",
+      "title": "Reset your password",
+      "description": "Enter your account email and we will send reset instructions if the account exists.",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "submitted": "If this email exists, reset instructions have been sent.",
+      "send": "Send reset link",
+      "rememberPassword": "Remember your password?",
+      "backToSignIn": "Back to sign in"
+    }
+  },
+  "Auth": {
+    "login": {
+      "title": "Welcome back",
+      "description": "Welcome back! Please enter your details.",
+      "username": "Username",
+      "usernamePlaceholder": "Enter your username",
+      "password": "Password",
+      "remember": "Remember for 30 days",
+      "forgotPassword": "Forgot password",
+      "signIn": "Sign in",
+      "signingIn": "Signing in...",
+      "validation": {
+        "required": "Please enter your username and password.",
+        "invalidCredentials": "Invalid username or password.",
+        "failed": "Login failed."
+      }
     }
   },
   "Layout": {

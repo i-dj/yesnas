@@ -17,11 +17,12 @@ interface JobsClientProps {
   initialJobsResult: JobListResponse
   initialScheduledJobs: ScheduledJob[]
   timeZone: string
+  now?: string
 }
 
 const toBackendStatus = (status: JobStatusMetaKey): JobStatus | 'all' => (status === 'canceled' ? 'cancelled' : status)
 
-export function JobsClient({ initialJobsResult, initialScheduledJobs, timeZone }: JobsClientProps) {
+export function JobsClient({ initialJobsResult, initialScheduledJobs, timeZone, now }: JobsClientProps) {
   const t = useTranslations('Jobs')
   const locale = useLocale()
   const [filterStatus, setFilterStatus] = useState<JobStatusMetaKey>('all')
@@ -105,8 +106,8 @@ export function JobsClient({ initialJobsResult, initialScheduledJobs, timeZone }
   )
 
   const columns = useMemo(
-    () => getJobColumns({ t, timeZone, locale, onJobAction: handleJobAction }),
-    [handleJobAction, locale, t, timeZone],
+    () => getJobColumns({ t, timeZone, locale, now, onJobAction: handleJobAction }),
+    [handleJobAction, locale, now, t, timeZone],
   )
 
   return (

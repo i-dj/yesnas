@@ -15,13 +15,13 @@ export function AuthCard({ eyebrow, title, description, children, className }: A
   return (
     <section
       className={cn(
-        'w-full max-w-[450px]',
+        'w-full max-w-112.5',
         className,
       )}
     >
       <div>
-        <h1 className="text-3xl leading-tight font-bold tracking-[-0.04em] text-[#171923]">{title}</h1>
-        <p className="mt-3 text-sm leading-6 text-[#7b808c]">{description || eyebrow}</p>
+        <h1 className="text-3xl leading-tight font-bold tracking-[-0.04em] text-white">{title}</h1>
+        <p className="mt-3 text-sm leading-6 text-white/55">{description || eyebrow}</p>
       </div>
 
       <div className="mt-7">{children}</div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { Button, Checkbox, EmptyState, Input, SideDrawer } from '@/components/ui'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, parseApiDate } from '@/lib/utils'
 import type { StoragePoolModel, StoragePoolSnapshotModel } from '@/types/models/storage'
 import { Camera, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -39,7 +39,7 @@ const groupSnapshots = (items: StoragePoolSnapshotModel[]) => {
   }
 
   for (const item of items) {
-    const ts = item.createdAt ? new Date(item.createdAt).getTime() : NaN
+    const ts = item.createdAt ? parseApiDate(item.createdAt).getTime() : NaN
     if (Number.isNaN(ts)) {
       groups.older.push(item)
       continue
@@ -108,8 +108,8 @@ export function StorageSnapshotManager({
   const snapshots = (activePool?.snapshots ?? [])
     .filter((item): item is StoragePoolSnapshotModel => Boolean(item))
     .sort((a, b) => {
-      const t1 = a.createdAt ? new Date(a.createdAt).getTime() : 0
-      const t2 = b.createdAt ? new Date(b.createdAt).getTime() : 0
+      const t1 = a.createdAt ? parseApiDate(a.createdAt).getTime() : 0
+      const t2 = b.createdAt ? parseApiDate(b.createdAt).getTime() : 0
       return t2 - t1
     })
   const groupedSnapshots = groupSnapshots(snapshots)

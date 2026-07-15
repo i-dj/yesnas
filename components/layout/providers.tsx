@@ -3,12 +3,24 @@
 import { Theme } from '@radix-ui/themes'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import type { AuthUser } from '@/types'
+import { TIME_ZONE_COOKIE } from '@/lib/auth-session'
 
 import { ThemeProvider } from './next-themes-provider'
 import { GlobalNetworkLoading } from './global-network-loading'
-import { GlobalConfirmModal } from '@/components/ui/global-confirm-modal'
+import { GlobalConfirmModal, ToastStack } from '@/components/ui'
+import { AuthProvider } from './auth-context'
+import { useToastStore } from '@/store/use-toast-store'
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  initialUser,
+  initialTimeZone,
+}: {
+  children: React.ReactNode
+  initialUser: AuthUser | null
+  initialTimeZone: string
+}) {
   return (
     <ThemeProvider
       attribute="class"
@@ -16,14 +28,30 @@ export function Providers({ children }: { children: React.ReactNode }) {
       enableSystem
       disableTransitionOnChange
     >
-      <RadixThemeBridge>{children}</RadixThemeBridge>
+      <AuthProvider initialUser={initialUser}>
+        <ClientPreferenceSync initialTimeZone={initialTimeZone} />
+        <RadixThemeBridge>{children}</RadixThemeBridge>
+      </AuthProvider>
     </ThemeProvider>
   )
+}
+
+function ClientPreferenceSync({ initialTimeZone }: { initialTimeZone: string }) {
+  useEffect(() => {
+    const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    if (!browserTimeZone || browserTimeZone === initialTimeZone) return
+
+    document.cookie = `${TIME_ZONE_COOKIE}=${encodeURIComponent(browserTimeZone)}; path=/; max-age=31536000; samesite=lax`
+  }, [initialTimeZone])
+
+  return null
 }
 
 function RadixThemeBridge({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false)
   const { resolvedTheme } = useTheme()
+  const toasts = useToastStore((state) => state.toasts)
+  const removeToast = useToastStore((state) => state.remove)
 
   useEffect(() => {
     setMounted(true)
@@ -37,6 +65,7 @@ function RadixThemeBridge({ children }: { children: React.ReactNode }) {
     >
       <GlobalNetworkLoading />
       <GlobalConfirmModal />
+      <ToastStack toasts={toasts} onClose={removeToast} />
       {children}
     </Theme>
   )

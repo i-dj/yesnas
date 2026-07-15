@@ -9,6 +9,7 @@
       "open": "開く",
       "copy": "コピー",
       "move": "移動",
+      "save": "保存",
       "clearInput": "入力内容を消去",
       "logout": "ログアウト",
       "feedback": "フィードバック",
@@ -26,7 +27,58 @@
       "label": "言語"
     },
     "profile": {
-      "name": "かわいい王子さま"
+      "name": "かわいい王子さま",
+      "editProfile": "プロフィールを編集",
+      "displayName": "表示名",
+      "avatar": "アバター",
+      "profileHint": "ログイン中のユーザーのアバターと表示名を変更します。",
+      "invalidAvatar": "画像ファイルを選択してください。",
+      "displayNameRequired": "表示名を入力してください。",
+      "profileSaved": "プロフィールを更新しました。",
+      "profileSaveFailed": "プロフィールの保存に失敗しました。",
+      "setAvatar": "アバターを設定",
+      "avatarZoom": "ズーム",
+      "avatarZoomIn": "拡大",
+      "avatarZoomOut": "縮小",
+      "avatarRotateLeft": "左に回転",
+      "avatarRotateRight": "右に回転",
+      "currentPassword": "現在のパスワード",
+      "newPassword": "新しいパスワード",
+      "confirmPassword": "新しいパスワードを確認",
+      "passwordHint": "パスワードを変更するには現在のパスワードが必要です。",
+      "passwordRequired": "現在のパスワードと新しいパスワードを入力してください。",
+      "passwordMismatch": "新しいパスワードが一致しません。",
+      "passwordSaved": "パスワードを更新しました。",
+      "passwordSaveFailed": "パスワードの変更に失敗しました。"
+    },
+    "forgotPassword": {
+      "eyebrow": "パスワードの再設定",
+      "title": "パスワードをリセット",
+      "description": "アカウントのメールアドレスを入力してください。アカウントが存在する場合、再設定手順を送信します。",
+      "email": "メールアドレス",
+      "emailPlaceholder": "メールアドレスを入力",
+      "submitted": "このメールアドレスのアカウントが存在する場合、再設定手順を送信しました。",
+      "send": "再設定リンクを送信",
+      "rememberPassword": "パスワードを思い出しましたか？",
+      "backToSignIn": "ログインに戻る"
+    }
+  },
+  "Auth": {
+    "login": {
+      "title": "おかえりなさい",
+      "description": "ログイン情報を入力してください。",
+      "username": "ユーザー名",
+      "usernamePlaceholder": "ユーザー名を入力",
+      "password": "パスワード",
+      "remember": "30日間ログイン状態を保持",
+      "forgotPassword": "パスワードをお忘れですか",
+      "signIn": "ログイン",
+      "signingIn": "ログイン中...",
+      "validation": {
+        "required": "ユーザー名とパスワードを入力してください。",
+        "invalidCredentials": "ユーザー名またはパスワードが正しくありません。",
+        "failed": "ログインに失敗しました。"
+      }
     }
   },
   "Layout": {

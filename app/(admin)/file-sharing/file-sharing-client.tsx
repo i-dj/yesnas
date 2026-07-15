@@ -298,7 +298,7 @@ export function FileSharingClient({
     <PageWrapper className="-mx-8 flex flex-col gap-5 overflow-y-auto px-8 pb-8 [scrollbar-gutter:stable]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <SectionTitle title={t('title')} subTitle={t('subtitle', { enabled: enabledCount, total: protocols.length })} />
-        <Button size="sm" icon={Plus} onClick={openCreate}>
+        <Button   icon={Plus} onClick={openCreate}>
           {t('actions.create')}
         </Button>
       </div>
@@ -511,18 +511,18 @@ function ProtocolCard({ protocol, onToggle }: { protocol: ProtocolItem; onToggle
         </Button>
       </div>
 
-      <p className="text-app-text-muted mt-2 truncate text-xs">{t(`protocols.${protocol.key}.description`)}</p>
-      <p className="text-app-text-muted mt-1 line-clamp-2 text-[11px]">
+      <p className="text-app-text mt-4 truncate  ">{t(`protocols.${protocol.key}.description`)}</p>
+      <p className="text-app-text-muted mt-2 line-clamp-2 text-sm">
         {t(`protocols.${protocol.key}.connectionHint`)}
       </p>
 
-      <div className="mt-auto flex h-9 pt-2.5">
-        <div className="bg-app-hover/45 flex w-full min-w-0 items-center justify-between gap-2 rounded-md px-2.5 py-1.5">
+      <div className="mt-auto flex h-10 pt-2.5">
+        <div className="bg-app-hover/45 flex w-full min-w-0 items-center justify-between gap-2 rounded-md px-2.5 py-2">
           <a
             href={href}
             target="_blank"
             rel="noreferrer"
-            className="text-app-text hover:text-app-primary flex min-w-0 items-center gap-1 truncate font-mono text-xs transition-colors"
+            className="text-app-text hover:text-app-primary flex min-w-0 items-center gap-1 truncate font-mono text-sm transition-colors"
             title={endpoint}
           >
             <span className="truncate">{endpoint}</span>

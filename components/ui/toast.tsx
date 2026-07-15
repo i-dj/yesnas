@@ -72,7 +72,7 @@ export function ToastCard({ item, onClose }: ToastCardProps) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 text-xs leading-5 font-medium">{item.message}</p>
+          <p className="line-clamp-2 text-sm leading-5 font-medium">{item.message}</p>
         </div>
 
         <button

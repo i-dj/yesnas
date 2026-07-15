@@ -7,61 +7,105 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { useAuth } from '@/components/layout/auth-context'
+import { toast } from '@/store/use-toast-store'
 
 export default function LoginPage() {
   const router = useRouter()
+  const auth = useAuth()
+  const t = useTranslations('Auth.login')
   const [remember, setRemember] = useState(false)
+  const [account, setAccount] = useState('')
+  const [password, setPassword] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const username = account.trim()
+    if (!username || !password) {
+      toast.error(t('validation.required'), 8000)
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      await auth.login({ username, password }, remember)
+      router.replace('/dashboard')
+      router.refresh()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ''
+      toast.error(
+        isInvalidCredentials(message) ? t('validation.invalidCredentials') : message || t('validation.failed'),
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <AuthShell>
       <AuthCard
-        eyebrow="Welcome back! Please enter your details."
-        title="Welcome back"
-        description="Welcome back! Please enter your details."
+        eyebrow={t('description')}
+        title={t('title')}
+        description={t('description')}
       >
-        <form
-          className="space-y-6"
-          onSubmit={(event) => {
-            event.preventDefault()
-            router.push('/storage')
-          }}
-        >
-          <label className="block space-y-1.5">
-            <span className="text-sm font-semibold text-[#343844]">Email</span>
-            <AuthInput type="text" name="account" autoComplete="username" placeholder="Enter your email" />
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-sm font-semibold text-white/75">{t('username')}</span>
+            <AuthInput
+              type="text"
+              name="account"
+              autoComplete="username"
+              placeholder={t('usernamePlaceholder')}
+              value={account}
+              onChange={(event) => setAccount(event.target.value)}
+            />
           </label>
 
-          <label className="block space-y-1.5">
-            <span className="text-sm font-semibold text-[#343844]">Password</span>
-            <AuthInput type="password" name="password" autoComplete="current-password" placeholder="••••••••" />
+          <label className="flex flex-col gap-1.5">
+            <span className="text-sm font-semibold text-white/75">{t('password')}</span>
+            <AuthInput
+              type="password"
+              name="password"
+              autoComplete="current-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
           </label>
 
-          <div className="flex items-center justify-between gap-4 text-base">
-            <label className="flex cursor-pointer items-center gap-2 text-[#343844]">
+          <div className="flex items-center justify-between gap-4 text-sm">
+            <label className="flex cursor-pointer items-center gap-2 text-white/65">
               <input
                 type="checkbox"
                 checked={remember}
                 onChange={(event) => setRemember(event.target.checked)}
                 className="peer sr-only"
               />
-              <span className="peer-checked:border-theme peer-checked:bg-theme grid size-4 place-items-center rounded border border-[#cfd3dc] bg-white text-white transition">
+              <span className="peer-checked:border-theme peer-checked:bg-theme grid size-4 place-items-center rounded border border-white/20 bg-white/5 text-white transition">
                 <Check className="size-3" strokeWidth={3} />
               </span>
-              <span>Remember for 30 days</span>
+              <span>{t('remember')}</span>
             </label>
             <Link href="/forgot-password" className="text-theme hover:text-theme/80 font-semibold">
-              Forgot password
+              {t('forgotPassword')}
             </Link>
           </div>
 
           <button
             type="submit"
-            className="bg-theme hover:bg-theme/90 h-14 w-full rounded-lg text-lg font-semibold text-white transition active:scale-[0.99]"
+            disabled={submitting}
+            className="bg-theme hover:bg-theme/90 h-12 w-full rounded-lg text-lg font-semibold text-white transition active:scale-[0.99]"
           >
-            Sign in
+            {submitting ? t('signingIn') : t('signIn')}
           </button>
         </form>
       </AuthCard>
     </AuthShell>
   )
+}
+
+function isInvalidCredentials(message: string) {
+  return /invalid\s+(?:username|user name)\s+or\s+password/i.test(message)
 }

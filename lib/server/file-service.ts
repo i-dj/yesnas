@@ -21,6 +21,7 @@ import {
   StoragePoolModel,
 } from '@/types/models/storage'
 import { BreadcrumbItem, FileNode } from '@nextdj/file-explorer'
+import { getRequestTimeZone } from './request-context'
 
 /**
  * Fetches the full storage node list.
@@ -74,9 +75,7 @@ export async function getJobs(): Promise<Job[]> {
   return payload.items
 }
 
-export function getServerTimeZone() {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-}
+export const getServerTimeZone = getRequestTimeZone
 
 export async function deleteJob(jobId: string | number) {
   const res = await fetch(`${getJobsUrl()}/${jobId}`, {

@@ -9,6 +9,7 @@
       "open": "打开",
       "copy": "复制",
       "move": "移动",
+      "save": "保存",
       "clearInput": "清空输入内容",
       "logout": "退出",
       "feedback": "反馈",
@@ -26,7 +27,58 @@
       "label": "语言"
     },
     "profile": {
-      "name": "可爱的小王子"
+      "name": "可爱的小王子",
+      "editProfile": "修改资料",
+      "displayName": "显示名称",
+      "avatar": "头像",
+      "profileHint": "修改当前登录用户的头像和显示名称。",
+      "invalidAvatar": "请选择图片文件。",
+      "displayNameRequired": "请输入显示名称。",
+      "profileSaved": "用户资料已更新。",
+      "profileSaveFailed": "保存用户资料失败。",
+      "setAvatar": "设置头像",
+      "avatarZoom": "缩放",
+      "avatarZoomIn": "放大",
+      "avatarZoomOut": "缩小",
+      "avatarRotateLeft": "向左旋转",
+      "avatarRotateRight": "向右旋转",
+      "currentPassword": "当前密码",
+      "newPassword": "新密码",
+      "confirmPassword": "确认新密码",
+      "passwordHint": "修改密码需要先输入当前密码。",
+      "passwordRequired": "请输入当前密码和新密码。",
+      "passwordMismatch": "两次输入的新密码不一致。",
+      "passwordSaved": "密码已更新。",
+      "passwordSaveFailed": "修改密码失败。"
+    },
+    "forgotPassword": {
+      "eyebrow": "找回密码",
+      "title": "重置密码",
+      "description": "请输入账户邮箱。如果账户存在，我们会向您发送重置说明。",
+      "email": "邮箱",
+      "emailPlaceholder": "请输入邮箱",
+      "submitted": "如果该邮箱对应的账户存在，重置说明已发送。",
+      "send": "发送重置链接",
+      "rememberPassword": "想起密码了？",
+      "backToSignIn": "返回登录"
+    }
+  },
+  "Auth": {
+    "login": {
+      "title": "欢迎回来",
+      "description": "欢迎回来！请输入您的登录信息。",
+      "username": "用户名",
+      "usernamePlaceholder": "请输入用户名",
+      "password": "密码",
+      "remember": "记住登录状态 30 天",
+      "forgotPassword": "忘记密码",
+      "signIn": "登录",
+      "signingIn": "正在登录...",
+      "validation": {
+        "required": "请输入用户名和密码。",
+        "invalidCredentials": "用户名或密码错误。",
+        "failed": "登录失败。"
+      }
     }
   },
   "Layout": {

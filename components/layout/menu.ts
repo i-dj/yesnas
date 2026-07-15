@@ -36,7 +36,7 @@ export const menuGroups: MenuGroup[] = [
   {
     nameKey: 'SYSTEM',
     sub: [
-      { nameKey: 'docker', href: '/docker', icon: Boxes },
+      // { nameKey: 'docker', href: '/docker', icon: Boxes },
       { nameKey: 'hardware', href: '/hardware', icon: CircuitBoard },
       { nameKey: 'jobs', href: '/jobs', icon: ListTodo },
       { nameKey: 'users', href: '/users', icon: Users },

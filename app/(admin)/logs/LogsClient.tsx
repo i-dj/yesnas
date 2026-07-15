@@ -13,7 +13,16 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { getLogColumns, LogHeatmap } from './components'
-import { DEFAULT_RANGE, PAGE_SIZE_OPTIONS, addFailureCounts, parsePage, parsePageSize, parseRange } from './utils'
+import {
+  DEFAULT_RANGE,
+  PAGE_SIZE_OPTIONS,
+  addFailureCounts,
+  parsePage,
+  parsePageSize,
+  parseRange,
+  parseSeverity,
+  parseSuccess,
+} from './utils'
 
 type ResultFilter = 'success' | 'failed'
 type Filters = {
@@ -39,13 +48,17 @@ export function LogsClient({
   initialHeatmap,
   initialFailedLogs,
   initialPeriod,
+  initialQuery,
   timeZone,
+  now,
 }: {
   initialLogs: LogsResponse
   initialHeatmap: LogHeatmapResponse
   initialFailedLogs: Log[]
   initialPeriod: { from: string; to: string }
+  initialQuery: { q: string; severity: Filters['severity']; success: boolean | undefined }
   timeZone: string
+  now?: string
 }) {
   const t = useTranslations('Logs')
   const locale = useLocale()
@@ -64,22 +77,25 @@ export function LogsClient({
   )
   const [filters, setFilters] = useState<Filters>(() => ({
     ...INITIAL_FILTERS,
+    q: initialQuery.q,
+    severity: initialQuery.severity,
+    results: successToResults(initialQuery.success),
     ...initialRangePeriod,
   }))
   const [loading, setLoading] = useState(false)
   const [heatmapLoading, setHeatmapLoading] = useState(false)
-  const lastSearchKey = useRef(searchKey ? '' : searchKey)
+  const lastSearchKey = useRef(searchKey)
   const currentRange = useRef<LogHeatmapRange>(initialHeatmap.range)
+  const currentPeriod = useRef(initialRangePeriod)
   const filterBarRef = useRef<HTMLDivElement>(null)
   const scrollAfterPageLoad = useRef(false)
 
-  const columns = useMemo(() => getLogColumns({ t, timeZone, locale }), [locale, t, timeZone])
+  const columns = useMemo(() => getLogColumns({ t, timeZone, locale, now }), [locale, now, t, timeZone])
   const range = parseRange(searchParams.get('range'))
   const selectedBucket = searchParams.get('bucket') ?? undefined
   const rangePeriod = useMemo(
-    () =>
-      range === initialHeatmap.range && !searchParams.get('range') ? initialRangePeriod : getDateRange(range, timeZone),
-    [initialHeatmap.range, initialRangePeriod, range, searchParams, timeZone],
+    () => (range === initialHeatmap.range ? initialRangePeriod : getDateRange(range, timeZone)),
+    [initialHeatmap.range, initialRangePeriod, range, timeZone],
   )
   const activePeriod = useMemo(
     () => formatDateRange(filters.from, filters.to, locale, timeZone),
@@ -104,8 +120,8 @@ export function LogsClient({
           q: nextFilters.q,
           severity: nextFilters.severity,
           success: nextFilters.results.length === 1 ? nextFilters.results[0] === 'success' : undefined,
-          from: getZonedDateTime(nextFilters.from, timeZone)?.rfc3339,
-          to: getZonedDateTime(nextFilters.to, timeZone)?.rfc3339,
+          from: getZonedDateTime(nextFilters.from, timeZone)?.iso,
+          to: getZonedDateTime(nextFilters.to, timeZone)?.iso,
         }
         const result = await logApi.list(query)
         setLogsResult(result)
@@ -132,8 +148,8 @@ export function LogsClient({
       setHeatmapLoading(true)
       try {
         const queryPeriod = {
-          from: getZonedDateTime(period.from, timeZone)?.rfc3339,
-          to: getZonedDateTime(period.to, timeZone)?.rfc3339,
+          from: getZonedDateTime(period.from, timeZone)?.iso,
+          to: getZonedDateTime(period.to, timeZone)?.iso,
         }
         const [nextHeatmap, failedLogs] = await Promise.all([
           logApi.heatmap(nextRange),
@@ -156,22 +172,24 @@ export function LogsClient({
     const nextRange = parseRange(searchParams.get('range'))
     const nextPage = parsePage(searchParams.get('page'))
     const nextPageSize = parsePageSize(searchParams.get('pageSize'))
-    const nextPeriod = getDateRange(nextRange, timeZone)
+    const rangeChanged = currentRange.current !== nextRange
+    const nextPeriod = rangeChanged ? getDateRange(nextRange, timeZone) : currentPeriod.current
     const from = getZonedDateTime(searchParams.get('from'), timeZone)?.local ?? nextPeriod.from
     const to = getZonedDateTime(searchParams.get('to'), timeZone)?.local ?? nextPeriod.to
     const nextFilters: Filters = {
       ...INITIAL_FILTERS,
       q: searchParams.get('q') ?? '',
       severity: parseSeverity(searchParams.get('severity')),
-      results: parseResults(searchParams.get('success')),
+      results: successToResults(parseSuccess(searchParams.get('success'))),
       from,
       to,
     }
 
+    currentPeriod.current = { from, to }
     setFilters(nextFilters)
     void fetchLogs(nextPage, nextPageSize, nextFilters)
 
-    if (currentRange.current !== nextRange) {
+    if (rangeChanged) {
       currentRange.current = nextRange
       void fetchHeatmap(nextRange, nextPeriod)
     }
@@ -325,12 +343,8 @@ function toggleResult(current: ResultFilter[], result: ResultFilter, onChange: (
   if (next.length > 0) onChange(next)
 }
 
-function parseSeverity(value: string | null): Filters['severity'] {
-  return value === 'info' || value === 'warn' || value === 'error' ? value : 'all'
-}
-
-function parseResults(value: string | null): ResultFilter[] {
-  if (value === 'true') return ['success']
-  if (value === 'false') return ['failed']
+function successToResults(value: boolean | undefined): ResultFilter[] {
+  if (value === true) return ['success']
+  if (value === false) return ['failed']
   return ['success', 'failed']
 }

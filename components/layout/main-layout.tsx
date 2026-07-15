@@ -3,18 +3,18 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useState } from 'react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { FiUser } from 'react-icons/fi'
 import { menuGroups } from './menu'
 import Image from 'next/image'
-import { ChevronDown, ChevronLeft, ImageUp, KeyRound, LogOut, MessageCircleMore, Upload } from 'lucide-react'
-import { ActionMenu, Button, SearchInput, SideDrawer, ThemeToggle, ToastStack } from '../ui'
+import { ChevronDown, ChevronLeft, KeyRound, LogOut, MessageCircleMore, Upload, UserRound } from 'lucide-react'
+import { ActionMenu, Button, SearchInput, SideDrawer, ThemeToggle } from '../ui'
 import { GlobalUpload } from './global-upload'
 import { useUploadStore } from '@/store/use-upload-store'
-import { useToastStore } from '@/store/use-toast-store'
+import { useAuth } from './auth-context'
+import { PasswordDrawer, ProfileDrawer } from './account-drawers'
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
-  const locale = useLocale()
   const tLayout = useTranslations('Layout')
   const tCommon = useTranslations('Common')
   const pathname = usePathname()
@@ -30,10 +30,11 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [uploadDrawer, setUploadDrawer] = useState<boolean>(false)
+  const [profileDrawer, setProfileDrawer] = useState(false)
+  const [passwordDrawer, setPasswordDrawer] = useState(false)
+  const auth = useAuth()
   const uploadFiles = useUploadStore((state) => state.files)
   const clearCompletedUploads = useUploadStore((state) => state.clearCompleted)
-  const toasts = useToastStore((state) => state.toasts)
-  const removeToast = useToastStore((state) => state.remove)
   const uploadFileList = Object.values(uploadFiles)
   const hasUploadingFiles = uploadFileList.some((file) => file.status === 'uploading')
   const activePathname = pathname === '/file' || pathname.startsWith('/file/') ? '/storage' : pathname
@@ -55,21 +56,21 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       ),
     },
     {
-      label: tCommon('actions.changeAvatar'),
-      action: 'change-avatar',
-      icon: ImageUp,
+      label: tCommon('profile.editProfile'),
+      action: 'edit-profile',
+      icon: UserRound,
     },
     {
       label: tCommon('actions.changePassword'),
       action: 'change-password',
       icon: KeyRound,
     },
-    {
-      label: tCommon('actions.feedback'),
-      action: 'feedback',
-      icon: MessageCircleMore,
-      separator: true,
-    },
+    // {
+    //   label: tCommon('actions.feedback'),
+    //   action: 'feedback',
+    //   icon: MessageCircleMore,
+    //   separator: true,
+    // },
     {
       label: tCommon('actions.logout'),
       action: 'logout',
@@ -80,17 +81,20 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
   const handleUserAction = (action: string) => {
     switch (action) {
-      case 'change-avatar':
-        console.info('change-avatar')
+      case 'edit-profile':
+        setProfileDrawer(true)
         break
       case 'change-password':
-        console.info('change-password')
+        setPasswordDrawer(true)
         break
       case 'feedback':
         window.open('mailto:feedback@yesnas.com?subject=YesNAS%20Feedback')
         break
       case 'logout':
-        console.info('logout')
+        void auth.logout().finally(() => {
+          router.replace('/login')
+          router.refresh()
+        })
         break
       default:
         break
@@ -210,7 +214,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
               />
             </div>
             <div className="ml-auto flex items-center gap-4">
-              <LanguageMenu currentLocale={locale} onChange={() => router.refresh()} />
               <ActionMenu
                 mode="left-click"
                 align="end"
@@ -223,10 +226,14 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                     type="button"
                     className="text-app-text-muted hover:bg-app-hover hover:text-app-text flex cursor-pointer items-center gap-3 rounded-full px-2 py-1.5 transition-colors duration-200 ease-out outline-none"
                   >
-                    <div className="bg-app-active flex size-6 items-center justify-center rounded-full text-xs font-semibold">
-                      DJ
-                    </div>
-                    <span className="hidden text-sm sm:block">{tCommon('profile.name')}</span>
+                    <UserMenuAvatar user={auth.user} />
+                    {auth.loading ? (
+                      <span className="bg-app-active hidden h-4 w-20 animate-pulse rounded sm:block" />
+                    ) : (
+                      <span className="hidden max-w-36 truncate text-sm sm:block">
+                        {auth.user?.displayName || auth.user?.username || '-'}
+                      </span>
+                    )}
                     <ChevronDown size={16} className="-ml-1" />
                   </button>
                 }
@@ -266,54 +273,32 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         <GlobalUpload isOpen={uploadDrawer} />
       </SideDrawer>
 
-      <ToastStack toasts={toasts} onClose={removeToast} />
+      <ProfileDrawer
+        open={profileDrawer}
+        user={auth.user}
+        onOpenChange={setProfileDrawer}
+        onSaved={(user) => auth.updateUser(user)}
+      />
+      <PasswordDrawer open={passwordDrawer} onOpenChange={setPasswordDrawer} />
     </div>
   )
 }
 
-const localeOptions = [
-  { value: 'zh', label: '中', triggerLabel: '中文', name: '中文' },
-  { value: 'ja', label: '日', triggerLabel: '日本語', name: '日本語' },
-  { value: 'ko', label: '韩', triggerLabel: '한국어', name: '한국어' },
-  { value: 'en', label: 'EN', triggerLabel: 'EN', name: 'English' },
-] as const
+function UserMenuAvatar({ user }: { user: { username: string; displayName: string; avatar: string } | null }) {
+  const label = (user?.displayName || user?.username || '').trim().slice(0, 1).toUpperCase()
 
-function LanguageMenu({ currentLocale, onChange }: { currentLocale: string; onChange: () => void }) {
-  const currentOption = localeOptions.find((option) => option.value === currentLocale) ?? localeOptions[0]
-
-  const handleChange = (locale: (typeof localeOptions)[number]['value']) => {
-    document.cookie = `yesnas-locale=${locale}; path=/; max-age=31536000; samesite=lax`
-    onChange()
+  if (user?.avatar) {
+    return (
+      <span className="bg-app-active flex size-6 shrink-0 overflow-hidden rounded-full">
+        <img src={user.avatar} alt="" className="size-full object-cover" />
+      </span>
+    )
   }
 
   return (
-    <ActionMenu
-      mode="left-click"
-      align="end"
-      onAction={(action) => handleChange(action as (typeof localeOptions)[number]['value'])}
-      items={localeOptions.map((option) => ({
-        label: (
-          <span className="flex items-center gap-2">
-            <span className="text-app-text bg-app-active flex size-5 items-center justify-center rounded-full text-[10px] font-semibold">
-              {option.label}
-            </span>
-            <span>{option.name}</span>
-          </span>
-        ),
-        action: option.value,
-        checked: currentLocale === option.value,
-      }))}
-      trigger={
-        <button
-          type="button"
-          aria-label={currentOption.name}
-          className="bg-app-active/70 text-app-text hover:bg-app-hover flex h-9 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors duration-200 ease-out outline-none"
-        >
-          <span>{currentOption.triggerLabel}</span>
-          <ChevronDown size={16} />
-        </button>
-      }
-    />
+    <span className="bg-app-active flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
+      {label || <UserRound className="size-3.5" />}
+    </span>
   )
 }
 

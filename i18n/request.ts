@@ -34,7 +34,7 @@ function getPreferredLocale(acceptLanguage: string): SupportedLocale {
     if (candidate.startsWith('en')) return 'en'
   }
 
-  return 'zh'
+  return 'en'
 }
 
 function isSupportedLocale(locale: unknown): locale is SupportedLocale {

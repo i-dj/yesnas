@@ -9,6 +9,7 @@
       "open": "열기",
       "copy": "복사",
       "move": "이동",
+      "save": "저장",
       "clearInput": "입력 내용 지우기",
       "logout": "로그아웃",
       "feedback": "피드백",
@@ -26,7 +27,58 @@
       "label": "언어"
     },
     "profile": {
-      "name": "귀여운 어린 왕자"
+      "name": "귀여운 어린 왕자",
+      "editProfile": "프로필 수정",
+      "displayName": "표시 이름",
+      "avatar": "아바타",
+      "profileHint": "현재 로그인한 사용자의 아바타와 표시 이름을 수정합니다.",
+      "invalidAvatar": "이미지 파일을 선택하세요.",
+      "displayNameRequired": "표시 이름을 입력하세요.",
+      "profileSaved": "프로필이 업데이트되었습니다.",
+      "profileSaveFailed": "프로필 저장에 실패했습니다.",
+      "setAvatar": "아바타 설정",
+      "avatarZoom": "확대/축소",
+      "avatarZoomIn": "확대",
+      "avatarZoomOut": "축소",
+      "avatarRotateLeft": "왼쪽으로 회전",
+      "avatarRotateRight": "오른쪽으로 회전",
+      "currentPassword": "현재 비밀번호",
+      "newPassword": "새 비밀번호",
+      "confirmPassword": "새 비밀번호 확인",
+      "passwordHint": "비밀번호를 변경하려면 현재 비밀번호를 입력하세요.",
+      "passwordRequired": "현재 비밀번호와 새 비밀번호를 입력하세요.",
+      "passwordMismatch": "새 비밀번호가 일치하지 않습니다.",
+      "passwordSaved": "비밀번호가 업데이트되었습니다.",
+      "passwordSaveFailed": "비밀번호 변경에 실패했습니다."
+    },
+    "forgotPassword": {
+      "eyebrow": "비밀번호 찾기",
+      "title": "비밀번호 재설정",
+      "description": "계정 이메일을 입력해 주세요. 계정이 존재하면 재설정 안내를 보내드립니다.",
+      "email": "이메일",
+      "emailPlaceholder": "이메일 입력",
+      "submitted": "이 이메일의 계정이 존재하면 재설정 안내가 전송되었습니다.",
+      "send": "재설정 링크 보내기",
+      "rememberPassword": "비밀번호가 기억나셨나요?",
+      "backToSignIn": "로그인으로 돌아가기"
+    }
+  },
+  "Auth": {
+    "login": {
+      "title": "다시 오신 것을 환영합니다",
+      "description": "로그인 정보를 입력해 주세요.",
+      "username": "사용자 이름",
+      "usernamePlaceholder": "사용자 이름 입력",
+      "password": "비밀번호",
+      "remember": "30일 동안 로그인 유지",
+      "forgotPassword": "비밀번호 찾기",
+      "signIn": "로그인",
+      "signingIn": "로그인 중...",
+      "validation": {
+        "required": "사용자 이름과 비밀번호를 입력해 주세요.",
+        "invalidCredentials": "사용자 이름 또는 비밀번호가 올바르지 않습니다.",
+        "failed": "로그인에 실패했습니다."
+      }
     }
   },
   "Layout": {

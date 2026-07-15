@@ -19,9 +19,10 @@ import { useUserActions } from './hooks/useUserActions'
 interface UsersClientProps {
   users: User[]
   timeZone: string
+  now?: string
 }
 
-export function UsersClient({ users, timeZone }: UsersClientProps) {
+export function UsersClient({ users, timeZone, now }: UsersClientProps) {
   const t = useTranslations('Users')
   const locale = useLocale()
   const router = useRouter()
@@ -41,11 +42,12 @@ export function UsersClient({ users, timeZone }: UsersClientProps) {
       getUserColumns({
         t,
         timeZone,
+        now,
         locale,
         onEdit: modal.openEdit,
         onDelete: modal.openDelete,
       }),
-    [locale, t, timeZone, users],
+    [locale, now, t, timeZone, users],
   )
 
   const handleDelete = async () => await actions.remove()
@@ -111,6 +113,7 @@ export function UsersClient({ users, timeZone }: UsersClientProps) {
             sortConfig={table.sort}
             onSortAction={table.handleSort}
             variant="plain"
+            showHeader={false}
             className="[&_.app-body-text]:text-xs"
           />
         ) : (

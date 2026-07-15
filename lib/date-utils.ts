@@ -3,7 +3,6 @@ export type DateBucket = 'hour' | 'day' | 'month'
 
 type ZonedDateTime = {
   local: string
-  rfc3339: string
   iso: string
 }
 
@@ -55,14 +54,9 @@ export function getZonedDateTime(
   if (Number.isNaN(date.getTime())) return undefined
 
   const local = toLocalDateTime(date, timeZone)
-  const offsetMinutes = Math.round(getTimeZoneOffset(date, timeZone) / 60_000)
-  const sign = offsetMinutes >= 0 ? '+' : '-'
-  const offset = Math.abs(offsetMinutes)
-  const offsetText = `${sign}${String(Math.floor(offset / 60)).padStart(2, '0')}:${String(offset % 60).padStart(2, '0')}`
 
   return {
     local,
-    rfc3339: `${local}:00${offsetText}`,
     iso: date.toISOString(),
   }
 }
@@ -101,19 +95,20 @@ function toLocalDateTime(date: Date, timeZone: string) {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit',
     hourCycle: 'h23',
   }).formatToParts(date)
   const part = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((item) => item.type === type)?.value || ''
 
-  return `${part('year')}-${part('month')}-${part('day')}T${part('hour')}:${part('minute')}`
+  return `${part('year')}-${part('month')}-${part('day')}T${part('hour')}:${part('minute')}:${part('second')}`
 }
 
 function zonedTimeToDate(value: string, timeZone: string) {
   const [datePart, timePart = '00:00'] = value.split('T')
   const [year, month, day] = datePart.split('-').map(Number)
-  const [hour, minute] = timePart.split(':').map(Number)
-  const wallTime = Date.UTC(year, month - 1, day, hour, minute)
+  const [hour, minute, second = 0] = timePart.split(':').map(Number)
+  const wallTime = Date.UTC(year, month - 1, day, hour, minute, second)
   let date = new Date(wallTime)
 
   for (let attempt = 0; attempt < 2; attempt += 1) {

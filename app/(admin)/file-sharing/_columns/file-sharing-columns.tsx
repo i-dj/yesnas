@@ -2,7 +2,7 @@ import { Button, type DataTableHeader } from '@/components/ui'
 import { cn, formatDateTime } from '@/lib/utils'
 import { Edit3, FolderInput, Globe2, HardDriveDownload, Network, UploadCloud, type LucideIcon } from 'lucide-react'
 
-import type { ProtocolKey, SharedFolder, ShareStatus } from '../_types'
+import type { ProtocolKey, SharedFolder } from '../_types'
 
 type Translate = (key: string, values?: Record<string, string | number>) => string
 
@@ -69,29 +69,32 @@ export function getFileSharingColumns({
       label: t('columns.status'),
       width: '96px',
       sortable: true,
-      render: (value: ShareStatus) => (
-        <span
-          className={cn(
-            'inline-flex rounded-full px-2 py-1 text-[11px] font-medium',
-            value === 'enabled' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-zinc-500/10 text-zinc-500',
-          )}
-        >
-          {t(`status.${value}`)}
-        </span>
-      ),
+      render: (_, record) => {
+        const value = record.status
+        return (
+          <span
+            className={cn(
+              'inline-flex rounded-full px-2 py-1 text-[11px] font-medium',
+              value === 'enabled' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-zinc-500/10 text-zinc-500',
+            )}
+          >
+            {t(`status.${value}`)}
+          </span>
+        )
+      },
     },
     {
       key: 'updatedAt',
       label: t('columns.updatedAt'),
       width: '150px',
-      render: (value: string) => (
-        <span className="text-app-text-muted text-xs">{formatDateTime(value, 'Asia/Shanghai')}</span>
+      render: (_, record) => (
+        <span className="text-app-text-muted text-xs">{formatDateTime(record.updatedAt, 'Asia/Shanghai')}</span>
       ),
     },
     {
       key: '__actions__',
       label: '',
-      width: '76px',
+      width: '90px',
       align: 'right',
       render: (_, record) => (
         <div className="flex items-center justify-end gap-1">

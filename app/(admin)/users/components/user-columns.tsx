@@ -1,5 +1,5 @@
-import { Button, Tooltip, type DataTableHeader } from '@/components/ui'
-import { cn, formatSmartTimeInfo } from '@/lib/utils'
+import { Button, RelativeTime, type DataTableHeader } from '@/components/ui'
+import { cn } from '@/lib/utils'
 import type { EnableStatus, User } from '@/types'
 import { Edit3, ShieldCheck, UserRound } from 'lucide-react'
 import type { useTranslations } from 'next-intl'
@@ -14,6 +14,7 @@ const statusClassNames = {
 interface GetUserColumnsParams {
   t: ReturnType<typeof useTranslations>
   timeZone: string
+  now?: string
   locale: string
   onEdit: (user: User) => void
   onDelete: (user: User) => void
@@ -22,6 +23,7 @@ interface GetUserColumnsParams {
 export function getUserColumns({
   t,
   timeZone,
+  now,
   locale,
   onEdit,
   onDelete,
@@ -80,17 +82,15 @@ export function getUserColumns({
       sortable: true,
       label: t('columns.updatedAt'),
       width: '220px',
-      render: (_, record) => {
-        const updatedAtText = formatSmartTimeInfo(record.updatedAt, timeZone, locale)
-
-        return (
-          <Tooltip content={updatedAtText.fullText} disabled={!updatedAtText.showTooltip} triggerClassName="w-fit">
-            <span className="text-app-text-muted inline-flex w-fit items-center gap-2 text-sm">
-              {updatedAtText.text}
-            </span>
-          </Tooltip>
-        )
-      },
+      render: (_, record) => (
+        <RelativeTime
+          value={record.updatedAt}
+          locale={locale}
+          timeZone={timeZone}
+          now={now}
+          className="text-app-text-muted inline-flex w-fit items-center gap-2 text-sm"
+        />
+      ),
     },
     {
       key: '__actions__',

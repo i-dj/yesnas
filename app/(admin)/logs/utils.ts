@@ -1,4 +1,5 @@
-import type { Log, LogHeatmapRange, LogHeatmapResponse } from '@/types'
+import type { Log, LogHeatmapRange, LogHeatmapResponse, LogSeverity } from '@/types'
+import { parseApiDate } from '@/lib/utils'
 
 export const DEFAULT_RANGE: LogHeatmapRange = '90d'
 export const PAGE_SIZE_OPTIONS = [20, 50, 100, 200] as const
@@ -18,6 +19,16 @@ export function parsePageSize(value: string | null) {
   return PAGE_SIZE_OPTIONS.includes(parsed as (typeof PAGE_SIZE_OPTIONS)[number]) ? parsed : PAGE_SIZE_OPTIONS[0]
 }
 
+export function parseSeverity(value: string | null): LogSeverity | 'all' {
+  return value === 'info' || value === 'warn' || value === 'error' ? value : 'all'
+}
+
+export function parseSuccess(value: string | null) {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return undefined
+}
+
 export function addFailureCounts(heatmap: LogHeatmapResponse, failedLogs: Log[]): LogHeatmapResponse {
   const counts = new Map<string, number>()
   failedLogs.forEach((log) => {
@@ -31,7 +42,7 @@ export function addFailureCounts(heatmap: LogHeatmapResponse, failedLogs: Log[])
 }
 
 function formatLogBucket(occurredAt: string, bucket: LogHeatmapResponse['bucket']) {
-  const date = new Date(occurredAt)
+  const date = parseApiDate(occurredAt)
   const year = date.getUTCFullYear()
   const month = String(date.getUTCMonth() + 1).padStart(2, '0')
   if (bucket === 'month') return `${year}-${month}`

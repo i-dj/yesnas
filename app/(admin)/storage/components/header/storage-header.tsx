@@ -46,7 +46,7 @@ export function StorageHeader({ poolSource, onSourceClick, onAddStorage }: Stora
 
       <div className="flex h-8 w-40 shrink-0 justify-end">
         {poolSource !== 'removable' ? (
-          <Button type="button" icon={Plus} size="sm" variant="borderghost" className="px-3" onClick={onAddStorage}>
+          <Button   onClick={onAddStorage}>
             {poolSource === 'local' ? '添加本地存储' : '添加网络存储'}
           </Button>
         ) : null}
