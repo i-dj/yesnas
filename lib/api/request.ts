@@ -1,9 +1,8 @@
 import { AUTH_TOKEN_COOKIE, getClientAuthToken } from '@/lib/auth-session'
+import { BASE } from './base'
 import { handleUnauthorized } from './unauthorized'
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-
-const BASE_URL = 'http://yesnas:8080/api/v1'
 
 export interface ApiOptions {
   method?: HttpMethod
@@ -63,11 +62,23 @@ async function getAuthToken() {
   }
 }
 
+async function getApiBaseUrl() {
+  if (typeof window !== 'undefined') return BASE
+
+  const { headers } = await import('next/headers')
+  const requestHeaders = await headers()
+  const host = requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host')
+  if (!host) throw new Error('Unable to resolve the API host')
+
+  const protocol = requestHeaders.get('x-forwarded-proto') ?? 'http'
+  return `${protocol}://${host}${BASE}`
+}
+
 /**
  * 通用 request
  */
 export async function request<T>(url: string, options: ApiOptions = {}): Promise<T> {
-  const token = await getAuthToken()
+  const [token, apiBaseUrl] = await Promise.all([getAuthToken(), getApiBaseUrl()])
   const init: YesNasRequestInit = {
     method: options.method || 'GET',
     cache: options.cache || 'no-store',
@@ -79,7 +90,7 @@ export async function request<T>(url: string, options: ApiOptions = {}): Promise
     body: options.body ? JSON.stringify(options.body) : undefined,
     yesnasSilentNetworkLoading: options.silentNetworkLoading,
   }
-  const res = await fetch(BASE_URL + url, init)
+  const res = await fetch(apiBaseUrl + url, init)
 
   if (!res.ok) {
     if (res.status === 401 && url !== '/auth/login' && url !== '/auth/logout') {

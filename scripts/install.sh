@@ -6,10 +6,10 @@ VERSION="${YESNAS_WEB_VERSION:-latest}"
 INSTALL_DIR="${YESNAS_WEB_INSTALL_DIR:-/opt/yesnas-web}"
 CONFIG_DIR="${YESNAS_WEB_CONFIG_DIR:-/etc/yesnas-web}"
 SERVICE_NAME="${YESNAS_WEB_SERVICE_NAME:-yesnas-web}"
-PORT="${YESNAS_WEB_PORT:-3000}"
+PORT="${YESNAS_WEB_PORT:-23000}"
 HOST="${YESNAS_WEB_HOST:-0.0.0.0}"
 STEP=0
-TOTAL_STEPS=8
+TOTAL_STEPS=9
 
 log() { printf '\033[1;32m[YesNAS Web]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[YesNAS Web][WARN]\033[0m %s\n' "$*" >&2; }
@@ -18,6 +18,22 @@ step() { STEP=$((STEP + 1)); printf '\n\033[1;34m[%02d/%02d]\033[0m %s\n' "$STEP
 run_root() { if [[ "$EUID" -eq 0 ]]; then "$@"; else sudo "$@"; fi; }
 run_as_user() { if [[ "$EUID" -eq 0 ]]; then runuser -u "$1" -- "${@:2}"; else sudo -u "$1" -- "${@:2}"; fi; }
 require_command() { command -v "$1" >/dev/null 2>&1 || fail "Missing command: $1"; }
+
+install_pnpm() {
+  local pnpm_arch
+  case "$(uname -m)" in
+    x86_64|amd64) pnpm_arch="x64" ;;
+    aarch64|arm64) pnpm_arch="arm64" ;;
+    *) fail "Unsupported architecture for pnpm: $(uname -m)" ;;
+  esac
+  local tmp_pnpm
+  tmp_pnpm="$(mktemp)"
+  curl -fL --retry 3 --retry-delay 2 \
+    -o "$tmp_pnpm" \
+    "https://github.com/pnpm/pnpm/releases/latest/download/pnpm-linux-$pnpm_arch"
+  run_root install -m 0755 "$tmp_pnpm" /usr/local/bin/pnpm
+  rm -f "$tmp_pnpm"
+}
 
 resolve_release_urls() {
   local api_url
@@ -66,11 +82,11 @@ main() {
   step "Install runtime dependencies"
   export DEBIAN_FRONTEND=noninteractive
   run_root apt-get update
-  run_root apt-get install -y ca-certificates curl tar gzip nodejs npm python3 util-linux
+  run_root apt-get install -y ca-certificates curl tar gzip nodejs python3 util-linux
   local node_major
   node_major="$(node -p 'Number(process.versions.node.split(".")[0])' 2>/dev/null || echo 0)"
   [[ "$node_major" -ge 20 ]] || fail "Node.js 20 or newer is required. Install a current Node.js LTS release and rerun this script."
-  if ! command -v pnpm >/dev/null 2>&1; then run_root npm install -g pnpm@10; fi
+  if ! command -v pnpm >/dev/null 2>&1; then install_pnpm; fi
 
   step "Create application directories"
   run_root mkdir -p "$INSTALL_DIR" "$CONFIG_DIR"
@@ -163,6 +179,11 @@ EOF
   local ip_addr
   ip_addr="$(hostname -I 2>/dev/null | awk '{print $1}')"
   log "Open: http://${ip_addr:-localhost}:$PORT"
+  log "Install directory: $INSTALL_DIR"
+  log "Config directory: $CONFIG_DIR"
+  log "Default username: admin"
+  log "Default password: admin"
+  warn "Change the default password immediately after your first sign-in."
   log "Status: systemctl status $SERVICE_NAME"
   log "Logs: journalctl -u $SERVICE_NAME -f"
 }

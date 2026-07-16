@@ -2,8 +2,9 @@ import Uppy from '@uppy/core'
 import Tus, { type TusOptions } from '@uppy/tus'
 import { getClientAuthToken } from '@/lib/auth-session'
 import { handleUnauthorized } from '@/lib/api/unauthorized'
+import { BASE } from '@/lib/api/base'
 
-const TUS_ENDPOINT = 'http://yesnas:8080/api/v1/uploads/tus'
+const TUS_ENDPOINT = `${BASE}/uploads/tus`
 const TUS_CHUNK_SIZE = 1 * 1024 * 1024
 
 const isTargetAlreadyExistsError = (error: {

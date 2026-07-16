@@ -1,1 +1,1 @@
-export const BASE = 'http://yesnas:8080/api/v1'
+export const BASE = '/api/v1'

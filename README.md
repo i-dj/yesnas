@@ -94,11 +94,8 @@ pnpm dev
 
 After the development server starts, open [http://localhost:3000](http://localhost:3000).
 
-The frontend currently sends API requests to `http://yesnas:8080/api/v1` by default. Before running locally, make sure the `yesnas` hostname resolves to your backend server, or update the following files for your environment:
+The frontend sends API, SSE, and TUS upload requests to the same-origin `/api/v1` path. Configure your reverse proxy to forward `/api/*` to the YesNAS backend service.
 
-- `lib/api/base.ts`
-- `lib/api/request.ts`
-- `lib/uppy.ts`
 
 ### Available Scripts
 
