@@ -16,7 +16,11 @@ confirm() { local value=""; [[ -r /dev/tty ]] && read -r -p "$1 " value </dev/tt
 main() {
   step "Check system environment"
   if [[ "$EUID" -ne 0 ]]; then command -v sudo >/dev/null || fail "sudo is required."; sudo -v; fi
-  confirm "This removes YesNAS Web and its configuration. Type YESNAS-WEB to continue:" "YESNAS-WEB" || fail "Uninstall cancelled."
+  if [[ "${YESNAS_NONINTERACTIVE:-0}" != "1" ]]; then
+    confirm "This removes YesNAS Web and its configuration. Type YESNAS-WEB to continue:" "YESNAS-WEB" || fail "Uninstall cancelled."
+  else
+    log "Non-interactive uninstall enabled."
+  fi
 
   step "Stop and disable service"
   run_root systemctl stop "$SERVICE_NAME" 2>/dev/null || true

@@ -60,7 +60,15 @@ print(checksum["browser_download_url"] if checksum else "")
 
 prompt_value() {
   local prompt="$1" default="$2" value=""
-  if [[ -r /dev/tty ]]; then read -r -p "${prompt} [${default}]: " value </dev/tty || true; fi
+  if [[ "${YESNAS_NONINTERACTIVE:-0}" == "1" ]]; then
+    printf '%s\n' "$default"
+    return
+  fi
+  if [[ -r /dev/tty ]]; then
+    read -r -p "${prompt} [${default}]: " value </dev/tty || true
+  else
+    warn "No interactive terminal detected; using default for ${prompt}: ${default}"
+  fi
   printf '%s\n' "${value:-$default}"
 }
 
