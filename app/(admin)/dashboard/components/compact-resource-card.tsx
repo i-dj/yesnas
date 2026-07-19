@@ -5,7 +5,6 @@ export function CompactResourceCard({
   icon: Icon,
   title,
   value,
-  note,
   color,
   percent,
   details,
@@ -13,7 +12,6 @@ export function CompactResourceCard({
   icon: LucideIcon
   title: string
   value: string
-  note: string
   color: string
   percent: number
   details: string[][]
@@ -24,7 +22,6 @@ export function CompactResourceCard({
         <div className="min-w-0">
           <h3 className="text-app-text flex flex-row items-center justify-center gap-2 truncate text-sm font-semibold">
             {title}
-            <p className="text-app-text-muted truncate text-sm">{note}</p>
           </h3>
         </div>
         <Icon className="text-app-text-muted size-3.5 shrink-0" />

@@ -6,12 +6,12 @@ import {
   Cpu,
   Database,
   Download,
-  Fan,
   Gauge,
   HardDrive,
   MemoryStick,
   Power,
   ShieldCheck,
+  Thermometer,
   Upload,
   Zap,
   type LucideIcon,
@@ -51,9 +51,7 @@ const toneClassMap = {
 }
 
 export default function DashboardPage() {
-  const { data: snapshot } = useSse<SystemStatusSnapshot>(systemApi.statusStreamUrl(1), {
-    events: ['system-status'],
-  })
+  const { data: snapshot } = useSse<SystemStatusSnapshot>('system.status', { interval: 1 })
   const [historicalNetworkSnapshot, setHistoricalNetworkSnapshot] = useState<NetworkInterfacesSnapshot | null>(null)
   const [networkRange, setNetworkRange] = useState<NetworkRange>('realtime')
   const [selectedNetwork, setSelectedNetwork] = useState('all')
@@ -170,7 +168,11 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:flex sm:items-center sm:gap-0">
           <MiniStatus icon={Power} label="电源" value="AC 供电" />
           <MiniStatus icon={Computer} label="主机名" value="yesnas" />
-          <MiniStatus icon={Fan} label="风扇" value={formatOptionalNumber(snapshot?.cpu.fanRpm, ' RPM')} />
+          <MiniStatus
+            icon={Thermometer}
+            label="温度"
+            value={formatOptionalNumber(snapshot?.cpu.temperatureC, '°C')}
+          />
           <MiniStatus icon={Zap} label="功耗" value={formatOptionalNumber(snapshot?.cpu.powerW, ' W')} />
         </div>
       </section>
@@ -267,12 +269,11 @@ export default function DashboardPage() {
             icon={Cpu}
             title="CPU"
             value={snapshot ? formatPercent(snapshot.cpu.usagePercent) : '-'}
-            note={snapshot?.cpu.model ?? '等待接口数据'}
             color="#0ea5e9"
             percent={snapshot?.cpu.usagePercent ?? 0}
             details={[
               ['核心', snapshot ? `${snapshot.cpu.cores} 核 ${snapshot.cpu.threads} 线程` : '-'],
-              ['风扇', formatOptionalNumber(snapshot?.cpu.fanRpm, ' RPM')],
+              ['温度', formatOptionalNumber(snapshot?.cpu.temperatureC, '°C')],
               ['功率', formatOptionalNumber(snapshot?.cpu.powerW, ' W')],
             ]}
           />
@@ -280,16 +281,6 @@ export default function DashboardPage() {
             icon={MemoryStick}
             title="内存"
             value={snapshot ? formatPercent(snapshot.memory.usagePercent) : '-'}
-            note={
-              snapshot
-                ? formatBytes(snapshot.memory.totalBytes) +
-                  ' · ' +
-                  snapshot.memory.type +
-                  ' · ' +
-                  snapshot.memory.speedMHz +
-                  'MHz'
-                : '0'
-            }
             color="#8b5cf6"
             percent={snapshot?.memory.usagePercent ?? 0}
             details={[
@@ -301,7 +292,6 @@ export default function DashboardPage() {
             icon={Gauge}
             title="显卡"
             value={formatPercent(gpu?.usagePercent ?? 0)}
-            note={`${gpu?.name ?? '未检测到显卡'} · ${formatOptionalNumber(gpu?.temperatureC, '°C')}`}
             color="#f59e0b"
             percent={gpu?.usagePercent ?? 0}
             details={[

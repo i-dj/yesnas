@@ -14,7 +14,6 @@ import { useUploadStore } from '@/store/use-upload-store'
 import { useAuth } from './auth-context'
 import { PasswordDrawer, ProfileDrawer } from './account-drawers'
 import { useSse } from '@/hooks/use-sse'
-import { systemApi } from '@/lib/api/system.api'
 import type { SystemStatusSnapshot } from '@/types'
 import { useRealtimeNetwork } from './realtime-network-context'
 
@@ -42,9 +41,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const clearCompletedUploads = useUploadStore((state) => state.clearCompleted)
   const uploadFileList = Object.values(uploadFiles)
   const hasUploadingFiles = uploadFileList.some((file) => file.status === 'uploading')
-  const { data: systemStatus } = useSse<SystemStatusSnapshot>(systemApi.statusStreamUrl(2), {
-    events: ['system-status'],
-  })
+  const { data: systemStatus } = useSse<SystemStatusSnapshot>('system.status', { interval: 2 })
   const activePathname = pathname === '/file' || pathname.startsWith('/file/') ? '/storage' : pathname
 
   // Shared active-route matcher

@@ -13,6 +13,32 @@ interface SseHandlers {
   onClose?: () => void
 }
 
+export interface ServerEvent<T = unknown> {
+  version: number
+  type: string
+  id: string
+  timestamp: string
+  data: T
+}
+
+export interface EventsUrlOptions {
+  interval?: number
+  storageId?: string
+  poolId?: string
+  sizeGiB?: number
+}
+
+export function eventsUrl(topics: string | string[], options: EventsUrlOptions = {}) {
+  const params = new URLSearchParams({
+    topics: (Array.isArray(topics) ? topics : [topics]).join(','),
+    interval: String(options.interval ?? 2),
+  })
+  if (options.storageId) params.set('storageId', options.storageId)
+  if (options.poolId) params.set('poolId', options.poolId)
+  if (options.sizeGiB) params.set('sizeGiB', String(options.sizeGiB))
+  return `/api/v1/events?${params}`
+}
+
 export function openAuthenticatedSse(url: string, handlers: SseHandlers): SseConnection {
   const controller = new AbortController()
 

@@ -12,7 +12,6 @@ import {
   UpdateStoragePoolSnapshotPolicyPayload,
 } from '@/types/models/storage'
 import type { StorageDrive } from '@/types'
-import { BASE } from './base'
 
 export const storageApi = {
   ...createCrudApi<StoragePoolModel>('/system/storage-pools'),
@@ -24,16 +23,6 @@ export const storageApi = {
     }),
 
   listStorages: () => request<StorageDrive[]>('/storages', { unwrapList: true }),
-
-  benchmarkStreamUrl: (poolId: string, sizeGiB?: number) => {
-    const query = sizeGiB ? `?sizeGiB=${sizeGiB}` : ''
-    return `${BASE}/system/storage-pools/${poolId}/benchmark/stream${query}`
-  },
-
-  probeBenchmark: (poolId: string, sizeGiB?: number) =>
-    request<unknown>(`/system/storage-pools/${poolId}/benchmark/stream${sizeGiB ? `?sizeGiB=${sizeGiB}` : ''}`, {
-      silentNetworkLoading: true,
-    }),
 
   createPool: (payload: CreateStoragePoolPayload) =>
     request<StoragePoolModel>('/system/storage-pools', {

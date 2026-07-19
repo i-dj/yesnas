@@ -11,7 +11,6 @@ import { Copy, FolderInput, Eye, Trash2 } from 'lucide-react'
 
 import type { QuickFilterType, StorageLocation } from './types'
 import { QUICK_FILTERS, STORAGE_LOCATIONS } from './constants'
-import { fileManagementApi } from '@/lib/api/file-management.api'
 import { StorageDrive } from '@/types'
 import Link from 'next/link'
 import { cn, formatDateTime } from '@/lib/utils'
@@ -70,10 +69,7 @@ export function FileClient({ files, storages }: FileClientProps) {
     [tFile],
   )
 
-  const { data: storagesIoStats } = useSse<StoragesIoStatsPayload>(fileManagementApi.storagesIoStatsStreamUrl(1), {
-    event: 'io-stats',
-    parser: (raw) => JSON.parse(raw) as StoragesIoStatsPayload,
-  })
+  const { data: storagesIoStats } = useSse<StoragesIoStatsPayload>('storage.io', { interval: 1 })
 
   const storageIoStatsById = useMemo(
     () =>

@@ -1,15 +1,14 @@
 'use client'
 
 import { useSse } from '@/hooks/use-sse'
-import { systemApi } from '@/lib/api/system.api'
 import type { NetworkInterfacesSnapshot, NetworkPoint } from '@/types'
 import { createContext, useContext, type ReactNode } from 'react'
 
 const RealtimeNetworkContext = createContext<NetworkInterfacesSnapshot | null>(null)
 
 export function RealtimeNetworkProvider({ children }: { children: ReactNode }) {
-  const { data } = useSse<NetworkInterfacesSnapshot>(systemApi.networkStreamUrl(1), {
-    events: ['network-interfaces'],
+  const { data } = useSse<NetworkInterfacesSnapshot>('system.network', {
+    interval: 1,
     reducer: mergeRealtimeNetworkSnapshot,
   })
 

@@ -1,17 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { openAuthenticatedSse } from '@/lib/api/sse'
+import { eventsUrl, openAuthenticatedSse, type ServerEvent } from '@/lib/api/sse'
 
 export type SseStatus = 'idle' | 'connecting' | 'ready' | 'error'
 
 type UseSseOptions<T> = {
   enabled?: boolean
-  event?: string
-  events?: string[]
-  readyEvents?: string[]
-  listenToMessage?: boolean
-  parser?: (raw: string) => T
+  interval?: number
+  storageId?: string
   reducer?: (current: T | null, next: T) => T
   onMessage?: (data: T) => void
 }
@@ -23,17 +20,12 @@ type UseSseResult<T> = {
   reconnect: () => void
 }
 
-const parseJson = <T>(raw: string) => JSON.parse(raw) as T
-
 export function useSse<T>(
-  url: string | null,
+  topics: string | string[] | null,
   {
     enabled = true,
-    event,
-    events = [],
-    readyEvents = ['ready'],
-    listenToMessage = false,
-    parser = parseJson,
+    interval = 2,
+    storageId,
     reducer,
     onMessage,
   }: UseSseOptions<T> = {},
@@ -42,27 +34,25 @@ export function useSse<T>(
   const [status, setStatus] = useState<SseStatus>('idle')
   const [error, setError] = useState<Event | Error | null>(null)
   const [version, setVersion] = useState(0)
-  const callbacksRef = useRef({ parser, reducer, onMessage })
-  const eventsKey = (event ? [event, ...events] : events).join('\u0000')
-  const readyEventsKey = readyEvents.join('\u0000')
+  const callbacksRef = useRef({ reducer, onMessage })
+  const topicsKey = Array.isArray(topics) ? topics.join('\u0000') : topics
 
   useEffect(() => {
-    callbacksRef.current = { parser, reducer, onMessage }
-  }, [parser, reducer, onMessage])
+    callbacksRef.current = { reducer, onMessage }
+  }, [reducer, onMessage])
 
   const reconnect = useCallback(() => {
     setVersion((current) => current + 1)
   }, [])
 
   useEffect(() => {
-    if (!url || !enabled) {
+    if (!topicsKey || !enabled) {
       setStatus('idle')
       setError(null)
       return
     }
 
-    const dataEvents = eventsKey ? eventsKey.split('\u0000') : []
-    const connectionEvents = readyEventsKey ? readyEventsKey.split('\u0000') : []
+    const subscribedTopics = topicsKey.split('\u0000')
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined
     let closed = false
     setStatus('connecting')
@@ -74,7 +64,9 @@ export function useSse<T>(
 
     const handleMessage = (raw: string) => {
       try {
-        const next = callbacksRef.current.parser(raw)
+        const event = JSON.parse(raw) as ServerEvent<T>
+        if (!subscribedTopics.includes(event.type)) return
+        const next = event.data
         setData((current) => callbacksRef.current.reducer?.(current, next) ?? next)
         setStatus('ready')
         setError(null)
@@ -85,13 +77,13 @@ export function useSse<T>(
       }
     }
 
-    const source = openAuthenticatedSse(url, {
+    const source = openAuthenticatedSse(eventsUrl(subscribedTopics, { interval, storageId }), {
       onOpen: handleReady,
-      onEvent: (eventName, raw) => {
-        if (connectionEvents.includes(eventName)) handleReady()
-        if (dataEvents.includes(eventName) || (eventName === 'message' && (listenToMessage || dataEvents.length === 0))) {
-          handleMessage(raw)
-        }
+      onEvent: (_eventName, raw) => {
+        const event = JSON.parse(raw) as ServerEvent
+        if (event.type === 'ready') handleReady()
+        else if (event.type === 'error') throw new Error('SSE event error')
+        else if (event.type !== 'heartbeat') handleMessage(raw)
       },
       onError: (nextError) => {
         setStatus('error')
@@ -108,7 +100,7 @@ export function useSse<T>(
       if (reconnectTimer) clearTimeout(reconnectTimer)
       source.close()
     }
-  }, [enabled, eventsKey, listenToMessage, readyEventsKey, reconnect, url, version])
+  }, [enabled, interval, reconnect, storageId, topicsKey, version])
 
   return { data, status, error, reconnect }
 }

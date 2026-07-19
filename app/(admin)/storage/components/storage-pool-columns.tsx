@@ -168,10 +168,9 @@ export const getStoragePoolColumns = (
       width: '170px',
       render: (_, record) => (
         <div className="space-y-1 text-[13px]">
-          <div className="text-app-text-muted flex items-center gap-1.5">
-            <ArrowDown className="h-3.5 w-3.5 text-sky-400" />
-            <span className="uppercase">Read</span>
-            <span className="text-app-text ml-auto">
+          <div className="text-app-text-muted flex items-center gap-3">
+            <span >Read Speed</span>
+            <span className="text-app-text ">
               {record.readSpeedBytesPerSec
                 ? `${bytesFormat(record.readSpeedBytesPerSec, {
                     standard: 'm',
@@ -180,10 +179,9 @@ export const getStoragePoolColumns = (
                 : '-'}
             </span>
           </div>
-          <div className="text-app-text-muted flex items-center gap-1.5">
-            <ArrowUp className="h-3.5 w-3.5 text-violet-400" />
-            <span className="uppercase">Write</span>
-            <span className="text-app-text ml-auto">
+          <div className="text-app-text-muted flex items-center gap-3">
+            <span >Write Speed</span>
+            <span className="text-app-text">
               {record.writeSpeedBytesPerSec
                 ? `${bytesFormat(record.writeSpeedBytesPerSec, {
                     standard: 'm',

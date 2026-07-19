@@ -1,7 +1,6 @@
 'use client'
 
-import { storageApi } from '@/lib/api/storage.api'
-import { openAuthenticatedSse, type SseConnection } from '@/lib/api/sse'
+import { eventsUrl, openAuthenticatedSse, type ServerEvent, type SseConnection } from '@/lib/api/sse'
 import { toast } from '@/store/use-toast-store'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BenchmarkStage, BenchmarkViewState } from '../components/storage-pool-benchmark'
@@ -32,38 +31,6 @@ interface BenchmarkCompletedPayload {
 
 interface UseStorageBenchmarkOptions {
   onCompleted?: (poolId: string, payload: BenchmarkCompletedPayload) => void
-}
-
-const parseBenchmarkError = (raw: string) => {
-  if (!raw) return { message: '', code: '' }
-  try {
-    const parsed = JSON.parse(raw) as {
-      code?: string
-      message?: string
-      error?: string
-    }
-    return {
-      message: parsed.message || parsed.error || '',
-      code: parsed.code || '',
-    }
-  } catch {
-    return { message: raw, code: '' }
-  }
-}
-
-const resolveBenchmarkError = async (poolId: string, sizeGiB: BenchmarkSizeGiB, raw: string) => {
-  const parsed = parseBenchmarkError(raw)
-  if (parsed.message || parsed.code) return parsed
-
-  try {
-    await storageApi.probeBenchmark(poolId, sizeGiB)
-    return { message: '', code: '' }
-  } catch (error) {
-    return {
-      message: error instanceof Error ? error.message : 'Benchmark request failed',
-      code: '',
-    }
-  }
 }
 
 export function useStorageBenchmark(options?: UseStorageBenchmarkOptions) {
@@ -139,18 +106,14 @@ export function useStorageBenchmark(options?: UseStorageBenchmarkOptions) {
         error: null,
       }))
 
-      const streamUrl = storageApi.benchmarkStreamUrl(poolId, current.sizeGiB)
+      const streamUrl = eventsUrl('storage.benchmark', { poolId, sizeGiB: current.sizeGiB })
+      let finalized = false
       const source = openAuthenticatedSse(streamUrl, {
-        onEvent: (eventName, raw) => {
-          if (eventName === 'ready') {
-            const data = JSON.parse(raw) as { sizeGiB?: number }
-            setBenchmarkState(poolId, (state) => ({
-              running: true,
-              stage: 'ready',
-              sizeGiB: (data.sizeGiB as BenchmarkSizeGiB) || state.sizeGiB,
-            }))
-          } else if (eventName === 'progress') {
-            const data = JSON.parse(raw) as {
+        onEvent: (_eventName, raw) => {
+          const event = JSON.parse(raw) as ServerEvent
+
+          if (event.type === 'storage.benchmark.progress') {
+            const data = event.data as {
               stage?: BenchmarkStage
               totalBytes?: number
               completedBytes?: number
@@ -169,9 +132,9 @@ export function useStorageBenchmark(options?: UseStorageBenchmarkOptions) {
               currentSpeedBytesPerSec: data.currentSpeedBytesPerSec ?? 0,
               elapsedSeconds: data.elapsedSeconds ?? 0,
             }))
-          } else if (eventName === 'completed') {
+          } else if (event.type === 'storage.benchmark.completed') {
             finalized = true
-            const data = JSON.parse(raw) as BenchmarkCompletedPayload
+            const data = event.data as BenchmarkCompletedPayload
             setBenchmarkState(poolId, () => ({
               running: false,
               stage: 'completed',
@@ -182,14 +145,13 @@ export function useStorageBenchmark(options?: UseStorageBenchmarkOptions) {
             }))
             closeStream(poolId)
             options?.onCompleted?.(poolId, data)
-          } else if (eventName === 'error') {
+          } else if (event.type === 'error') {
             finalized = true
             closeStream(poolId)
-            void resolveBenchmarkError(poolId, current.sizeGiB, raw).then(({ message, code }) => {
-              const reason = message || code || 'Benchmark request failed'
-              toast.error(code ? `${reason}: ${code}` : reason, 5000)
-              setBenchmarkState(poolId, () => ({ running: false, stage: 'failed', error: message || null }))
-            })
+            const data = event.data as { code?: string; message?: string }
+            const reason = data.message || data.code || 'Benchmark request failed'
+            toast.error(data.code && data.message ? `${data.message}: ${data.code}` : reason, 5000)
+            setBenchmarkState(poolId, () => ({ running: false, stage: 'failed', error: reason }))
           }
         },
         onError: (error) => {
@@ -198,7 +160,6 @@ export function useStorageBenchmark(options?: UseStorageBenchmarkOptions) {
         },
       })
       streams.set(poolId, source)
-      let finalized = false
     },
     [benchmarkByPoolId, closeStream, options, setBenchmarkState, streams],
   )

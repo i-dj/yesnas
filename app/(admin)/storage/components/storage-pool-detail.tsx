@@ -169,7 +169,6 @@ export function StoragePoolDetail({
                   label: activePool.kind === 'cloud' ? 'Download' : 'Read Speed',
                   value: (
                     <span className="inline-flex items-center gap-1.5">
-                      <ArrowDown className="h-3.5 w-3.5 text-sky-400" />
                       {activePool.readSpeedBytesPerSec
                         ? `${bytesFormat(activePool.readSpeedBytesPerSec, {
                             standard: 'm',
@@ -183,7 +182,6 @@ export function StoragePoolDetail({
                   label: activePool.kind === 'cloud' ? 'Upload' : 'Write Speed',
                   value: (
                     <span className="inline-flex items-center gap-1.5">
-                      <ArrowUp className="h-3.5 w-3.5 text-violet-400" />
                       {activePool.writeSpeedBytesPerSec
                         ? `${bytesFormat(activePool.writeSpeedBytesPerSec, {
                             standard: 'm',
