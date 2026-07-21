@@ -1,4 +1,12 @@
-import { ActionMenu, Button, Progress, RelativeTime, type ActionMenuConfig, type DataTableHeader } from '@/components/ui'
+import {
+  ActionMenu,
+  Button,
+  Progress,
+  RelativeTime,
+  StatusPill,
+  type ActionMenuConfig,
+  type DataTableHeader,
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 import type { Job } from '@/types'
 import { MoreVertical, Pause, Play, Trash2, XCircle } from 'lucide-react'
@@ -8,13 +16,13 @@ import { getJobIcon, getJobStatusMeta, type JobStatusMetaKey, JobAction } from '
 type Translate = (key: string, values?: Record<string, string | number>) => string
 
 const statusClassNames = {
-  all: 'bg-zinc-500/10 text-zinc-500',
-  running: 'bg-sky-500/10 text-sky-500',
-  paused: 'bg-amber-500/10 text-amber-500',
-  success: 'bg-emerald-500/10 text-emerald-500',
-  failed: 'bg-red-500/10 text-red-500',
-  canceled: 'bg-zinc-500/10 text-zinc-500',
-} satisfies Record<JobStatusMetaKey, string>
+  all: 'neutral',
+  running: 'info',
+  paused: 'warning',
+  success: 'success',
+  failed: 'danger',
+  canceled: 'neutral',
+} satisfies Record<JobStatusMetaKey, 'success' | 'warning' | 'danger' | 'neutral' | 'info'>
 
 function getJobActions(job: Job, t: Translate): ActionMenuConfig[] {
   const terminal = ['success', 'failed', 'cancelled'].includes(job.status)
@@ -82,11 +90,7 @@ export function getJobColumns({
       width: '14%',
       render: (_, job) => {
         const status = getJobStatusMeta(job.status).key
-        return (
-          <span className={cn('inline-flex rounded-full px-2 py-1 text-xs', statusClassNames[status])}>
-            {t(`statuses.${status}`)}
-          </span>
-        )
+        return <StatusPill color={statusClassNames[status]} content={t(`statuses.${status}`)} />
       },
     },
     {

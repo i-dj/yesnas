@@ -7,6 +7,7 @@ export type UserFormState = {
   avatar: string
   password: string
   status: EnableStatus
+  groupIds: string[]
 }
 
 export const createEmptyUserForm = (): UserFormState => ({
@@ -16,4 +17,15 @@ export const createEmptyUserForm = (): UserFormState => ({
   avatar: '',
   password: '',
   status: 'enabled',
+  groupIds: [],
+})
+
+export type GroupFormState = {
+  name: string
+  description: string
+}
+
+export const createEmptyGroupForm = (): GroupFormState => ({
+  name: '',
+  description: '',
 })

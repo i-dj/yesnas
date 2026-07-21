@@ -47,6 +47,8 @@
       "avatarZoomOut": "缩小",
       "avatarRotateLeft": "向左旋转",
       "avatarRotateRight": "向右旋转",
+      "groups": "所属组",
+      "noGroups": "当前用户暂未加入任何组。",
       "currentPassword": "当前密码",
       "newPassword": "新密码",
       "confirmPassword": "确认新密码",
@@ -97,7 +99,7 @@
       "fileSharing": "文件共享",
       "hardware": "硬件信息",
       "jobs": "任务",
-      "users": "用户",
+      "users": "用户和组",
       "logs": "日志",
       "docker": "Docker 管理"
     },
@@ -384,6 +386,10 @@
     "empty": "暂无用户",
     "emptySearch": "没有匹配的用户",
     "searchPlaceholder": "搜索用户",
+    "tabs": {
+      "users": "用户",
+      "groups": "组"
+    },
     "overview": {
       "total": "全部用户",
       "enabled": "启用账号",
@@ -400,6 +406,7 @@
       "user": "用户",
       "status": "状态",
       "role": "角色",
+      "groups": "组",
       "smb": "SMB",
       "updatedAt": "更新时间"
     },
@@ -447,11 +454,34 @@
       "passwordCreateHint": "请为新用户设置一个安全的登录密码。",
       "passwordEditHint": "留空将继续使用当前密码。",
       "status": "状态",
+      "groups": "所属组",
+      "noGroups": "暂无可选组，请先创建组。",
       "sections": {
         "profile": "基本资料",
         "access": "权限与状态",
+        "groups": "所属组",
         "security": "账户安全"
       }
+    },
+    "groups": {
+      "create": "创建组",
+      "createTitle": "创建组",
+      "editTitle": "编辑组",
+      "name": "组名称",
+      "description": "描述",
+      "members": "成员",
+      "memberCount": "{count} 人",
+      "empty": "暂无组",
+      "none": "未加入组",
+      "noDescription": "暂无描述",
+      "formHint": "组用于把多个用户归类，用户可以同时属于多个组。",
+      "created": "组已创建",
+      "updated": "组已更新",
+      "deleted": "组已删除",
+      "saveFailed": "保存组失败",
+      "deleteFailed": "删除组失败",
+      "deleteTitle": "删除组",
+      "deleteDescription": "确定要删除组 {name} 吗？用户不会被删除，只会移除此组归属。"
     },
     "messages": {
       "created": "用户已创建",

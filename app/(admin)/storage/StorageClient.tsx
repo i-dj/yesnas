@@ -25,7 +25,7 @@ interface StorageClientProps {
 
 export function StorageClient({ diskList, storagePools, initialPoolSource }: StorageClientProps) {
   const router = useRouter()
-  const { poolSource, changePoolSource, handlePoolSourceAnchorClick } = usePoolSource(initialPoolSource)
+  const { poolSource, changePoolSource } = usePoolSource(initialPoolSource)
   const drawers = useDrawerGroup<StorageDrawerKey>([
     'disk',
     'creator',
@@ -121,11 +121,7 @@ export function StorageClient({ diskList, storagePools, initialPoolSource }: Sto
   return (
     <PageWrapper className="overflow-visible">
       <section className="space-y-6 pb-4">
-        <StorageHeader
-          poolSource={poolSource}
-          onSourceClick={handlePoolSourceAnchorClick}
-          onAddStorage={handleAddStorage}
-        />
+        <StorageHeader poolSource={poolSource} onSourceChange={changePoolSource} onAddStorage={handleAddStorage} />
 
         <StorageContent
           source={poolSource}

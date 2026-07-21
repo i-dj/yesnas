@@ -7,6 +7,7 @@ import {
   DataTable,
   EmptyState,
   Input,
+  Pill,
   SectionTitle,
   Select,
   SideDrawer,
@@ -19,7 +20,16 @@ import { cn } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
 import type { User } from '@/types'
 import type { StoragePoolModel } from '@/types/models/storage'
-import { Copy, ExternalLink, Globe2, HardDriveDownload, Network, Plus, UploadCloud, type LucideIcon } from 'lucide-react'
+import {
+  Copy,
+  ExternalLink,
+  Globe2,
+  HardDriveDownload,
+  Network,
+  Plus,
+  UploadCloud,
+  type LucideIcon,
+} from 'lucide-react'
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 
@@ -246,7 +256,7 @@ export function FileSharingClient({
     <PageWrapper className="-mx-8 flex flex-col gap-5 overflow-y-auto px-8 pb-8 [scrollbar-gutter:stable]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <SectionTitle title={t('title')} subTitle={t('subtitle', { enabled: enabledCount, total: protocols.length })} />
-        <Button   icon={Plus} onClick={openCreate}>
+        <Button icon={Plus} onClick={openCreate}>
           {t('actions.create')}
         </Button>
       </div>
@@ -313,9 +323,9 @@ export function FileSharingClient({
             label={t('form.users')}
             extra={
               users.length > 0 ? (
-                <span className="bg-app-hover text-app-text-muted inline-flex h-5 items-center rounded-full px-2 text-[10px] leading-none">
+                <Pill variant="plain" className="h-5 px-2 text-[10px] leading-none">
                   已选 {form.userIds.length} / {users.length}
-                </span>
+                </Pill>
               ) : null
             }
           >
@@ -416,10 +426,7 @@ function ProtocolCard({ protocol, onToggle }: { protocol: ProtocolItem; onToggle
   const t = useTranslations('FileSharing')
   const Icon = protocol.icon
   const endpoint = protocol.shareUrl
-  const href =
-    protocol.key === 'nfs'
-      ? `nfs://${endpoint.replace(/^nfs:\/\//, '').replace(':/', '/')}`
-      : endpoint
+  const href = protocol.key === 'nfs' ? `nfs://${endpoint.replace(/^nfs:\/\//, '').replace(':/', '/')}` : endpoint
 
   const handleCopy = async () => {
     try {
@@ -459,10 +466,8 @@ function ProtocolCard({ protocol, onToggle }: { protocol: ProtocolItem; onToggle
         </Button>
       </div>
 
-      <p className="text-app-text mt-4 truncate  ">{t(`protocols.${protocol.key}.description`)}</p>
-      <p className="text-app-text-muted mt-2 line-clamp-2 text-sm">
-        {t(`protocols.${protocol.key}.connectionHint`)}
-      </p>
+      <p className="text-app-text mt-4 truncate">{t(`protocols.${protocol.key}.description`)}</p>
+      <p className="text-app-text-muted mt-2 line-clamp-2 text-sm">{t(`protocols.${protocol.key}.connectionHint`)}</p>
 
       <div className="mt-auto flex h-10 pt-2.5">
         <div className="bg-app-hover/45 flex w-full min-w-0 items-center justify-between gap-2 rounded-md px-2.5 py-2">

@@ -1,15 +1,14 @@
-import { Button, RelativeTime, type DataTableHeader } from '@/components/ui'
-import { cn } from '@/lib/utils'
+import { Button, Pill, RelativeTime, StatusPill, type DataTableHeader } from '@/components/ui'
 import type { EnableStatus, User } from '@/types'
 import { Edit3, ShieldCheck, UserRound } from 'lucide-react'
 import type { useTranslations } from 'next-intl'
 
 import { UserAvatar } from './user-avatar'
 
-const statusClassNames = {
-  enabled: 'bg-emerald-500/10 text-emerald-500',
-  disabled: 'bg-zinc-500/10 text-zinc-500',
-} satisfies Record<EnableStatus, string>
+const statusPillColors = {
+  enabled: 'success',
+  disabled: 'neutral',
+} satisfies Record<EnableStatus, 'success' | 'neutral'>
 
 interface GetUserColumnsParams {
   t: ReturnType<typeof useTranslations>
@@ -32,7 +31,7 @@ export function getUserColumns({
     {
       key: 'username',
       label: t('columns.user'),
-      width: '280px',
+      width: '180px',
       sortable: true,
 
       render: (_, record) => (
@@ -50,13 +49,11 @@ export function getUserColumns({
     {
       key: 'status',
       label: t('columns.status'),
-      width: '140px',
+      width: '80px',
       sortable: true,
 
       render: (_, record) => (
-        <span className={cn('inline-flex rounded-full px-2 py-1 text-xs', statusClassNames[record.status])}>
-          {t(`statuses.${record.status}`)}
-        </span>
+        <StatusPill color={statusPillColors[record.status]} content={t(`statuses.${record.status}`)} />
       ),
     },
     {
@@ -66,22 +63,41 @@ export function getUserColumns({
       sortable: true,
 
       render: (_, record) => (
-        <span
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs',
-            record.isAdmin ? 'bg-amber-500/15 text-amber-600' : 'bg-zinc-500/10 text-zinc-500',
-          )}
-        >
-          {record.isAdmin ? <ShieldCheck className="h-3 w-3" /> : <UserRound className="h-3 w-3" />}
-          {record.isAdmin ? t('roles.admin') : t('roles.user')}
-        </span>
+        <StatusPill
+          color={record.isAdmin ? 'warning' : 'neutral'}
+          icon={record.isAdmin ? ShieldCheck : UserRound}
+          content={record.isAdmin ? t('roles.admin') : t('roles.user')}
+        />
       ),
+    },
+    {
+      key: 'groups',
+      label: t('columns.groups'),
+      render: (_, record) => {
+        const groups = record.groups ?? []
+        return groups.length ? (
+          <div className="flex flex-wrap gap-1.5">
+            {groups.slice(0, 3).map((group) => (
+              <Pill key={group.id} variant="plain" className="h-auto px-2 py-1 text-xs">
+                {group.name}
+              </Pill>
+            ))}
+            {groups.length > 3 ? (
+              <Pill variant="plain" className="h-auto px-2 py-1 text-xs">
+                +{groups.length - 3}
+              </Pill>
+            ) : null}
+          </div>
+        ) : (
+          <span className="text-app-text-muted text-xs">{t('groups.none')}</span>
+        )
+      },
     },
     {
       key: 'updatedAt',
       sortable: true,
       label: t('columns.updatedAt'),
-      width: '220px',
+      width: '180px',
       render: (_, record) => (
         <RelativeTime
           value={record.updatedAt}

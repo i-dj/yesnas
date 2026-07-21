@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Input } from '@/components/ui'
+import { Button, Input, RadioGroup, StatusPill } from '@/components/ui'
 import {
   completeCloudStorage,
   connectCloudStorage,
@@ -8,9 +8,8 @@ import {
   getConnectedStorages,
   type CloudStorageProvider,
 } from '@/lib/api/cloud-storage.api'
-import { cn } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
-import { CheckCircle2, Cloud, ExternalLink, HardDrive, LoaderCircle } from 'lucide-react'
+import { Cloud, ExternalLink, HardDrive, LoaderCircle } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface NetworkStorageCreatorProps {
@@ -250,43 +249,33 @@ export function NetworkStorageCreator({ onCancel, onConnected }: NetworkStorageC
             <p className="text-app-text-muted mt-1 text-xs">支持 Google Drive、OneDrive 和 Dropbox。</p>
           </div>
 
-          <div className="grid gap-3">
-            {cloudProviders.map((item) => {
-              const selected = item.value === provider
-              return (
-                <button
-                  key={item.value}
-                  type="button"
-                  disabled={connecting}
-                  onClick={() => handleSelectProvider(item)}
-                  className={cn(
-                    'border-app-border bg-app-surface text-left transition-all',
-                    'hover:border-app-border-strong hover:bg-app-hover/40 rounded-xl border p-4',
-                    selected && 'border-app-text bg-app-hover/60 shadow-sm',
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className="border-app-border bg-app-hover/50 text-app-text flex size-10 shrink-0 items-center justify-center rounded-lg border">
-                        <HardDrive className="size-4" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-app-text text-sm font-semibold">{item.title}</span>
-                          <span className="rounded-full bg-emerald-500/12 px-2 py-0.5 text-[11px] text-emerald-600">
-                            已支持
-                          </span>
-                        </div>
-                        <p className="text-app-text-muted mt-1 text-xs leading-5">{item.description}</p>
-                      </div>
-                    </div>
-
-                    {selected ? <CheckCircle2 className="mt-1 size-4 shrink-0 text-emerald-500" /> : null}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+          <RadioGroup
+            value={provider}
+            variant="card"
+            disabled={connecting}
+            onValueChange={(value) => {
+              const nextProvider = cloudProviders.find((item) => item.value === value)
+              if (nextProvider) handleSelectProvider(nextProvider)
+            }}
+            ariaLabel="选择云盘"
+            options={cloudProviders.map((item) => ({
+              value: item.value,
+              label: (
+                <span className="flex items-start gap-3">
+                  <span className="border-app-border bg-app-hover/50 text-app-text flex size-10 shrink-0 items-center justify-center rounded-lg border">
+                    <HardDrive className="size-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-2">
+                      <span className="text-app-text text-sm font-semibold">{item.title}</span>
+                      <StatusPill color="success" content="已支持" />
+                    </span>
+                    <span className="text-app-text-muted mt-1 block text-xs leading-5">{item.description}</span>
+                  </span>
+                </span>
+              ),
+            }))}
+          />
         </div>
 
         <div className="space-y-4">

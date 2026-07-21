@@ -3,6 +3,11 @@ export interface AuthUser {
   username: string
   displayName: string
   avatar: string
+  groups?: Array<{
+    id: string
+    name: string
+  }>
+  groupIds?: string[]
 }
 
 export interface LoginPayload {

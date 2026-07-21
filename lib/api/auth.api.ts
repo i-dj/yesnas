@@ -15,6 +15,8 @@ export const authApi = {
       silentNetworkLoading: true,
     }),
 
+  getProfile: () => request<AuthUser>('/users/me/profile'),
+
   updateProfile: (payload: UpdateProfilePayload) =>
     request<AuthUser>('/users/me/profile', {
       method: 'PUT',

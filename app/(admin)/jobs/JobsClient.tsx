@@ -1,7 +1,7 @@
 'use client'
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
-import { DataTable, EmptyState, Pagination, SearchInput, ToggleButton } from '@/components/ui'
+import { DataTable, EmptyState, Pagination, SearchInput, StatusPill, ToggleButton } from '@/components/ui'
 import { jobApi } from '@/lib/api/job.api'
 import { cn, formatDateTime } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
@@ -133,17 +133,10 @@ export function JobsClient({ initialJobsResult, initialScheduledJobs, timeZone, 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-3">
                         <h3 className="text-app-text truncate text-sm">{t(`types.${job.type}`)}</h3>
-                        <span
-                          className={cn(
-                            'inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-xs',
-                            job.enabled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-500/10 text-zinc-400',
-                          )}
-                        >
-                          <span
-                            className={cn('size-1.5 rounded-full', job.enabled ? 'bg-emerald-400' : 'bg-zinc-500')}
-                          />
-                          {job.enabled ? t('scheduled.enabled') : t('scheduled.disabled')}
-                        </span>
+                        <StatusPill
+                          color={job.enabled ? 'success' : 'neutral'}
+                          content={job.enabled ? t('scheduled.enabled') : t('scheduled.disabled')}
+                        />
                       </div>
 
                       <div className="text-app-text-muted mt-3 space-y-1 text-xs">

@@ -8,6 +8,17 @@ export interface User {
   avatar: string
   status: EnableStatus
   smbUsername: string
+  groups?: Group[]
+  groupIds?: string[]
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface Group {
+  id: string
+  name: string
+  description: string
+  userCount: number
   createdAt?: string
   updatedAt?: string
 }
@@ -19,6 +30,7 @@ export interface CreateUserPayload {
   avatar?: string
   password: string
   status: EnableStatus
+  groupIds?: string[]
 }
 
 export interface UpdateUserPayload {
@@ -27,4 +39,5 @@ export interface UpdateUserPayload {
   avatar?: string
   status: EnableStatus
   password?: string
+  groupIds?: string[]
 }

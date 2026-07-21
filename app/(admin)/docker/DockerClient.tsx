@@ -16,13 +16,22 @@ import {
   Plus,
   Power,
   RefreshCw,
-  Search,
   Settings2,
   Square,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-import { ActionMenu, Button, Card, DataTable, Progress, StatusPill, ToggleButton, type DataTableHeader } from '@/components/ui'
+import {
+  ActionMenu,
+  Button,
+  Card,
+  DataTable,
+  Progress,
+  SearchInput,
+  StatusPill,
+  ToggleButton,
+  type DataTableHeader,
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { dockerContainers, dockerImages, dockerNetworks, dockerOverview, dockerVolumes } from './docker.mock'
 
@@ -83,7 +92,9 @@ export function DockerClient() {
   const filteredContainers = useMemo(() => {
     const keyword = query.trim().toLowerCase()
     if (!keyword) return containers
-    return containers.filter((item) => `${item.name} ${item.image} ${item.ports.join(' ')}`.toLowerCase().includes(keyword))
+    return containers.filter((item) =>
+      `${item.name} ${item.image} ${item.ports.join(' ')}`.toLowerCase().includes(keyword),
+    )
   }, [query])
 
   const runningCount = containers.filter((item) => item.status === 'running').length
@@ -108,12 +119,19 @@ export function DockerClient() {
         ),
       },
       { key: 'subnet', label: '网段' },
-      { key: 'containers', label: '容器', align: 'center', render: (value) => <span className="text-app-text font-semibold">{value}</span> },
+      {
+        key: 'containers',
+        label: '容器',
+        align: 'center',
+        render: (value) => <span className="text-app-text font-semibold">{value}</span>,
+      },
       {
         key: 'status',
         label: '状态',
         align: 'right',
-        render: (_, item) => <StatusPill color={item.status === 'online' ? 'success' : 'neutral'} content={item.status.toUpperCase()} />,
+        render: (_, item) => (
+          <StatusPill color={item.status === 'online' ? 'success' : 'neutral'} content={item.status.toUpperCase()} />
+        ),
       },
     ],
     [],
@@ -121,7 +139,7 @@ export function DockerClient() {
 
   return (
     <div className="flex min-h-full flex-col gap-6 py-6">
-      <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <section className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="text-app-text-muted mb-2 flex items-center gap-2 text-sm">
             <Boxes size={16} />
@@ -133,7 +151,9 @@ export function DockerClient() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="secondary" icon={Download}>拉取镜像</Button>
+          <Button variant="secondary" icon={Download}>
+            拉取镜像
+          </Button>
           <Button icon={Plus}>创建容器</Button>
         </div>
       </section>
@@ -144,7 +164,12 @@ export function DockerClient() {
           return (
             <Card key={metric.id} className="bg-app-surface/50">
               <div className="flex items-center gap-4">
-                <div className={cn('grid size-10 place-items-center rounded-lg bg-gradient-to-br text-white', metricColors[metric.tone])}>
+                <div
+                  className={cn(
+                    'grid size-10 place-items-center rounded-lg bg-gradient-to-br text-white',
+                    metricColors[metric.tone],
+                  )}
+                >
                   <Icon size={20} />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -162,17 +187,22 @@ export function DockerClient() {
       </section>
 
       <section className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <ToggleButton items={tabItems} value={tab} onChange={setTab} variant="tabs" shape="rounded" className="bg-app-hover/30 rounded-xl p-1" />
+        <ToggleButton
+          items={tabItems}
+          value={tab}
+          onChange={setTab}
+          variant="tabs"
+          shape="rounded"
+          className="bg-app-hover/30 rounded-xl p-1"
+        />
         <div className="flex items-center gap-2">
-          <div className="border-app-border bg-app-surface flex h-9 min-w-72 items-center gap-2 rounded-lg border px-3">
-            <Search size={16} className="text-app-text-muted" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="搜索容器、镜像或端口"
-              className="text-app-text placeholder:text-app-text-muted min-w-0 flex-1 bg-transparent text-sm outline-none"
-            />
-          </div>
+          <SearchInput
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="搜索容器、镜像或端口"
+            wrapperClassName="min-w-72"
+            className="h-9 rounded-lg"
+          />
           <Button variant="ghost" icon={RefreshCw} tip="刷新" />
         </div>
       </section>
@@ -180,7 +210,9 @@ export function DockerClient() {
       {tab === 'overview' && (
         <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
           <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-            {filteredContainers.map((container) => <ContainerCard key={container.id} container={container} />)}
+            {filteredContainers.map((container) => (
+              <ContainerCard key={container.id} container={container} />
+            ))}
           </section>
           <aside className="flex flex-col gap-4">
             <Card className="bg-app-surface/50">
@@ -210,7 +242,9 @@ export function DockerClient() {
               <div className="mt-4 space-y-3">
                 {['jellyfin 已重启', 'redis 健康检查通过', 'homepage 镜像更新完成'].map((item, index) => (
                   <div key={item} className="flex items-center gap-3">
-                    <span className="bg-blue-500/20 text-blue-400 grid size-7 place-items-center rounded-full text-xs">{index + 1}</span>
+                    <span className="grid size-7 place-items-center rounded-full bg-blue-500/20 text-xs text-blue-400">
+                      {index + 1}
+                    </span>
                     <span className="text-app-text-muted text-sm">{item}</span>
                   </div>
                 ))}
@@ -222,7 +256,9 @@ export function DockerClient() {
 
       {tab === 'containers' && (
         <section className="grid gap-4 lg:grid-cols-2">
-          {filteredContainers.map((container) => <ContainerListCard key={container.id} container={container} />)}
+          {filteredContainers.map((container) => (
+            <ContainerListCard key={container.id} container={container} />
+          ))}
         </section>
       )}
 
@@ -237,7 +273,7 @@ export function DockerClient() {
                 <div className="flex min-w-0 flex-1 flex-col p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="text-blue-400 text-xs font-semibold uppercase">{image.publisher}</div>
+                      <div className="text-xs font-semibold text-blue-400 uppercase">{image.publisher}</div>
                       <h3 className="text-app-text mt-1 truncate text-lg font-semibold">{image.name}</h3>
                       <p className="text-app-text-muted text-xs">{image.tag}</p>
                     </div>
@@ -249,7 +285,9 @@ export function DockerClient() {
                       <Download size={14} />
                       {image.pulls}
                     </span>
-                    <Button size="sm" variant="secondary">创建</Button>
+                    <Button size="sm" variant="secondary">
+                      创建
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -267,7 +305,9 @@ export function DockerClient() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="text-app-text font-semibold">{volume.name}</div>
-                      <div className="text-app-text-muted mt-1 text-xs">{volume.driver} · {volume.mount}</div>
+                      <div className="text-app-text-muted mt-1 text-xs">
+                        {volume.driver} · {volume.mount}
+                      </div>
                     </div>
                     <StatusPill color="neutral" content={volume.size} />
                   </div>
@@ -291,7 +331,12 @@ function ContainerCard({ container }: { container: DockerContainer }) {
     <Card className="bg-app-surface/50 overflow-hidden">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <div className={cn('grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br text-white shadow-lg', container.color)}>
+          <div
+            className={cn(
+              'grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br text-white shadow-lg',
+              container.color,
+            )}
+          >
             <Boxes size={24} />
           </div>
           <div className="min-w-0">
@@ -333,7 +378,12 @@ function ContainerListCard({ container }: { container: DockerContainer }) {
     <Card className="bg-app-surface/50">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 items-center gap-4">
-          <div className={cn('grid size-13 shrink-0 place-items-center rounded-2xl bg-gradient-to-br text-white', container.color)}>
+          <div
+            className={cn(
+              'grid size-13 shrink-0 place-items-center rounded-2xl bg-gradient-to-br text-white',
+              container.color,
+            )}
+          >
             <Boxes size={24} />
           </div>
           <div className="min-w-0">
@@ -349,8 +399,12 @@ function ContainerListCard({ container }: { container: DockerContainer }) {
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <Button variant="secondary" size="sm" icon={Play}>启动</Button>
-          <Button variant="ghost" size="sm" icon={Settings2}>设置</Button>
+          <Button variant="secondary" size="sm" icon={Play}>
+            启动
+          </Button>
+          <Button variant="ghost" size="sm" icon={Settings2}>
+            设置
+          </Button>
         </div>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -370,7 +424,14 @@ function Sparkline({ values, className }: { values: number[]; className?: string
 
   return (
     <svg viewBox="0 0 100 36" preserveAspectRatio="none" className={cn('h-10 w-full text-blue-500', className)}>
-      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline
+        points={points}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       <line x1="0" y1="35" x2="100" y2="35" stroke="currentColor" strokeOpacity="0.22" strokeWidth="1" />
     </svg>
   )

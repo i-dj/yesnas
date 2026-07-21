@@ -5,7 +5,7 @@ export const formatOptional = formatOptionalNumber
 export const formatSpeed = formatBytesPerSecond
 
 export function isHealthyDisk(disk: HardwareDisk) {
-  return ['passed', 'healthy'].includes(disk.health.toLowerCase())
+  return ['passed', 'healthy'].includes(disk.health?.toLowerCase() ?? '')
 }
 
 export function formatDiskUsage(usage: string | undefined, t: (key: string) => string) {

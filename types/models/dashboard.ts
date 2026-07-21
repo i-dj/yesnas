@@ -54,6 +54,12 @@ export type SystemStatusSnapshot = {
     manufacturer: string
     partNumber: string
   }
+  processes: {
+    total: number
+    running: number
+    sleeping: number
+    threads: number
+  }
   gpu?: {
     name: string
     usagePercent?: number

@@ -1,10 +1,9 @@
 'use client'
 
-import { Button, EmptyState, Input, StatusPill } from '@/components/ui'
+import { Button, Checkbox, EmptyState, Input, RadioGroup } from '@/components/ui'
 import { bytesFormat, cn } from '@/lib/utils'
 import { RAID_LEVELS, type RaidLevel } from '@/types/models/_constants'
 import type { DiskModel } from '@/types/models/storage'
-import { CheckSquare, Database, HardDrive, Layers3, Loader2, Square } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { SnapshotPolicyControl } from './snapshot-policy-control'
 
@@ -20,9 +19,7 @@ interface StoragePoolCreatorProps {
 }
 
 interface PoolCandidateItem {
-  candidateType: 'disk' | 'partition'
   eligible: boolean
-  parentPath?: string
   path: string
   name: string
   kernelName?: string
@@ -76,7 +73,6 @@ const formatEstimatedCapacity = (bytes: number) =>
   })}`
 
 const toDiskCandidate = (disk: DiskModel): PoolCandidateItem => ({
-  candidateType: 'disk',
   eligible: true,
   path: disk.path,
   name: disk.name,
@@ -88,24 +84,6 @@ const toDiskCandidate = (disk: DiskModel): PoolCandidateItem => ({
   readOnly: disk.readOnly,
   hasChildren: disk.hasChildren,
 })
-
-const toUnusedPartitionCandidates = (disk: DiskModel): PoolCandidateItem[] =>
-  (disk.partitions ?? [])
-    .filter((part) => String(part.usage || '').toLowerCase() === 'unused')
-    .map((part) => ({
-      candidateType: 'partition',
-      eligible: true,
-      parentPath: disk.path,
-      path: part.path,
-      name: part.name,
-      kernelName: part.kernelName,
-      sizeBytes: part.sizeBytes,
-      model: disk.model,
-      serial: disk.serial,
-      transport: disk.transport,
-      readOnly: part.readOnly,
-      hasChildren: part.hasChildren,
-    }))
 
 const raidByCount = (count: number): RaidLevel[] => {
   if (count <= 1) return [RAID_LEVELS.SINGLE]
@@ -196,6 +174,12 @@ const getRecommendedRaid = (options: RaidPlanOption[], diskCount: number): RaidL
   return options.find((item) => item.level === RAID_LEVELS.RAID1)?.level ?? options[0].level
 }
 
+const getRaidRiskClass = (risk: RaidPlanOption['backupRisk']) =>
+  risk === 'low' ? 'text-emerald-400' : risk === 'medium' ? 'text-amber-400' : 'text-red-400'
+
+const getRaidRiskLabel = (risk: RaidPlanOption['backupRisk']) =>
+  risk === 'low' ? 'Low' : risk === 'medium' ? 'Medium' : 'High'
+
 export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps) {
   const [poolName, setPoolName] = useState('')
   const [selectedDiskIds, setSelectedDiskIds] = useState<string[]>([])
@@ -214,11 +198,6 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
 
       if (diskUsage === 'unused') {
         candidates.push(toDiskCandidate(disk))
-        continue
-      }
-
-      if (diskUsage === 'mixed') {
-        candidates.push(...toUnusedPartitionCandidates(disk))
       }
     }
 
@@ -249,14 +228,6 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
   const recommendedRaid = getRecommendedRaid(raidOptions, selectedCandidates.length)
 
   const selectedRaidOption = raidOptions.find((item) => item.level === effectiveRaid)
-  const selectedRaidRiskClass =
-    selectedRaidOption?.backupRisk === 'low'
-      ? 'text-emerald-400'
-      : selectedRaidOption?.backupRisk === 'medium'
-        ? 'text-amber-400'
-        : 'text-red-400'
-  const selectedRaidRiskLabel =
-    selectedRaidOption?.backupRisk === 'low' ? 'Low' : selectedRaidOption?.backupRisk === 'medium' ? 'Medium' : 'High'
 
   useEffect(() => {
     if (selectedCandidates.length === 0) {
@@ -273,16 +244,8 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
     }
   }, [submitError])
 
-  const toggleDisk = (id: string) => {
-    setSelectedDiskIds((current) => (current.includes(id) ? current.filter((v) => v !== id) : [...current, id]))
-  }
-
-  const maskSerial = (serial: string) => {
-    const normalized = serial.trim()
-    if (!normalized) return '-'
-    if (normalized.length <= 4) return normalized
-
-    return `****${normalized.slice(-4)}`
+  const updateDiskSelection = (id: string, checked: boolean) => {
+    setSelectedDiskIds((current) => (checked ? [...current, id] : current.filter((v) => v !== id)))
   }
 
   const resetFormState = () => {
@@ -324,12 +287,9 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
 
   return (
     <div className="flex min-h-full flex-col">
-      <div className="flex-1 space-y-10 p-4 select-text">
+      <div className="flex-1 space-y-7 p-4 pb-6 select-text">
         <div className="space-y-3">
-          <div className="text-app-text flex items-center gap-2 text-sm font-semibold uppercase">
-            <Database className="text-app-text-muted size-4" />
-            <span>Storage Name</span>
-          </div>
+          <div className="text-app-text text-base font-semibold">Storage Name</div>
           <Input
             id="storage-pool-name"
             type="text"
@@ -340,42 +300,42 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
         </div>
 
         <div className="space-y-4">
-          <div className="text-app-text flex items-center gap-2 text-sm font-semibold uppercase">
-            <HardDrive className="text-app-text-muted size-4" />
+          <div className="text-app-text text-base font-semibold">
             <span>
-              Disks <span className="text-app-text-muted ml-1 normal-case">({selectedDiskIds.length} selected)</span>
+              Disks{' '}
+              <span className="text-app-text-muted ml-1 text-sm font-semibold">
+                ({selectedDiskIds.length} selected)
+              </span>
             </span>
           </div>
           {raidCandidates.length === 0 && <EmptyState />}
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             {raidCandidates.map((candidate) => {
               const selected = selectedDiskIds.includes(candidate.path)
-              const candidateKind = candidate.candidateType === 'partition' ? 'PARTITION' : 'DISK'
               const availableCapacity = bytesFormat(candidate.sizeBytes, { standard: 's', decimalPlaces: 2 })
+              const model = candidate.model || candidate.name || candidate.path
               const serial = candidate.serial || '-'
               return (
-                <button
+                <Checkbox
                   key={candidate.path}
-                  type="button"
-                  onClick={() => toggleDisk(candidate.path)}
-                  className={cn(
-                    'border-app-border bg-app-bg hover:border-app-border-strong flex items-center justify-between rounded-lg border px-2 py-2.5 text-left select-text',
-                    selected && 'border-app-border-strong bg-app-hover',
-                  )}
-                >
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <div className="text-app-text w-22 shrink-0 text-base leading-none font-bold tracking-tight">
-                      {availableCapacity}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-app-text-muted truncate text-[11px]">SN: {maskSerial(serial)}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <StatusPill color="neutral" content={candidateKind} />
-                    {selected ? <CheckSquare size={16} /> : <Square size={16} />}
-                  </div>
-                </button>
+                  variant="card"
+                  checked={selected}
+                  onChange={(checked) => updateDiskSelection(candidate.path, checked)}
+                  className="min-h-24 items-start px-4 py-3"
+                  contentClassName="space-y-3"
+                  markClassName="mt-0.5 size-5"
+                  label={
+                    <>
+                      <span className="text-app-text block min-w-0 truncate text-lg leading-none font-semibold tracking-tight">
+                        {availableCapacity}
+                      </span>
+                      <span className="block min-w-0 space-y-1 mt-3">
+                        <span className="text-app-text block truncate text-sm font-medium">{model}</span>
+                        <span className="text-app-text-muted block truncate text-xs">SN: {serial}</span>
+                      </span>
+                    </>
+                  }
+                />
               )
             })}
           </div>
@@ -384,80 +344,63 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
         {selectedDiskIds.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-4">
-              <div className="text-app-text flex items-center gap-2 text-sm font-semibold uppercase">
-                <Layers3 className="text-app-text-muted size-4" />
-                <span>RAID Mode</span>
-              </div>
+              <div className="text-app-text text-base font-semibold">RAID Mode</div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {raidOptions.map((option) => {
-                const active = effectiveRaid === option.level
+            <RadioGroup
+              value={effectiveRaid}
+              variant="card"
+              options={raidOptions.map((option) => {
                 const recommended = option.level === recommendedRaid
-                return (
-                  <button
-                    key={option.level}
-                    type="button"
-                    onClick={() => setRaidLevel(option.level)}
-                    className={cn(
-                      'border-app-border hover:border-app-border-strong hover:bg-app-hover text-app-text-muted flex h-9 items-center gap-2 rounded-lg border bg-transparent px-3 text-sm transition-colors',
-                      active && 'border-app-border-strong bg-app-hover text-app-text',
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'border-app-border flex size-3 shrink-0 items-center justify-center rounded-full border transition-colors',
-                        active && 'border-app-text',
-                      )}
-                    >
-                      {active ? <span className="bg-app-text block size-[5px] rounded-full" /> : null}
-                    </span>
-                    <span>{option.level === RAID_LEVELS.SINGLE ? 'Single' : option.level.toUpperCase()}</span>
-                    {recommended && (
-                      <span className="bg-theme/10 text-theme rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase">
-                        Best
+                const metrics = [
+                  { label: '容量', value: formatEstimatedCapacity(option.usableBytes) },
+                  { label: '容错', value: option.faultTolerance },
+                  { label: '性能', value: option.performance },
+                  {
+                    label: '风险',
+                    value: getRaidRiskLabel(option.backupRisk),
+                    className: getRaidRiskClass(option.backupRisk),
+                  },
+                ]
+
+                return {
+                  value: option.level,
+                  label: (
+                    <>
+                      <span className="mb-2 block min-w-0">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span className="text-app-text truncate text-sm font-semibold">{option.label}</span>
+                          {recommended && (
+                            <span className="bg-theme/10 text-theme rounded px-2 py-0.5 text-[10px] font-semibold uppercase">
+                              Best
+                            </span>
+                          )}
+                        </span>
+                        <span className="text-app-text-muted mt-1 line-clamp-2 text-xs leading-5">
+                          {option.summary}
+                        </span>
                       </span>
-                    )}
-                  </button>
-                )
+
+                      <span className="bg-app-hover/35 grid min-w-0 grid-cols-2 gap-px overflow-hidden rounded-md sm:grid-cols-4">
+                        {metrics.map((metric) => (
+                          <span key={metric.label} className="bg-app-bg/45 min-w-0 px-3 py-2">
+                            <span className="text-app-text-muted block text-xs leading-4 uppercase">
+                              {metric.label}
+                            </span>
+                            <span className={cn('text-app-text block truncate text-sm font-medium', metric.className)}>
+                              {metric.value}
+                            </span>
+                          </span>
+                        ))}
+                      </span>
+                    </>
+                  ),
+                }
               })}
-            </div>
+              onValueChange={setRaidLevel}
+              ariaLabel="RAID Mode"
+            />
             {selectedRaidOption && (
-              <div className="border-app-border bg-app-hover/30 grid grid-cols-[minmax(180px,1fr)_minmax(260px,1.25fr)] gap-5 rounded-lg border px-4 py-3">
-                <div className="min-w-0">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="text-app-text truncate text-base font-semibold">{selectedRaidOption.label}</span>
-                    {effectiveRaid === recommendedRaid && (
-                      <span className="bg-theme/10 text-theme rounded px-2 py-0.5 text-[10px] font-semibold uppercase">
-                        Best
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-app-text-muted mt-1 text-xs leading-5">{selectedRaidOption.summary}</div>
-                </div>
-                <div className="grid gap-1.5">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-app-text-muted text-[10px] whitespace-nowrap uppercase">Usable Capacity</span>
-                    <span className="text-app-text text-sm font-semibold">
-                      {formatEstimatedCapacity(selectedRaidOption.usableBytes)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-app-text-muted text-[10px] whitespace-nowrap uppercase">Min. Tolerance</span>
-                    <span className="text-app-text text-sm font-semibold">{selectedRaidOption.faultTolerance}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-app-text-muted text-[10px] uppercase">Perf</span>
-                    <span className="text-app-text text-sm font-semibold">{selectedRaidOption.performance}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-app-text-muted text-[10px] uppercase">Risk</span>
-                    <span className={cn('text-sm font-semibold', selectedRaidRiskClass)}>{selectedRaidRiskLabel}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            {selectedRaidOption && (
-              <div className="mt-8">
+              <div className="mt-6">
                 <SnapshotPolicyControl
                   directSelection={true}
                   weekdays={autoSnapshotWeekdays}
@@ -478,7 +421,7 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
         )}
       </div>
 
-      <div className="border-app-border bg-app-hover mt-auto border-t px-4 py-3">
+      <div className="border-app-border bg-app-hover sticky bottom-0 z-20 mt-auto border-t px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="text-app-text text-sm">

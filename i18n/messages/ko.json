@@ -47,6 +47,8 @@
       "avatarZoomOut": "축소",
       "avatarRotateLeft": "왼쪽으로 회전",
       "avatarRotateRight": "오른쪽으로 회전",
+      "groups": "Groups",
+      "noGroups": "This user does not belong to any groups.",
       "currentPassword": "현재 비밀번호",
       "newPassword": "새 비밀번호",
       "confirmPassword": "새 비밀번호 확인",
@@ -97,7 +99,7 @@
       "fileSharing": "파일 공유",
       "hardware": "하드웨어",
       "jobs": "작업",
-      "users": "사용자",
+      "users": "사용자 및 그룹",
       "logs": "로그",
       "docker": "Docker 관리"
     },
@@ -422,6 +424,10 @@
     "empty": "No users yet",
     "emptySearch": "No matching users",
     "searchPlaceholder": "Search users",
+    "tabs": {
+      "users": "Users",
+      "groups": "Groups"
+    },
     "overview": {
       "total": "전체 사용자",
       "enabled": "활성 계정",
@@ -438,6 +444,7 @@
       "user": "User",
       "status": "Status",
       "role": "Role",
+      "groups": "Groups",
       "smb": "SMB",
       "updatedAt": "Updated"
     },
@@ -485,11 +492,34 @@
       "passwordCreateHint": "새 사용자의 안전한 로그인 비밀번호를 설정하세요.",
       "passwordEditHint": "비워 두면 현재 비밀번호가 유지됩니다.",
       "status": "Status",
+      "groups": "Groups",
+      "noGroups": "No groups yet. Create a group first.",
       "sections": {
         "profile": "기본 정보",
         "access": "권한 및 상태",
+        "groups": "Groups",
         "security": "계정 보안"
       }
+    },
+    "groups": {
+      "create": "Create group",
+      "createTitle": "Create group",
+      "editTitle": "Edit group",
+      "name": "Group name",
+      "description": "Description",
+      "members": "Members",
+      "memberCount": "{count} users",
+      "empty": "No groups yet",
+      "none": "No groups",
+      "noDescription": "No description",
+      "formHint": "Use groups to organize users. A user can belong to multiple groups.",
+      "created": "Group created",
+      "updated": "Group updated",
+      "deleted": "Group deleted",
+      "saveFailed": "Save group failed",
+      "deleteFailed": "Delete group failed",
+      "deleteTitle": "Delete group",
+      "deleteDescription": "Delete group {name}? Users will not be deleted; only this membership will be removed."
     },
     "messages": {
       "created": "User created",

@@ -1,5 +1,5 @@
-import { Button, type DataTableHeader } from '@/components/ui'
-import { cn, formatDateTime } from '@/lib/utils'
+import { Button, StatusPill, type DataTableHeader } from '@/components/ui'
+import { formatDateTime } from '@/lib/utils'
 import { Edit3, FolderInput, Globe2, HardDriveDownload, Network, UploadCloud, type LucideIcon } from 'lucide-react'
 
 import type { ProtocolKey, SharedFolder } from '../types'
@@ -41,13 +41,13 @@ export function getFileSharingColumns({
                 {record.protocols.map((protocol) => {
                   const Icon = protocolIcons[protocol]
                   return (
-                    <span
+                    <StatusPill
                       key={protocol}
-                      className="bg-app-hover text-app-text inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
-                    >
-                      <Icon className="size-2.5" />
-                      {t(`protocols.${protocol}.name`)}
-                    </span>
+                      color="neutral"
+                      icon={Icon}
+                      content={t(`protocols.${protocol}.name`)}
+                      className="text-app-text text-[10px]"
+                    />
                   )
                 })}
               </div>
@@ -71,16 +71,7 @@ export function getFileSharingColumns({
       sortable: true,
       render: (_, record) => {
         const value = record.status
-        return (
-          <span
-            className={cn(
-              'inline-flex rounded-full px-2 py-1 text-[11px] font-medium',
-              value === 'enabled' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-zinc-500/10 text-zinc-500',
-            )}
-          >
-            {t(`status.${value}`)}
-          </span>
-        )
+        return <StatusPill color={value === 'enabled' ? 'success' : 'neutral'} content={t(`status.${value}`)} />
       },
     },
     {

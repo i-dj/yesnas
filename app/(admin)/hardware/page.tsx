@@ -16,7 +16,7 @@ export default function HardwarePage() {
 
   return (
     <PageWrapper className="flex-1 overflow-x-hidden overflow-y-auto">
-      <section className="flex shrink-0 flex-col gap-2 pb-3 sm:flex-row sm:items-end sm:justify-between">
+      <section className="flex shrink-0 flex-col gap-2 pb-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="app-page-title text-app-text flex items-center gap-2">
             {t('title')}

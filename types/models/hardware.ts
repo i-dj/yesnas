@@ -69,7 +69,7 @@ export interface HardwareDisk {
   inUse?: boolean
   sizeBytes: number
   temperatureC: number | null
-  health: string
+  health?: string | null
   smartAvailable?: boolean
   smartPassed?: boolean
   powerOnHours?: number

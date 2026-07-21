@@ -37,6 +37,8 @@ export function serializeAuthUser(user: AuthUser): string {
     username: user.username,
     displayName: user.displayName,
     avatar,
+    groups: user.groups ?? [],
+    groupIds: user.groupIds ?? [],
   } satisfies AuthUser)
 }
 
@@ -52,6 +54,8 @@ export function parseAuthUser(value?: string | null): AuthUser | null {
       username: parsed.username,
       displayName: parsed.displayName ?? '',
       avatar: parsed.avatar ?? '',
+      groups: parsed.groups ?? [],
+      groupIds: parsed.groupIds ?? [],
     }
   } catch {
     return null

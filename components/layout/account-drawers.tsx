@@ -1,6 +1,6 @@
 'use client'
 
-import { AvatarEditorModal, Button, Input, SideDrawer } from '@/components/ui'
+import { AvatarEditorModal, Button, Input, Pill, SideDrawer } from '@/components/ui'
 import { Field } from '@/components/ui/form'
 import { authApi } from '@/lib/api/auth.api'
 import { cn } from '@/lib/utils'
@@ -32,7 +32,15 @@ export function ProfileDrawer({ open, user, onOpenChange, onSaved }: ProfileDraw
     setDisplayName(user?.displayName ?? '')
     setAvatar(user?.avatar ?? '')
     setAvatarEditorImage(null)
-  }, [open, user])
+    void authApi
+      .getProfile()
+      .then((currentUser) => {
+        onSaved(currentUser)
+        setDisplayName(currentUser.displayName ?? '')
+        setAvatar(currentUser.avatar ?? '')
+      })
+      .catch(() => undefined)
+  }, [open])
 
   const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -127,6 +135,20 @@ export function ProfileDrawer({ open, user, onOpenChange, onSaved }: ProfileDraw
                 </button>
               </div>
               <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={handleUpload} />
+            </Field>
+
+            <Field label={t('profile.groups')}>
+              {user?.groups?.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {user.groups.map((group) => (
+                    <Pill key={group.id} variant="plain" className="h-auto px-2.5 py-1 text-xs">
+                      {group.name}
+                    </Pill>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-app-text-muted text-xs">{t('profile.noGroups')}</p>
+              )}
             </Field>
           </div>
 

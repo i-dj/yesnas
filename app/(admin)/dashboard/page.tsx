@@ -6,14 +6,11 @@ import {
   Cpu,
   Database,
   Download,
-  Gauge,
   HardDrive,
   MemoryStick,
   Power,
   ShieldCheck,
-  Thermometer,
   Upload,
-  Zap,
   type LucideIcon,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -27,12 +24,7 @@ import { cn, formatBytes, formatOptionalNumber, formatPercent, formatUptime } fr
 import { healthLabelMap } from '@/lib/health'
 import { CompactResourceCard, FileSharingOverview, NetworkChart } from './components'
 import type { NetworkRange } from './types'
-import {
-  formatCheckedAt,
-  formatInterfaceOption,
-  formatSpeed,
-  statusLabelMap,
-} from './utils'
+import { formatCheckedAt, formatInterfaceOption, formatSpeed, statusLabelMap } from './utils'
 import { NetworkInterfacesSnapshot, SystemStatusSnapshot } from '@/types/models/dashboard'
 
 const networkRanges: Array<{ label: string; value: NetworkRange }> = [
@@ -48,6 +40,18 @@ const toneClassMap = {
   sky: 'bg-sky-500/10 text-sky-500 dark:text-sky-300',
   violet: 'bg-violet-500/10 text-violet-500 dark:text-violet-300',
   amber: 'bg-amber-500/10 text-amber-500 dark:text-amber-300',
+}
+
+const yesNasVersion = process.env.NEXT_PUBLIC_YESNAS_VERSION || '0.1.0'
+const yesNasReleaseDate = process.env.NEXT_PUBLIC_YESNAS_RELEASE_DATE || '2026-07-20'
+const yesNasVersionLabel = yesNasVersion.trim().startsWith('v') ? yesNasVersion.trim() : `v${yesNasVersion.trim()}`
+
+function resolveLoadLevel(load1: number, threads: number) {
+  const ratio = load1 / Math.max(1, threads)
+  if (ratio >= 1) return '高负载'
+  if (ratio >= 0.7) return '繁忙'
+  if (ratio >= 0.3) return '正常'
+  return '空闲'
 }
 
 export default function DashboardPage() {
@@ -98,12 +102,10 @@ export default function DashboardPage() {
         tone: snapshot?.systemDisk.health === 'healthy' ? 'sky' : 'amber',
       },
       {
-        title: '负载',
-        value: snapshot ? snapshot.load.load1.toFixed(2) : '-',
-        meta: snapshot
-          ? `5分钟 ${snapshot.load.load5.toFixed(2)} · 15分钟 ${snapshot.load.load15.toFixed(2)}`
-          : '等待接口数据',
-        icon: Activity,
+        title: '系统版本',
+        value: yesNasVersionLabel,
+        meta: `发布日期 ${yesNasReleaseDate}`,
+        icon: Computer,
         tone: 'violet',
       },
       {
@@ -119,8 +121,8 @@ export default function DashboardPage() {
     [snapshot],
   )
 
-  const gpu = snapshot?.gpu
   const networkInterfaces = useMemo(() => networkSnapshot?.interfaces ?? [], [networkSnapshot])
+  const loadPercent = snapshot ? Math.min(100, (snapshot.load.load1 / Math.max(1, snapshot.cpu.threads)) * 100) : 0
   const visibleNetworkInterfaces = useMemo(
     () =>
       selectedNetwork === 'all'
@@ -151,29 +153,14 @@ export default function DashboardPage() {
 
   return (
     <PageWrapper className="-mx-8 gap-3 overflow-y-auto px-8 pb-8">
-      <section className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+      <section className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
         <div className="flex flex-row gap-3">
           <h1 className="app-page-title text-app-text mb-2">信息中心</h1>
-          <div className="text-app-text-muted flex items-center gap-2 text-sm font-medium">
-            <span
-              className={cn(
-                'inline-flex size-2 rounded-full',
-                snapshot?.status.state === 'healthy' ? 'bg-emerald-500' : 'bg-amber-500',
-              )}
-            />
-            最后刷新 {snapshot ? formatCheckedAt(snapshot.checkedAt) : '--:--:--'}
-          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:flex sm:items-center sm:gap-0">
           <MiniStatus icon={Power} label="电源" value="AC 供电" />
           <MiniStatus icon={Computer} label="主机名" value="yesnas" />
-          <MiniStatus
-            icon={Thermometer}
-            label="温度"
-            value={formatOptionalNumber(snapshot?.cpu.temperatureC, '°C')}
-          />
-          <MiniStatus icon={Zap} label="功耗" value={formatOptionalNumber(snapshot?.cpu.powerW, ' W')} />
         </div>
       </section>
 
@@ -289,15 +276,15 @@ export default function DashboardPage() {
             ]}
           />
           <CompactResourceCard
-            icon={Gauge}
-            title="显卡"
-            value={formatPercent(gpu?.usagePercent ?? 0)}
+            icon={Activity}
+            title="系统负载"
+            value={snapshot ? resolveLoadLevel(snapshot.load.load1, snapshot.cpu.threads) : '-'}
             color="#f59e0b"
-            percent={gpu?.usagePercent ?? 0}
+            percent={loadPercent}
             details={[
-              ['显存', gpu ? `${formatBytes(gpu.memoryUsedBytes)} / ${formatBytes(gpu.memoryTotalBytes)}` : '-'],
-              ['功率', formatOptionalNumber(gpu?.powerW, ' W')],
-              ['温度', formatOptionalNumber(gpu?.temperatureC, '°C')],
+              ['1分钟', snapshot ? snapshot.load.load1.toFixed(2) : '-'],
+              ['5分钟', snapshot ? snapshot.load.load5.toFixed(2) : '-'],
+              ['CPU线程', snapshot ? `${snapshot.cpu.threads} 个` : '-'],
             ]}
           />
         </section>

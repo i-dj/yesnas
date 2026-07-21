@@ -1,11 +1,11 @@
 'use client'
 
-import { AvatarEditorModal, Button, Input, RadioGroup, SideDrawer } from '@/components/ui'
+import { AvatarEditorModal, Button, Checkbox, Input, RadioGroup, SideDrawer } from '@/components/ui'
 import { Field } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
-import type { User } from '@/types'
-import { ImagePlus, KeyRound, ShieldCheck, UserRound, type LucideIcon } from 'lucide-react'
+import type { Group, User } from '@/types'
+import { ImagePlus, UserRound } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 
@@ -15,12 +15,13 @@ import { USER_AVATAR_PRESETS, isImageAvatar, isPresetUserAvatar } from './user-a
 interface Props {
   open: boolean
   editingUser: User | null
+  groups: Group[]
   submitting: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (form: UserFormState) => void | Promise<void>
 }
 
-export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, onSubmit }: Props) {
+export function UserFormDrawer({ open, editingUser, groups, submitting, onOpenChange, onSubmit }: Props) {
   const t = useTranslations('Users')
 
   const [form, setForm] = useState<UserFormState>(createEmptyUserForm)
@@ -45,6 +46,7 @@ export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, on
             avatar: editingUser.avatar || '',
             password: '',
             status: editingUser.status,
+            groupIds: editingUser.groupIds ?? editingUser.groups?.map((group) => group.id) ?? [],
           }
         : createEmptyUserForm,
     )
@@ -88,6 +90,9 @@ export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, on
   }
 
   const isCustomAvatar = isImageAvatar(form.avatar) && !isPresetUserAvatar(form.avatar)
+  const toggleGroup = (groupId: string, checked: boolean) => {
+    update('groupIds', checked ? [...form.groupIds, groupId] : form.groupIds.filter((id) => id !== groupId))
+  }
 
   return (
     <>
@@ -99,8 +104,8 @@ export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, on
       >
         <form className="flex min-h-full flex-col" noValidate onSubmit={handleSubmit}>
           <div className="flex-1 px-5">
-            <FormSection icon={UserRound} title={t('form.sections.profile')}>
-              <div className="grid gap-4 sm:grid-cols-2">
+            <FormSection>
+              <div className="space-y-4">
                 <Field label={t('form.username')}>
                   <Input
                     value={form.username}
@@ -172,41 +177,56 @@ export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, on
               </Field>
 
               <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={handleUpload} />
+
+              <Field label={t('form.groups')}>
+                {groups.length ? (
+                  <div className="grid grid-cols-3 gap-2">
+                    {groups.map((group) => (
+                      <Checkbox
+                        key={group.id}
+                        variant="card"
+                        label={group.name}
+                        checked={form.groupIds.includes(group.id)}
+                        className="min-w-0 px-2 py-2"
+                        onChange={(checked) => toggleGroup(group.id, checked)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-app-text-muted text-xs">{t('form.noGroups')}</p>
+                )}
+              </Field>
             </FormSection>
 
-            <FormSection icon={ShieldCheck} title={t('form.sections.access')}>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={t('form.status')}>
-                  <RadioGroup
-                    name="user-status"
-                    value={form.status}
-                    options={[
-                      { value: 'enabled', label: t('statuses.enabled') },
-                      { value: 'disabled', label: t('statuses.disabled') },
-                    ]}
-                    onValueChange={(value) => update('status', value)}
-                    ariaLabel={t('form.status')}
-                  />
-                </Field>
+            <FormSection>
+              <Field label={t('form.status')}>
+                <RadioGroup
+                  name="user-status"
+                  value={form.status}
+                  options={[
+                    { value: 'enabled', label: t('statuses.enabled') },
+                    { value: 'disabled', label: t('statuses.disabled') },
+                  ]}
+                  onValueChange={(value) => update('status', value)}
+                  ariaLabel={t('form.status')}
+                />
+              </Field>
 
-                <div className="flex flex-col gap-2">
-                  <Field label={t('form.role')}>
-                    <RadioGroup
-                      name="user-role"
-                      value={form.isAdmin ? 'admin' : 'user'}
-                      options={[
-                        { value: 'user', label: t('roles.user') },
-                        { value: 'admin', label: t('roles.admin') },
-                      ]}
-                      onValueChange={(value) => update('isAdmin', value === 'admin')}
-                      ariaLabel={t('form.role')}
-                    />{' '}
-                  </Field>
-                </div>
-              </div>
+              <Field label={t('form.role')}>
+                <RadioGroup
+                  name="user-role"
+                  value={form.isAdmin ? 'admin' : 'user'}
+                  options={[
+                    { value: 'user', label: t('roles.user') },
+                    { value: 'admin', label: t('roles.admin') },
+                  ]}
+                  onValueChange={(value) => update('isAdmin', value === 'admin')}
+                  ariaLabel={t('form.role')}
+                />
+              </Field>
             </FormSection>
 
-            <FormSection icon={KeyRound} title={t('form.sections.security')}>
+            <FormSection>
               <Field label={editingUser ? t('form.newPassword') : t('form.password')}>
                 <Input
                   type="password"
@@ -256,13 +276,9 @@ export function UserFormDrawer({ open, editingUser, submitting, onOpenChange, on
   )
 }
 
-function FormSection({ icon: Icon, title, children }: { icon: LucideIcon; title: string; children: ReactNode }) {
+function FormSection({ children }: { children: ReactNode }) {
   return (
     <section className="border-app-border -mx-1 border-b px-1 py-5 last:border-b-0">
-      <div className="mb-4 flex items-center gap-2.5">
-        <Icon className="size-4 text-sky-400" />
-        <h3 className="text-app-text text-sm font-semibold">{title}</h3>
-      </div>
       <div className="space-y-4">{children}</div>
     </section>
   )

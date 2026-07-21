@@ -26,7 +26,11 @@ export function useUserTable(users: User[]) {
     })
 
     if (!q) return statusFiltered
-    return statusFiltered.filter((u) => [u.username, u.displayName].some((v) => v?.toLowerCase().includes(q)))
+    return statusFiltered.filter((u) =>
+      [u.username, u.displayName, ...(u.groups ?? []).map((group) => group.name)].some((v) =>
+        v?.toLowerCase().includes(q),
+      ),
+    )
   }, [keyword, list, statusFilter])
 
   const finalUsers = useMemo(() => {

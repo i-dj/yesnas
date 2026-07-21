@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils'
 import { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-type StatusPillColor = 'success' | 'warning' | 'danger' | 'neutral'
+type StatusPillColor = 'success' | 'warning' | 'danger' | 'neutral' | 'info'
 
 interface StatusPillProps {
   color: StatusPillColor
@@ -15,6 +15,7 @@ const colorClassMap: Record<StatusPillColor, string> = {
   success: '  text-emerald-400   dark:text-emerald-300',
   warning: '  text-amber-400  dark:text-amber-300',
   danger: '  text-red-400  dark:text-red-300',
+  info: 'text-sky-400 dark:text-sky-300',
   neutral: '  text-app-text-muted  ',
 }
 

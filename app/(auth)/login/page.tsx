@@ -5,10 +5,10 @@ import { AuthInput } from '../components/auth-input'
 import { AuthShell } from '../components/auth-shell'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Check } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@/components/layout/auth-context'
+import { Checkbox } from '@/components/ui'
 import { toast } from '@/store/use-toast-store'
 
 export default function LoginPage() {
@@ -46,11 +46,7 @@ export default function LoginPage() {
 
   return (
     <AuthShell>
-      <AuthCard
-        eyebrow={t('description')}
-        title={t('title')}
-        description={t('description')}
-      >
+      <AuthCard eyebrow={t('description')} title={t('title')} description={t('description')}>
         <form className="space-y-6" onSubmit={handleSubmit}>
           <label className="flex flex-col gap-1.5">
             <span className="text-sm font-semibold text-white/75">{t('username')}</span>
@@ -77,18 +73,13 @@ export default function LoginPage() {
           </label>
 
           <div className="flex items-center justify-between gap-4 text-sm">
-            <label className="flex cursor-pointer items-center gap-2 text-white/65">
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(event) => setRemember(event.target.checked)}
-                className="peer sr-only"
-              />
-              <span className="peer-checked:border-theme peer-checked:bg-theme grid size-4 place-items-center rounded border border-white/25 bg-transparent text-white transition-colors peer-checked:[&>svg]:scale-100 peer-checked:[&>svg]:opacity-100">
-                <Check className="size-3 scale-75 opacity-0 transition-all" strokeWidth={3} />
-              </span>
-              <span>{t('remember')}</span>
-            </label>
+            <Checkbox
+              label={t('remember')}
+              checked={remember}
+              onChange={setRemember}
+              className="px-0 text-white/65"
+              markClassName="border-white/25 bg-transparent text-white"
+            />
             <Link href="/forgot-password" className="text-theme hover:text-theme/80 font-semibold">
               {t('forgotPassword')}
             </Link>

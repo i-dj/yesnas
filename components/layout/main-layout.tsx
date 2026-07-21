@@ -1,5 +1,5 @@
 'use client'
-import { cn, formatBytesPerSecond, formatUptime } from '@/lib/utils'
+import { cn, formatBytesPerSecond } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useState } from 'react'
@@ -7,14 +7,22 @@ import { useTranslations } from 'next-intl'
 import { FiUser } from 'react-icons/fi'
 import { menuGroups } from './menu'
 import Image from 'next/image'
-import { ArrowDown, ArrowUp, ChevronDown, ChevronLeft, KeyRound, LogOut, MessageCircleMore, Upload, UserRound } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronLeft,
+  KeyRound,
+  LogOut,
+  MessageCircleMore,
+  Upload,
+  UserRound,
+} from 'lucide-react'
 import { ActionMenu, Button, SideDrawer, ThemeToggle } from '../ui'
 import { GlobalUpload } from './global-upload'
 import { useUploadStore } from '@/store/use-upload-store'
 import { useAuth } from './auth-context'
 import { PasswordDrawer, ProfileDrawer } from './account-drawers'
-import { useSse } from '@/hooks/use-sse'
-import type { SystemStatusSnapshot } from '@/types'
 import { useRealtimeNetwork } from './realtime-network-context'
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
@@ -41,7 +49,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   const clearCompletedUploads = useUploadStore((state) => state.clearCompleted)
   const uploadFileList = Object.values(uploadFiles)
   const hasUploadingFiles = uploadFileList.some((file) => file.status === 'uploading')
-  const { data: systemStatus } = useSse<SystemStatusSnapshot>('system.status', { interval: 2 })
   const activePathname = pathname === '/file' || pathname.startsWith('/file/') ? '/storage' : pathname
 
   // Shared active-route matcher
@@ -200,19 +207,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
       {/* Main content area */}
       <div className="bg-app-bg flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="border-app-border flex h-12.5 shrink-0 items-center justify-between border-b px-4">
-          <DeviceStatus
-            snapshot={systemStatus}
-            onlineLabel={tCommon('deviceStatus.online')}
-            connectingLabel={tCommon('deviceStatus.connecting')}
-            uptimeLabel={(value) => tCommon('deviceStatus.uptime', { value })}
-            formatDuration={(seconds) =>
-              formatUptime(seconds, {
-                daysHours: (days, hours) => tHardware('values.daysHours', { days, hours }),
-                hours: (hours) => tHardware('values.hours', { value: hours }),
-              })
-            }
-          />
+        <header className="border-app-border flex h-12.5 shrink-0 items-center justify-end border-b px-4">
           <div className="flex flex-row items-center gap-4">
             <div className="flex flex-col items-center">
               <Button
@@ -293,46 +288,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         onSaved={(user) => auth.updateUser(user)}
       />
       <PasswordDrawer open={passwordDrawer} onOpenChange={setPasswordDrawer} />
-    </div>
-  )
-}
-
-function DeviceStatus({
-  snapshot,
-  onlineLabel,
-  connectingLabel,
-  uptimeLabel,
-  formatDuration,
-}: {
-  snapshot: SystemStatusSnapshot | null
-  onlineLabel: string
-  connectingLabel: string
-  uptimeLabel: (value: string) => string
-  formatDuration: (seconds: number) => string
-}) {
-  const state = snapshot?.status.state
-
-  return (
-    <div className="flex min-w-0 items-center gap-2 text-sm">
-      <span
-        className={cn(
-          'size-2 shrink-0 rounded-full',
-          state === 'healthy'
-            ? 'bg-emerald-500'
-            : state === 'warning'
-              ? 'bg-amber-500'
-              : state === 'error'
-                ? 'bg-red-500'
-                : 'bg-app-text-muted/40 animate-pulse',
-        )}
-      />
-      <span className="text-app-text font-semibold">yesnas</span>
-      <span className="text-app-text-muted hidden sm:inline">{snapshot ? onlineLabel : connectingLabel}</span>
-      {snapshot ? (
-        <span className="text-app-text-muted hidden border-l border-app-border pl-2 md:inline">
-          {uptimeLabel(formatDuration(snapshot.status.uptimeSeconds))}
-        </span>
-      ) : null}
     </div>
   )
 }
