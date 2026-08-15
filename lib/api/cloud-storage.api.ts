@@ -4,6 +4,11 @@ import type {
   CloudStorageConnectResponse,
   CloudStorageOAuthStatusResponse,
   CloudStorageProvider,
+  NetworkStorageCreatePayload,
+  NetworkStorageCreateResponse,
+  NetworkStorageProtocol,
+  SMBShareListPayload,
+  SMBShareListResponse,
 } from '@/types'
 import { request } from './request'
 
@@ -16,9 +21,7 @@ export const connectCloudStorage = (provider: CloudStorageProvider, payload: Clo
   })
 
 export const getCloudStorageOAuthStatus = (provider: CloudStorageProvider, sessionId: string) =>
-  request<CloudStorageOAuthStatusResponse>(
-    `${providerPath(provider)}/oauth-status/${encodeURIComponent(sessionId)}`,
-  )
+  request<CloudStorageOAuthStatusResponse>(`${providerPath(provider)}/oauth-status/${encodeURIComponent(sessionId)}`)
 
 export const completeCloudStorage = (provider: CloudStorageProvider, sessionId: string) =>
   request<CloudStorageCompleteResponse>(`${providerPath(provider)}/complete`, {
@@ -26,7 +29,18 @@ export const completeCloudStorage = (provider: CloudStorageProvider, sessionId: 
     body: { sessionId },
   })
 
-export const getConnectedStorages = () =>
-  request<Array<Record<string, unknown>>>('/storages', { unwrapList: true })
+export const getConnectedStorages = () => request<Array<Record<string, unknown>>>('/storages', { unwrapList: true })
 
-export type { CloudStorageProvider } from '@/types'
+export const createNetworkStorage = (payload: NetworkStorageCreatePayload) =>
+  request<NetworkStorageCreateResponse>('/storages/network', {
+    method: 'POST',
+    body: payload,
+  })
+
+export const listSMBShares = (payload: SMBShareListPayload) =>
+  request<SMBShareListResponse>('/storages/network/smb/shares', {
+    method: 'POST',
+    body: payload,
+  })
+
+export type { CloudStorageProvider, NetworkStorageProtocol } from '@/types'

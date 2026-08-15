@@ -134,7 +134,7 @@ export const ActionMenu = ({
                 itemJustify === 'between' ? 'justify-between gap-4' : 'justify-start gap-3',
                 !item.isDelete && 'text-app-text-muted',
                 !item.isDelete
-                  ? 'data-highlighted:bg-app-hover data-highlighted:text-app-text'
+                  ? 'data-highlighted:bg-card-border data-highlighted:text-app-text'
                   : 'text-red-500 data-highlighted:bg-red-500/10 data-highlighted:text-red-600',
                 item.checked && 'bg-app-active text-app-text border-app-border-strong border',
                 'data-disabled:cursor-not-allowed data-disabled:opacity-40',
@@ -165,7 +165,7 @@ export const ActionMenu = ({
   )
 
   const contentClassName = cn(
-    'bg-white dark:bg-[#242529]',
+    'bg-app-hover',
     'min-w-48 mx-1 overflow-hidden rounded-xl border border-app-border',
     'px-2 py-1.5',
     'shadow-[0_18px_42px_rgba(0,0,0,0.34)]',

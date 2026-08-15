@@ -23,7 +23,7 @@ export function HardwareSection({
   children: ReactNode
 }) {
   return (
-    <Card className={cn('bg-app-hover/20 min-w-0 rounded-lg p-3', className)}>
+    <Card className={cn('  min-w-0 rounded-lg p-3', className)}>
       <div
         className={cn(
           'mb-3 flex min-h-8 min-w-0 flex-wrap justify-between gap-2',

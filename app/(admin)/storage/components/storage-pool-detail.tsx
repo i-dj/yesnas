@@ -99,7 +99,7 @@ export function StoragePoolDetail({
   }
 
   const warnings = [...(activePool?.warnings ?? [])]
-  const cloudUnmountedWarning = 'äº‘ç›˜è´¦å·å¯è®¿é—®ï¼Œä½†æœ¬åœ°æŒ‚è½½æœªæ¿€æ´»ï¼ŒSMB æˆ–æœ¬åœ°è·¯å¾„è®¿é—®å¯èƒ½ä¸å¯ç”¨ã€‚'
+  const cloudUnmountedWarning = '云盘账号可访问，但本地挂载未激活，SMB 或本地路径访问可能不可用。'
   if (activePool?.kind === 'cloud' && !activePool.mounted && !warnings.includes(cloudUnmountedWarning)) {
     warnings.unshift(cloudUnmountedWarning)
   }
@@ -124,7 +124,7 @@ export function StoragePoolDetail({
             subtitle={
               activePool.kind === 'cloud' && cloudProvider
                 ? cloudProviderLabels[cloudProvider]
-                : [activePool.raidLevel, activePool.filesystem].filter(Boolean).join(' Â· ').toUpperCase()
+                : [activePool.raidLevel, activePool.filesystem].filter(Boolean).join(' · ').toUpperCase()
             }
             icon={activePool.kind === 'cloud' ? undefined : HardDrive}
             iconSrc={cloudProviderLogoSrc}
@@ -270,12 +270,12 @@ export function StoragePoolDetail({
                                     >
                                       <div className="text-app-text text-xs">{candidate.path}</div>
                                       <div className="text-app-text-muted text-[10px] uppercase">
-                                        {candidate.label} Â·{' '}
+                                        {candidate.label} ·{' '}
                                         {bytesFormat(candidate.sizeBytes ?? 0, {
                                           standard: 'm',
                                           decimalPlaces: 0,
                                         })}{' '}
-                                        Â· {candidate.kind.toUpperCase()}
+                                        · {candidate.kind.toUpperCase()}
                                       </div>
                                     </button>
                                   ))}

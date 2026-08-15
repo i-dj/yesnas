@@ -108,7 +108,7 @@ export function Select({
                     'text-app-text-muted relative flex min-h-8 cursor-pointer items-center rounded-sm py-1.5 pr-8 pl-2.5',
                     'text-[13px] transition-colors outline-none select-none',
                     'data-highlighted:bg-app-hover data-highlighted:text-app-text',
-                    'data-[state=checked]:text-app-text data-[state=checked]:font-normal dark:data-[state=checked]:text-sky-300',
+                    'data-[state=checked]:text-app-text data-[state=checked]:font-normal',
                     'data-disabled:pointer-events-none data-disabled:opacity-40',
                   )}
                 >

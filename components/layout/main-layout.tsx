@@ -1,5 +1,5 @@
 'use client'
-import { cn, formatBytesPerSecond } from '@/lib/utils'
+import { cn, formatBitsPerSecond } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useState } from 'react'
@@ -180,8 +180,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                           'group relative flex cursor-pointer items-center rounded-lg py-2 text-[15px] font-normal transition-all duration-200',
                           sidebarCollapsed ? 'justify-center px-2' : 'px-4',
                           active
-                            ? 'text-app-text bg-blue-500/8 font-semibold hover:bg-blue-500/12'
-                            : 'text-app-text/70 hover:bg-app-active hover:text-app-text',
+                            ? 'text-app-text bg-app-menu-active'
+                            : 'text-app-text/70 hover:bg-app-menu-hover hover:text-app-text',
                         )}
                         title={sidebarCollapsed ? itemLabel : undefined}
                       >
@@ -190,7 +190,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                           className={cn(
                             'shrink-0 transition-colors',
                             sidebarCollapsed ? 'mr-0' : 'mr-5',
-                            active ? 'text-blue-500' : 'text-app-text-muted group-hover:text-app-text',
+                            active ? 'text-app-text' : 'text-app-text-muted group-hover:text-app-text',
                           )}
                         />
                         {!sidebarCollapsed && <span>{itemLabel}</span>}
@@ -307,13 +307,13 @@ function GlobalNetworkSpeed({ receiveLabel, sendLabel }: { receiveLabel: string;
       <NetworkSpeedItem
         icon={ArrowDown}
         label={receiveLabel}
-        value={formatBytesPerSecond(totals.receive)}
+        value={formatBitsPerSecond(totals.receive)}
         className="text-cyan-500"
       />
       <NetworkSpeedItem
         icon={ArrowUp}
         label={sendLabel}
-        value={formatBytesPerSecond(totals.send)}
+        value={formatBitsPerSecond(totals.send)}
         className="text-violet-500"
       />
     </div>

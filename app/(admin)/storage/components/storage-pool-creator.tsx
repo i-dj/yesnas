@@ -1,11 +1,22 @@
 'use client'
 
-import { Button, Checkbox, EmptyState, Input, RadioGroup } from '@/components/ui'
+import {
+  Button,
+  Checkbox,
+  EmptyState,
+  FormSection,
+  FormSectionPanel,
+  FormSectionTitle,
+  Input,
+  RadioGroup,
+} from '@/components/ui'
 import { bytesFormat, cn } from '@/lib/utils'
 import { RAID_LEVELS, type RaidLevel } from '@/types/models/_constants'
 import type { DiskModel } from '@/types/models/storage'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { SnapshotPolicyControl } from './snapshot-policy-control'
+import { Field } from '@/components/ui/form'
+import { FormInputIcon, PenBox } from 'lucide-react'
 
 interface StoragePoolCreatorProps {
   disks: DiskModel[]
@@ -287,58 +298,61 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
 
   return (
     <div className="flex min-h-full flex-col">
-      <div className="flex-1 space-y-7 p-4 pb-6 select-text">
-        <div className="space-y-3">
-          <div className="text-app-text text-base font-semibold">Storage Name</div>
-          <Input
-            id="storage-pool-name"
-            type="text"
-            value={poolName}
-            onChange={(event) => setPoolName(event.target.value)}
-            placeholder="e.g. pool-a"
-          />
-        </div>
+          <div className="flex-1 space-y-7 p-4 pb-6 select-text ">
+              <div className="space-y-5">
+                  <div className='flex gap-2  flex-col'>
+                  	 <span>Storage Name</span>
 
-        <div className="space-y-4">
-          <div className="text-app-text text-base font-semibold">
-            <span>
-              Disks{' '}
-              <span className="text-app-text-muted ml-1 text-sm font-semibold">
-                ({selectedDiskIds.length} selected)
-              </span>
-            </span>
-          </div>
-          {raidCandidates.length === 0 && <EmptyState />}
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            {raidCandidates.map((candidate) => {
-              const selected = selectedDiskIds.includes(candidate.path)
-              const availableCapacity = bytesFormat(candidate.sizeBytes, { standard: 's', decimalPlaces: 2 })
-              const model = candidate.model || candidate.name || candidate.path
-              const serial = candidate.serial || '-'
-              return (
-                <Checkbox
-                  key={candidate.path}
-                  variant="card"
-                  checked={selected}
-                  onChange={(checked) => updateDiskSelection(candidate.path, checked)}
-                  className="min-h-24 items-start px-4 py-3"
-                  contentClassName="space-y-3"
-                  markClassName="mt-0.5 size-5"
-                  label={
-                    <>
-                      <span className="text-app-text block min-w-0 truncate text-lg leading-none font-semibold tracking-tight">
-                        {availableCapacity}
-                      </span>
-                      <span className="block min-w-0 space-y-1 mt-3">
-                        <span className="text-app-text block truncate text-sm font-medium">{model}</span>
-                        <span className="text-app-text-muted block truncate text-xs">SN: {serial}</span>
-                      </span>
-                    </>
-                  }
-                />
-              )
-            })}
-          </div>
+                <Input
+                  id="storage-pool-name"
+                  type="text"
+                  variant="outline"
+                  value={poolName}
+                  onChange={(event) => setPoolName(event.target.value)}
+                  placeholder="e.g. pool-a"
+                /> </div>
+                  <div className="space-y-4">
+                    <div>
+
+                  <span>
+                    Disks{' '}
+                    <span className="text-app-text-muted ml-1 text-sm font-semibold">
+                      ({selectedDiskIds.length} selected)
+                    </span>
+                  </span>
+                    </div>
+                {raidCandidates.length === 0 && <EmptyState />}
+                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                  {raidCandidates.map((candidate) => {
+                    const selected = selectedDiskIds.includes(candidate.path)
+                    const availableCapacity = bytesFormat(candidate.sizeBytes, { standard: 's', decimalPlaces: 2 })
+                    const model = candidate.model || candidate.name || candidate.path
+                    const serial = candidate.serial || '-'
+                    return (
+                      <Checkbox
+                        key={candidate.path}
+                        variant="card"
+                        checked={selected}
+                        onChange={(checked) => updateDiskSelection(candidate.path, checked)}
+                        className="min-h-24 items-start px-4 py-3"
+                        contentClassName="space-y-3"
+                        markClassName="mt-0.5 size-5"
+                        label={
+                          <>
+                            <span className="text-app-text block min-w-0 truncate text-lg leading-none font-semibold tracking-tight">
+                              {availableCapacity}
+                            </span>
+                            <span className="mt-3 block min-w-0 space-y-1">
+                              <span className="text-app-text block truncate text-sm font-medium">{model}</span>
+                              <span className="text-app-text-muted block truncate text-xs">SN: {serial}</span>
+                            </span>
+                          </>
+                        }
+                      />
+                    )
+                  })}
+                </div>
+              </div>
         </div>
 
         {selectedDiskIds.length > 0 && (
@@ -365,7 +379,7 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
                 return {
                   value: option.level,
                   label: (
-                    <>
+                      <>
                       <span className="mb-2 block min-w-0">
                         <span className="flex min-w-0 items-center gap-2">
                           <span className="text-app-text truncate text-sm font-semibold">{option.label}</span>
@@ -380,18 +394,18 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
                         </span>
                       </span>
 
-                      <span className="bg-app-hover/35 grid min-w-0 grid-cols-2 gap-px overflow-hidden rounded-md sm:grid-cols-4">
+                      <div className="  grid-cols-4  gap-5  grid    ">
                         {metrics.map((metric) => (
-                          <span key={metric.label} className="bg-app-bg/45 min-w-0 px-3 py-2">
-                            <span className="text-app-text-muted block text-xs leading-4 uppercase">
+                          <span key={metric.label} className=" flex gap-2 items-center">
+                            <span className="text-app-text-muted   text-xs leading-4 uppercase">
                               {metric.label}
                             </span>
-                            <span className={cn('text-app-text block truncate text-sm font-medium', metric.className)}>
+                            <span className={cn('text-app-text   truncate text-sm font-medium', metric.className)}>
                               {metric.value}
                             </span>
                           </span>
                         ))}
-                      </span>
+                      </div>
                     </>
                   ),
                 }
@@ -410,16 +424,18 @@ export function StoragePoolCreator({ disks, onSubmit }: StoragePoolCreatorProps)
                   }}
                 />
               </div>
-            )}
-          </div>
+                      )}
+
+                  </div>
+
         )}
 
         {submitError && (
           <div ref={errorRef} className="rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-xs text-red-400">
             {submitError}
           </div>
-        )}
-      </div>
+                  )}
+          </div>
 
       <div className="border-app-border bg-app-hover sticky bottom-0 z-20 mt-auto border-t px-4 py-3">
         <div className="flex items-center justify-between gap-3">

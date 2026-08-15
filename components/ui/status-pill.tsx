@@ -12,18 +12,18 @@ interface StatusPillProps {
 }
 
 const colorClassMap: Record<StatusPillColor, string> = {
-  success: '  text-emerald-400   dark:text-emerald-300',
-  warning: '  text-amber-400  dark:text-amber-300',
-  danger: '  text-red-400  dark:text-red-300',
+  success: 'text-emerald-400 dark:text-emerald-300',
+  warning: 'text-amber-400 dark:text-amber-300',
+  danger: 'text-red-400 dark:text-red-300',
   info: 'text-sky-400 dark:text-sky-300',
-  neutral: '  text-app-text-muted  ',
+  neutral: 'text-app-text-muted',
 }
 
 export function StatusPill({ color, content, className, icon: Icon }: StatusPillProps) {
   return (
     <span
       className={cn(
-        'bg-app-hover/70 inline-flex w-fit shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px]',
+        'bg-card-bg border border-app-border  inline-flex w-fit shrink-0 items-center gap-1 rounded-full px-2 py-1 text-xs font-normal',
         colorClassMap[color],
         className,
       )}

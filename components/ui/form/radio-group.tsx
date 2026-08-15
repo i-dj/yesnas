@@ -54,9 +54,10 @@ export function RadioGroup<T extends string>({
             key={option.value}
             className={cn(
               variant === 'card'
-                ? 'border-app-border bg-app-bg hover:border-app-border-strong hover:bg-app-hover/60 text-app-text flex cursor-pointer items-start gap-3 rounded-lg border px-4 py-3 text-sm transition-colors select-text'
+                ? 'border-app-border bg-app-bg  text-app-text flex cursor-pointer items-start gap-3 rounded-lg border px-4 py-3 text-sm transition-colors select-text'
                 : 'text-app-text flex cursor-pointer items-center gap-2 text-sm',
-              variant === 'card' && checked && 'border-app-border-strong bg-app-hover',
+                variant === 'card' && checked && 'border-app-border-strong bg-card-bg-strong',
+              !checked &&'hover:border-app-border-strong hover:bg-app-hover',
               optionDisabled && 'cursor-not-allowed opacity-50',
               itemClassName,
               option.className,

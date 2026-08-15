@@ -6,7 +6,6 @@ import type {
   FileResponseData,
   FileTransferPayload,
   GetFilesOptions,
-  TrashFileResponse,
 } from '@/types'
 import { BASE } from './base'
 
@@ -18,33 +17,23 @@ const toFileQuery = (options: GetFilesOptions = {}) => {
   return suffix ? `?${suffix}` : ''
 }
 
-const mapTrashFileToNode = (file: TrashFileResponse): FileNode => ({
-  id: file.id,
-  name: file.name,
-  type: file.type,
-  parentId: file.parentId,
-  size: file.size,
-  extension: file.extension?.replace(/^\./, ''),
-  updatedAt: file.deletedAt,
-  isHidden: file.isHidden,
-  mimeType: file.mimeType,
-  mediaType: file.mediaType,
-  tagColors: file.tagColors ?? [],
-  metadata: {
-    storageId: file.storageId,
-    originalPath: file.originalPath,
-    recyclePath: file.recyclePath,
-    deletedAt: file.deletedAt,
-    expiresAt: file.expiresAt,
-  },
-})
+const storagePath = (storageId: string) => `/storages/${encodeURIComponent(storageId)}`
+const filePath = (storageId: string, fileId: string) => `${storagePath(storageId)}/files/${encodeURIComponent(fileId)}`
 
 export const fileManagementApi = {
   contentUrl: (storageId: string, fileId: string, download = false) =>
-    `${BASE}/storages/${storageId}/files/${fileId}/content${download ? '?download=true' : ''}`,
+    `${BASE}${filePath(storageId, fileId)}/content${download ? '?download=true' : ''}`,
 
-  thumbnailUrl: (storageId: string, fileId: string) =>
-    `${BASE}/storages/${storageId}/files/${fileId}/thumbnail`,
+  playableContentUrl: (storageId: string, fileId: string) => `${BASE}${filePath(storageId, fileId)}/playable-content`,
+
+  hlsManifestUrl: (storageId: string, fileId: string) => `${BASE}${filePath(storageId, fileId)}/hls/index.m3u8`,
+
+  hlsSegmentUrl: (storageId: string, fileId: string, segment: string) =>
+    `${BASE}${filePath(storageId, fileId)}/hls/${encodeURIComponent(segment)}`,
+
+  hlsStopUrl: (storageId: string, fileId: string) => `${BASE}${filePath(storageId, fileId)}/hls/stop`,
+
+  thumbnailUrl: (storageId: string, fileId: string) => `${BASE}${filePath(storageId, fileId)}/thumbnail`,
 
   storageIoStatsStreamUrl: (storageId: string, intervalSeconds = 1) =>
     `${BASE}/storages/${storageId}/io-stats/stream?intervalSeconds=${intervalSeconds}`,
@@ -57,51 +46,44 @@ export const fileManagementApi = {
     if (params?.parentId) query.set('parentId', params.parentId)
     const suffix = query.toString()
 
-    return request<FileExplorerData>(`/storages/${storageId}/files${suffix ? `?${suffix}` : ''}`)
+    return request<FileExplorerData>(`${storagePath(storageId)}/files${suffix ? `?${suffix}` : ''}`)
   },
 
   createFolder: (storageId: string, payload: { parentId?: string; name: string }) =>
-    request<FileNode>(`/storages/${storageId}/folders`, {
+    request<FileNode>(`${storagePath(storageId)}/folders`, {
       method: 'POST',
       body: payload,
     }),
 
   rename: (storageId: string, fileId: string, name: string) =>
-    request<FileNode>(`/storages/${storageId}/files/${fileId}`, {
+    request<FileNode>(filePath(storageId, fileId), {
       method: 'PATCH',
       body: { name },
     }),
 
   checkConflict: (storageId: string, fileId: string, payload: FileConflictPayload) =>
-    request<FileConflictResult>(`/storages/${storageId}/files/${fileId}/conflicts`, {
+    request<FileConflictResult>(`${filePath(storageId, fileId)}/conflicts`, {
       method: 'POST',
       body: payload,
     }),
 
   move: (storageId: string, fileId: string, payload: FileTransferPayload) =>
-    request<FileNode>(`/storages/${storageId}/files/${fileId}/move`, {
+    request<FileNode>(`${filePath(storageId, fileId)}/move`, {
       method: 'POST',
       body: payload,
     }),
 
   copy: (storageId: string, fileId: string, payload: FileTransferPayload) =>
-    request<FileNode>(`/storages/${storageId}/files/${fileId}/copy`, {
+    request<FileNode>(`${filePath(storageId, fileId)}/copy`, {
       method: 'POST',
       body: payload,
     }),
 
   delete: (storageId: string, fileId: string) =>
-    request<void>(`/storages/${storageId}/files/${fileId}`, {
+    request<void>(filePath(storageId, fileId), {
       method: 'DELETE',
     }),
 
   filesByPath: (storageId: string, options: GetFilesOptions = {}) =>
-    request<FileResponseData>(`/storages/${storageId}/files${toFileQuery(options)}`),
-
-  taggedFiles: () => request<FileNode[]>('/files/tags'),
-
-  trashFiles: async () => {
-    const files = await request<TrashFileResponse[]>('/files/trash')
-    return files.map(mapTrashFileToNode)
-  },
+    request<FileResponseData>(`${storagePath(storageId)}/files${toFileQuery(options)}`),
 }

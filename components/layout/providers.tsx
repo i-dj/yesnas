@@ -22,12 +22,7 @@ export function Providers({
   initialTimeZone: string
 }) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem
-      disableTransitionOnChange
-    >
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
       <AuthProvider initialUser={initialUser}>
         <ClientPreferenceSync initialTimeZone={initialTimeZone} />
         <RadixThemeBridge>{children}</RadixThemeBridge>
@@ -59,6 +54,7 @@ function RadixThemeBridge({ children }: { children: React.ReactNode }) {
 
   return (
     <Theme
+      suppressHydrationWarning
       appearance={mounted && resolvedTheme === 'dark' ? 'dark' : 'light'}
       accentColor="blue"
       panelBackground="translucent"

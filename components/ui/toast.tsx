@@ -34,23 +34,23 @@ const variantMeta: Record<
 > = {
   success: {
     icon: Check,
-    iconClassName: 'border-emerald-400 text-emerald-400',
-    panelClassName: 'bg-app-item-bg/95',
+    iconClassName: 'text-emerald-400',
+    panelClassName: '',
   },
   error: {
     icon: CircleAlert,
-    iconClassName: 'border-red-400 text-red-400',
-    panelClassName: 'bg-app-item-bg/95',
+    iconClassName: 'text-red-400',
+    panelClassName: '',
   },
   info: {
     icon: Info,
-    iconClassName: 'border-sky-400 text-sky-400',
-    panelClassName: 'bg-app-item-bg/95',
+    iconClassName: 'text-sky-400',
+    panelClassName: '',
   },
   warning: {
     icon: AlertTriangle,
-    iconClassName: 'border-amber-400 text-amber-400',
-    panelClassName: 'bg-app-item-bg/95',
+    iconClassName: 'text-amber-400',
+    panelClassName: '',
   },
 }
 
@@ -62,26 +62,26 @@ export function ToastCard({ item, onClose }: ToastCardProps) {
   return (
     <div
       className={cn(
-        'bg-app-item-bg/95 text-app-text border-app-border animate-in fade-in slide-in-from-right-2 relative overflow-hidden rounded-lg border px-3 py-2.5 shadow-[0_12px_28px_rgba(0,0,0,0.28)] backdrop-blur duration-150',
+        'bg-card-bg border-card-border text-app-text animate-in fade-in slide-in-from-top-2 relative overflow-hidden rounded-lg border-2 px-5 py-3 shadow-[0_18px_48px_rgba(0,0,0,0.32)] duration-150',
         meta.panelClassName,
       )}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex min-h-10 items-center gap-4">
         <div className={cn('inline-flex size-5 shrink-0 items-center justify-center', meta.iconClassName)}>
-          <Icon className="size-4" />
+          <Icon className="size-5" />
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 text-sm leading-5 font-medium">{item.message}</p>
+          <p className="line-clamp-3 text-sm leading-5 font-medium">{item.message}</p>
         </div>
 
         <button
           type="button"
           onClick={() => onClose?.(item.id)}
-          className="text-app-text-muted hover:text-app-text inline-flex size-7 shrink-0 items-center justify-center rounded-md transition"
+          className="text-app-text-muted hover:text-app-text inline-flex size-8 shrink-0 items-center justify-center rounded-md transition"
           aria-label="Close toast"
         >
-          <X className="size-4" />
+          <X className="size-5" />
         </button>
       </div>
     </div>
@@ -100,7 +100,7 @@ export function ToastStack({ toasts, onClose, className }: ToastStackProps) {
   return createPortal(
     <div
       className={cn(
-        'pointer-events-none fixed top-4 right-4 z-9999 flex w-[min(90vw,400px)] flex-col gap-2.5',
+        'pointer-events-none fixed top-10 left-1/2 z-9999 flex w-[min(calc(100vw-32px),640px)] -translate-x-1/2 flex-col gap-3',
         className,
       )}
       aria-live="polite"

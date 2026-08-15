@@ -1,8 +1,9 @@
-import { formatBytesPerSecond, formatOptionalNumber } from '@/lib/utils'
+import { formatBitsPerSecond, formatBytesPerSecond, formatOptionalNumber } from '@/lib/utils'
 import type { HardwareDisk } from '@/types'
 
 export const formatOptional = formatOptionalNumber
 export const formatSpeed = formatBytesPerSecond
+export const formatNetworkSpeed = formatBitsPerSecond
 
 export function isHealthyDisk(disk: HardwareDisk) {
   return ['passed', 'healthy'].includes(disk.health?.toLowerCase() ?? '')

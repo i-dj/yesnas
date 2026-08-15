@@ -92,12 +92,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         readOnly={readOnly}
         onChange={handleChange}
         className={cn(
-          'text-app-text placeholder:text-app-text-muted/70 h-8 w-full px-3 text-sm outline-none',
+          'text-app-text placeholder:text-app-text-muted/70 h-9 w-full px-3 text-sm outline-none',
           'transition-[border-color,box-shadow,background-color] disabled:cursor-not-allowed disabled:opacity-50',
           variant === 'filled' &&
-            'bg-app-active/50 hover:bg-app-active/65 focus:bg-app-active/70 rounded-lg border border-transparent',
+            'bg-app-active/50 hover:bg-app-active/65 focus:bg-app-active/70   focus:border-app-border-strong rounded-lg border border-transparent',
           variant === 'outline' &&
-            'bg-app-bg border-app-border-strong/40 hover:border-app-border-strong focus:border-app-border-strong rounded-lg border',
+            '  border-app-border-strong/40 hover:border-app-border-strong focus:border-app-border-strong rounded-lg border',
           variant === 'search' &&
             'bg-app-active/50 hover:bg-app-active/65 focus:bg-app-active/70 appearance-none rounded-full border-none pr-4 pl-10 [&::-webkit-search-cancel-button]:hidden',
           showClear && 'pr-9',

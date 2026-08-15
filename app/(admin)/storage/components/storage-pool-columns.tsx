@@ -169,8 +169,8 @@ export const getStoragePoolColumns = (
       render: (_, record) => (
         <div className="space-y-1 text-[13px]">
           <div className="text-app-text-muted flex items-center gap-3">
-            <span >Read Speed</span>
-            <span className="text-app-text ">
+            <span>Read Speed</span>
+            <span className="text-app-text">
               {record.readSpeedBytesPerSec
                 ? `${bytesFormat(record.readSpeedBytesPerSec, {
                     standard: 'm',
@@ -180,7 +180,7 @@ export const getStoragePoolColumns = (
             </span>
           </div>
           <div className="text-app-text-muted flex items-center gap-3">
-            <span >Write Speed</span>
+            <span>Write Speed</span>
             <span className="text-app-text">
               {record.writeSpeedBytesPerSec
                 ? `${bytesFormat(record.writeSpeedBytesPerSec, {
@@ -199,7 +199,7 @@ export const getStoragePoolColumns = (
       label: 'devices',
       render: (value, record) => (
         <div className="flex flex-col gap-1 text-center">
-          <span className="uppercase">{record.kind === 'local' ? (record.devices?.length ?? 0) : '-'}</span>
+          <span className="uppercase font-semibold">{record.kind === 'local' ? (record.devices?.length ?? 0) : '-'}</span>
           <span className="text-app-text-muted text-[13px]">Disks</span>
         </div>
       ),

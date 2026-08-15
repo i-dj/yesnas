@@ -75,18 +75,18 @@ export function SideDrawer({ open, onOpenChange, title, children, onAfterOpen, c
       )}
       aria-hidden={!open}
     >
-      <div className="absolute inset-0 bg-black/45" onClick={() => onOpenChange(false)} />
+      <div className="absolute inset-0 bg-black/50" onClick={() => onOpenChange(false)} />
 
       <aside
         className={cn(
-          'bg-app-bg border-app-border absolute top-0 right-0 flex h-full w-full max-w-xl flex-col overflow-x-hidden overflow-y-auto [overscroll-behavior:contain] border-l shadow-2xl transition-transform duration-200',
+          'bg-app-bg border-app-border absolute top-0 right-0 flex h-full w-full max-w-xl flex-col overflow-x-hidden overflow-y-auto overscroll-contain border-l shadow-2xl transition-transform duration-200',
           open ? 'translate-x-0' : 'translate-x-full',
         )}
         role="dialog"
         aria-modal="true"
         aria-label={title}
       >
-        <div className="bg-app-bg border-app-border sticky top-0 z-10 flex h-12.5 shrink-0 items-center justify-between border-b px-4 text-center">
+        <div className="bg-app-bg border-app-border sticky top-0 z-10 flex h-12.5 shrink-0 items-center justify-between   px-4 text-center">
           <h2 className="app-page-title text-app-text">{title}</h2>
           <button
             type="button"

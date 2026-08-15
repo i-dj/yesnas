@@ -9,6 +9,7 @@ interface PillProps {
   selected?: boolean
   className?: string
   contentClassName?: string
+  countClassName?: string
   disabled?: boolean
   type?: ButtonHTMLAttributes<HTMLButtonElement>['type']
   title?: string
@@ -45,6 +46,7 @@ export function Pill({
   selected,
   className,
   contentClassName,
+  countClassName,
   disabled,
   type = 'button',
   title,
@@ -64,7 +66,12 @@ export function Pill({
         )
       ) : null}
       {count !== undefined && count !== null ? (
-        <span className="bg-app-hover text-app-text-muted grid size-5 place-items-center rounded-full px-1.5 text-[10px] leading-5">
+        <span
+          className={cn(
+            'bg-app-hover text-app-text-muted grid size-5 place-items-center rounded-full px-1.5 text-[10px] leading-5',
+            countClassName,
+          )}
+        >
           {count}
         </span>
       ) : null}

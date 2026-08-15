@@ -30,10 +30,8 @@ export const Checkbox = ({
     return (
       <label
         className={cn(
-          'app-body-text border-app-border bg-app-surface hover:border-app-text-muted/40 flex cursor-pointer items-center gap-2.5 rounded-lg border px-2.5 py-2 transition',
-          checked
-            ? 'text-app-text border-app-text-muted/40 bg-app-hover/60'
-            : 'text-app-text-muted hover:bg-app-hover/60',
+          'app-body-text border-app-border flex  cursor-pointer items-center gap-2.5 rounded-lg border px-2.5 py-2 transition',
+          checked ? 'text-app-text bg-card-bg-strong border-app-border-strong' : 'text-app-text-muted hover:border-app-border-strong hover:bg-app-hover',
           disabled && 'cursor-not-allowed opacity-50',
           className,
         )}

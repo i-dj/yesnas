@@ -19,7 +19,7 @@ const getUploadIconMeta = (name: string) => {
 }
 
 const formatStableBytes = (bytes: number) => {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const units = ['B', 'K', 'M', 'G', 'T']
   let value = Math.max(0, bytes)
   let unitIndex = 0
 

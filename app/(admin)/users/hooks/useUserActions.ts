@@ -74,7 +74,7 @@ export function useUserActions({ modal, onSuccess, onClose, t, router }: Params)
         message.includes(LAST_ADMIN_DELETE_ERROR)
           ? t('messages.lastAdminDeleteBlocked')
           : `${t('messages.deleteFailed')}: ${message}`,
-        20000,
+        50000,
       )
     } finally {
       setLoading(null)

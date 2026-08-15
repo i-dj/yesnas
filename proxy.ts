@@ -19,6 +19,7 @@ export const config = {
     '/hardware/:path*',
     '/jobs/:path*',
     '/logs/:path*',
+    '/player/:path*',
     '/storage/:path*',
     '/users/:path*',
   ],

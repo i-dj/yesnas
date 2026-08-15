@@ -1,8 +1,5 @@
-import {
-  NetworkInterfaceSnapshot,
-  SystemState,
-} from '@/types/models/dashboard'
-import { formatBytesPerSecond } from '@/lib/utils'
+import { NetworkInterfaceSnapshot, SystemState } from '@/types/models/dashboard'
+import { formatBitsPerSecond, formatBytesPerSecond } from '@/lib/utils'
 
 export const statusLabelMap: Record<SystemState, string> = {
   healthy: '运行正常',
@@ -42,6 +39,7 @@ export function formatChartTime(timestamp?: string) {
 }
 
 export const formatSpeed = formatBytesPerSecond
+export const formatNetworkSpeed = formatBitsPerSecond
 
 export function formatCheckedAt(checkedAt: string) {
   const time = checkedAt.match(/T(\d{2}:\d{2}:\d{2})/)

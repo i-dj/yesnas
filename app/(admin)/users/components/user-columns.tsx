@@ -1,4 +1,4 @@
-import { Button, Pill, RelativeTime, StatusPill, type DataTableHeader } from '@/components/ui'
+import { Button, RelativeTime, StatusPill, Tooltip, type DataTableHeader } from '@/components/ui'
 import type { EnableStatus, User } from '@/types'
 import { Edit3, ShieldCheck, UserRound } from 'lucide-react'
 import type { useTranslations } from 'next-intl'
@@ -31,7 +31,7 @@ export function getUserColumns({
     {
       key: 'username',
       label: t('columns.user'),
-      width: '180px',
+      width: '28%',
       sortable: true,
 
       render: (_, record) => (
@@ -49,7 +49,7 @@ export function getUserColumns({
     {
       key: 'status',
       label: t('columns.status'),
-      width: '80px',
+      width: '12%',
       sortable: true,
 
       render: (_, record) => (
@@ -59,7 +59,7 @@ export function getUserColumns({
     {
       key: 'isAdmin',
       label: t('columns.role'),
-      width: '140px',
+      width: '14%',
       sortable: true,
 
       render: (_, record) => (
@@ -73,31 +73,14 @@ export function getUserColumns({
     {
       key: 'groups',
       label: t('columns.groups'),
-      render: (_, record) => {
-        const groups = record.groups ?? []
-        return groups.length ? (
-          <div className="flex flex-wrap gap-1.5">
-            {groups.slice(0, 3).map((group) => (
-              <Pill key={group.id} variant="plain" className="h-auto px-2 py-1 text-xs">
-                {group.name}
-              </Pill>
-            ))}
-            {groups.length > 3 ? (
-              <Pill variant="plain" className="h-auto px-2 py-1 text-xs">
-                +{groups.length - 3}
-              </Pill>
-            ) : null}
-          </div>
-        ) : (
-          <span className="text-app-text-muted text-xs">{t('groups.none')}</span>
-        )
-      },
+      width: '22%',
+      render: (_, record) => <UserGroupsCell groups={record.groups ?? []} emptyLabel={t('groups.none')} />,
     },
     {
       key: 'updatedAt',
       sortable: true,
       label: t('columns.updatedAt'),
-      width: '180px',
+      width: '16%',
       render: (_, record) => (
         <RelativeTime
           value={record.updatedAt}
@@ -111,7 +94,7 @@ export function getUserColumns({
     {
       key: '__actions__',
       label: '',
-      width: '88px',
+      width: '8%',
       align: 'right',
       render: (_, record) => (
         <div className="flex items-center justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100">
@@ -139,4 +122,34 @@ export function getUserColumns({
       ),
     },
   ]
+}
+
+function UserGroupsCell({ groups, emptyLabel }: { groups: NonNullable<User['groups']>; emptyLabel: string }) {
+  if (!groups.length) {
+    return <span className="text-app-text-muted/70 inline-flex h-7 items-center text-xs">{emptyLabel}</span>
+  }
+
+  const visibleGroups = groups.slice(0, 2)
+  const hiddenCount = groups.length - visibleGroups.length
+  const tooltip = groups.map((group) => group.name).join(' / ')
+
+  return (
+    <Tooltip content={tooltip} side="top" disabled={groups.length <= 2}>
+      <div className="flex max-w-full min-w-0 items-center gap-1.5 overflow-hidden">
+        {visibleGroups.map((group) => (
+          <span
+            key={group.id}
+            className="border-app-border    bg-card-bg  text-app-text-muted inline-flex   max-w-28 min-w-0 shrink items-center rounded-full border  px-2 py-1 text-xs"
+          >
+            <span className="truncate">{group.name}</span>
+          </span>
+        ))}
+        {hiddenCount > 0 ? (
+          <span className="border-app-border    bg-card-bg  text-app-text-muted inline-flex  shrink-0 items-center rounded-full border  px-2 py-1  text-xs tabular-nums">
+            +{hiddenCount}
+          </span>
+        ) : null}
+      </div>
+    </Tooltip>
+  )
 }

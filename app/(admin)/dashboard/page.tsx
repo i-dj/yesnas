@@ -24,7 +24,7 @@ import { cn, formatBytes, formatOptionalNumber, formatPercent, formatUptime } fr
 import { healthLabelMap } from '@/lib/health'
 import { CompactResourceCard, FileSharingOverview, NetworkChart } from './components'
 import type { NetworkRange } from './types'
-import { formatCheckedAt, formatInterfaceOption, formatSpeed, statusLabelMap } from './utils'
+import { formatCheckedAt, formatInterfaceOption, formatNetworkSpeed, formatSpeed, statusLabelMap } from './utils'
 import { NetworkInterfacesSnapshot, SystemStatusSnapshot } from '@/types/models/dashboard'
 
 const networkRanges: Array<{ label: string; value: NetworkRange }> = [
@@ -201,13 +201,13 @@ export default function DashboardPage() {
                 <NetworkTrafficStat
                   icon={Download}
                   label="接收"
-                  value={formatSpeed(networkTrafficTotal.rxBytesPerSec)}
+                  value={formatNetworkSpeed(networkTrafficTotal.rxBytesPerSec)}
                   className="text-sky-400"
                 />
                 <NetworkTrafficStat
                   icon={Upload}
                   label="发送"
-                  value={formatSpeed(networkTrafficTotal.txBytesPerSec)}
+                  value={formatNetworkSpeed(networkTrafficTotal.txBytesPerSec)}
                   className="text-violet-400"
                 />
               </div>
@@ -223,7 +223,7 @@ export default function DashboardPage() {
                     className={cn(
                       'px-2.5 transition',
                       networkRange === range.value
-                        ? 'bg-app-hover text-sm'
+                        ? 'bg-app-border text-app-text text-sm'
                         : 'text-app-text-muted hover:text-app-text hover:bg-app-hover/60 text-sm',
                     )}
                   >

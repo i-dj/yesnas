@@ -19,6 +19,12 @@ export interface ApiOptions {
 export interface YesNasRequestInit extends RequestInit {
   yesnasSilentNetworkLoading?: boolean
 }
+
+export type SettledRequestsResult<T extends Record<string, unknown>> = {
+  data: T
+  error?: string
+}
+
 function unwrapList<T>(json: unknown): T[] {
   if (Array.isArray(json)) return json
   if (!json || typeof json !== 'object') return []
@@ -109,4 +115,50 @@ export async function request<T>(url: string, options: ApiOptions = {}): Promise
   }
 
   return json as T
+}
+
+export async function settleRequests<T extends Record<string, Promise<unknown>>>(
+  requests: T,
+  fallback: {
+    [K in keyof T]: Awaited<T[K]>
+  },
+): Promise<
+  SettledRequestsResult<{
+    [K in keyof T]: Awaited<T[K]>
+  }>
+> {
+  const entries = Object.entries(requests) as [keyof T, T[keyof T]][]
+  const results = await Promise.allSettled(entries.map(([, promise]) => promise))
+  const data = {} as { [K in keyof T]: Awaited<T[K]> }
+  const errors: string[] = []
+
+  results.forEach((result, index) => {
+    const key = entries[index][0]
+    if (result.status === 'fulfilled') {
+      data[key] = result.value as Awaited<T[typeof key]>
+      return
+    }
+
+    data[key] = fallback[key] as Awaited<T[typeof key]>
+    errors.push(result.reason instanceof Error ? result.reason.message : '请求失败')
+  })
+
+  return {
+    data,
+    error: errors.length ? errors.join('；') : undefined,
+  }
+}
+
+export async function settleListRequests<T extends Record<string, Promise<unknown[]>>>(
+  requests: T,
+): Promise<
+  SettledRequestsResult<{
+    [K in keyof T]: Awaited<T[K]>
+  }>
+> {
+  const fallback = Object.fromEntries(Object.keys(requests).map((key) => [key, []])) as {
+    [K in keyof T]: Awaited<T[K]>
+  }
+
+  return settleRequests(requests, fallback)
 }

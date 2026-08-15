@@ -8,6 +8,7 @@ import { formatPercent } from '@/lib/utils'
 import type { HardwareCpu } from '@/types'
 import { formatOptional } from '../utils'
 import { DetailList, HardwareSection, UsageDonut, type DetailItem } from './hardware-section'
+import { Card } from '@/components/ui'
 
 export function CpuDetailCard({ cpus }: { cpus: HardwareCpu[] }) {
   const t = useTranslations('Hardware')
@@ -26,7 +27,7 @@ export function CpuDetailCard({ cpus }: { cpus: HardwareCpu[] }) {
       icon={Cpu}
       title={t('sections.cpu')}
       summary={
-        <div className="border-app-border/70 flex max-w-full gap-0.5 overflow-x-auto rounded-md border p-0.5">
+        <Card className="  flex max-w-full gap-0.5 overflow-x-auto rounded-md border p-0.5">
           {cpus.map((_, index) => (
             <button
               key={index}
@@ -39,7 +40,7 @@ export function CpuDetailCard({ cpus }: { cpus: HardwareCpu[] }) {
               {t('overview.processor', { index: index + 1 })}
             </button>
           ))}
-        </div>
+        </Card>
       }
     >
       <div className="grid min-w-0 gap-3 sm:grid-cols-[4rem_minmax(0,1fr)] sm:items-start">

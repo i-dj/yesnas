@@ -21,8 +21,8 @@ const headerInnerVariants = cva('flex min-h-9 items-center gap-1 bg-clip-padding
 const rowVariants = cva('group file-selectable relative cursor-default transition-colors outline-none', {
   variants: {
     selected: {
-      true: 'bg-app-active/50 hover:bg-app-hover/60',
-      false: 'hover:bg-app-hover/50',
+      true: 'bg-app-active hover:bg-app-hover',
+      false: 'hover:bg-app-hover',
     },
   },
 })
@@ -75,6 +75,7 @@ interface DataTableProps<T extends { id: number | string }> {
   rowWrapper?: (row: T, children: React.ReactElement) => React.ReactNode
   selectedIds?: Set<number | string>
   tdClassName?: string
+  headerClassName?: string
   className?: string
   variant?: 'default' | 'primary' | 'plain'
   showHeader?: boolean
@@ -91,6 +92,7 @@ export const DataTable = <T extends { id: number | string }>({
   getRowClassName,
   rowWrapper,
   tdClassName,
+  headerClassName,
   variant = 'default',
   selectedIds = new Set(),
   showHeader = true,
@@ -118,7 +120,7 @@ export const DataTable = <T extends { id: number | string }>({
                   style={{ width: h.width }}
                   className={cn(
                     'sticky top-0 z-30 p-0 text-left font-normal transition-all',
-                    showHeader && variant !== 'default' && 'border-app-border/70 border-b',
+                    showHeader && variant !== 'default' && 'border-app-border  border-b',
                     !showHeader && 'pointer-events-none h-0 border-none opacity-0',
                   )}
                 >
@@ -127,12 +129,14 @@ export const DataTable = <T extends { id: number | string }>({
                       className={cn(
                         headerInnerVariants({ variant }),
                         h.sortable && 'hover:bg-app-hover transition-colors',
-                        isFirst && isRounded && 'rounded-l-lg',
-                        isLast && isRounded && 'rounded-r-lg',
+                        // isFirst && isRounded && 'rounded-l-lg',
+                        // isLast && isRounded && 'rounded-r-lg',
                         h.align === 'right' && 'justify-end',
-                        variant !== 'plain' && 'bg-app-hover/50',
+                        h.align === 'center' && 'justify-center',
+                        variant !== 'plain' && 'bg-app-hover',
                         variant === 'plain' && 'text-app-text-muted',
                         'app-body-text',
+                        headerClassName,
                       )}
                       onClick={() => h.sortable && onSortAction?.(h.key as keyof T)}
                     >
@@ -213,7 +217,14 @@ export const DataTable = <T extends { id: number | string }>({
                           isStart && 'opacity-0',
                         )}
                       />
-                      <div className={cn('relative z-10 select-text', h.key !== '__selection__' && 'truncate')}>
+                      <div
+                        className={cn(
+                          'relative z-10 select-text',
+                          h.key !== '__selection__' && 'truncate',
+                          h.align === 'center' && 'flex justify-center',
+                          h.align === 'right' && 'flex justify-end',
+                        )}
+                      >
                         {h.render ? h.render(getCellValue(row, h.key), row) : renderCellValue(getCellValue(row, h.key))}
                       </div>
                     </td>

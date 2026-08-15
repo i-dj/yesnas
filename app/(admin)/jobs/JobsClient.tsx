@@ -1,7 +1,7 @@
 'use client'
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
-import { DataTable, EmptyState, Pagination, SearchInput, StatusPill, ToggleButton } from '@/components/ui'
+import { Card, DataTable, EmptyState, Pagination, SearchInput, StatusPill, ToggleButton } from '@/components/ui'
 import { jobApi } from '@/lib/api/job.api'
 import { cn, formatDateTime } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
@@ -122,9 +122,8 @@ export function JobsClient({ initialJobsResult, initialScheduledJobs, timeZone, 
             {scheduledJobs.map((job) => {
               const Icon = getJobIcon(job.type)
               return (
-                <article
+                <Card
                   key={job.id}
-                  className="border-app-border/60 bg-app-surface/50 group relative min-w-0 overflow-hidden rounded-xl border p-4 transition-colors"
                 >
                   <div className="flex items-start gap-3">
                     <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-sky-500/10 text-sky-400">
@@ -155,7 +154,7 @@ export function JobsClient({ initialJobsResult, initialScheduledJobs, timeZone, 
                       </div>
                     </div>
                   </div>
-                </article>
+                </Card>
               )
             })}
           </div>

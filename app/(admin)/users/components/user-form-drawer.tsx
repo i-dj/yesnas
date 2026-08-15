@@ -1,12 +1,23 @@
 'use client'
 
-import { AvatarEditorModal, Button, Checkbox, Input, RadioGroup, SideDrawer } from '@/components/ui'
+import {
+  AvatarEditorModal,
+  Button,
+  Card,
+  Checkbox,
+  FloatingLabelInput,
+  FormSection,
+  FormSectionPanel,
+  FormSectionTitle,
+  RadioGroup,
+  SideDrawer,
+} from '@/components/ui'
 import { Field } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
 import { toast } from '@/store/use-toast-store'
 import type { Group, User } from '@/types'
-import { ImagePlus, UserRound } from 'lucide-react'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Plus, UserRound } from 'lucide-react'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { createEmptyUserForm, type UserFormState } from '../types'
@@ -59,7 +70,7 @@ export function UserFormDrawer({ open, editingUser, groups, submitting, onOpenCh
     else setAvatarEditorImage(null)
   }, [open, editingUser])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     const nextErrors: typeof errors = {}
 
@@ -75,7 +86,7 @@ export function UserFormDrawer({ open, editingUser, groups, submitting, onOpenCh
     void onSubmit(form)
   }
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     e.target.value = ''
 
@@ -103,47 +114,44 @@ export function UserFormDrawer({ open, editingUser, groups, submitting, onOpenCh
         className="p-0 text-sm"
       >
         <form className="flex min-h-full flex-col" noValidate onSubmit={handleSubmit}>
-          <div className="flex-1 px-5">
+          <div className="flex-1 px-5 py-5">
             <FormSection>
-              <div className="space-y-4">
-                <Field label={t('form.username')}>
-                  <Input
-                    value={form.username}
-                    disabled={Boolean(editingUser)}
-                    required
-                    errorMessage={errors.username}
-                    onChange={(e) => update('username', e.target.value)}
-                  />
-                </Field>
+              <FormSectionTitle>基本信息</FormSectionTitle>
+              <FormSectionPanel className="grid gap-4">
+                <FloatingLabelInput
+                  label={t('form.username')}
+                  value={form.username}
+                  disabled={Boolean(editingUser)}
+                  required
+                  errorMessage={errors.username}
+                  onChange={(e) => update('username', e.target.value)}
+                />
 
-                <Field label={t('form.displayName')}>
-                  <Input
-                    value={form.displayName}
-                    required
-                    errorMessage={errors.displayName}
-                    onChange={(e) => update('displayName', e.target.value)}
-                  />
-                </Field>
-              </div>
+                <FloatingLabelInput
+                  label={t('form.displayName')}
+                  value={form.displayName}
+                  required
+                  errorMessage={errors.displayName}
+                  onChange={(e) => update('displayName', e.target.value)}
+                />
 
-              <Field label={t('form.avatar')}>
-                <div className="flex items-center gap-4 py-1">
-                  <div className="bg-app-hover/70 border-app-border/50 grid size-16 shrink-0 place-items-center overflow-hidden rounded-full border">
+                <Card className="flex items-center gap-4 pt-0 pb-2">
+                  <div className="bg-app-hover border-app-border grid size-12 shrink-0 place-items-center overflow-hidden rounded-full border">
                     {form.avatar ? (
                       <img src={form.avatar} alt="" className="size-full object-cover" />
                     ) : (
-                      <UserRound className="text-app-text-muted size-6" />
+                      <UserRound className="text-app-text-muted size-4" />
                     )}
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap gap-2">
+                  <div className="mt-3 min-w-0 flex-1">
+                    <div className="flex flex-wrap gap-3">
                       {USER_AVATAR_PRESETS.map((preset) => (
                         <button
                           key={preset}
                           type="button"
                           className={cn(
-                            'border-app-border/60 size-9 overflow-hidden rounded-full border p-0.5 transition-all',
+                            'border-app-border size-9 overflow-hidden rounded-full border p-0.5 transition-all',
                             'hover:border-app-border-strong hover:scale-105',
                             form.avatar === preset && 'border-sky-400/70 ring-2 ring-sky-400/25',
                           )}
@@ -157,7 +165,7 @@ export function UserFormDrawer({ open, editingUser, groups, submitting, onOpenCh
                       <button
                         type="button"
                         className={cn(
-                          'border-app-border/60 text-app-text-muted hover:text-app-text hover:border-app-border-strong',
+                          'border-app-border text-app-text-muted hover:text-app-text hover:border-app-border-strong',
                           'grid size-9 place-items-center overflow-hidden rounded-full border transition-all hover:scale-105',
                           isCustomAvatar && 'border-sky-400/70 ring-2 ring-sky-400/25',
                         )}
@@ -167,78 +175,89 @@ export function UserFormDrawer({ open, editingUser, groups, submitting, onOpenCh
                         {isCustomAvatar ? (
                           <img src={form.avatar} alt="" className="size-full object-cover" />
                         ) : (
-                          <ImagePlus className="size-4" />
+                          <Plus className="size-4" />
                         )}
                       </button>
                     </div>
                     <p className="text-app-text-muted mt-2 text-xs">{t('form.avatarHint')}</p>
                   </div>
-                </div>
-              </Field>
+                </Card>
+              </FormSectionPanel>
+            </FormSection>
 
-              <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={handleUpload} />
+            <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={handleUpload} />
+
+            <FormSection className="mt-10">
+              <FormSectionTitle>所属组</FormSectionTitle>
 
               <Field label={t('form.groups')}>
                 {groups.length ? (
-                  <div className="grid grid-cols-3 gap-2">
+                  <FormSectionPanel className="grid w-full flex-1 grid-cols-4 gap-2">
                     {groups.map((group) => (
                       <Checkbox
                         key={group.id}
                         variant="card"
                         label={group.name}
                         checked={form.groupIds.includes(group.id)}
-                        className="min-w-0 px-2 py-2"
+                        className="w-full min-w-0 px-2 py-2"
                         onChange={(checked) => toggleGroup(group.id, checked)}
                       />
                     ))}
-                  </div>
+                  </FormSectionPanel>
                 ) : (
-                  <p className="text-app-text-muted text-xs">{t('form.noGroups')}</p>
+                  <FormSectionPanel>
+                    <p className="text-app-text-muted text-xs">{t('form.noGroups')}</p>
+                  </FormSectionPanel>
                 )}
               </Field>
             </FormSection>
 
-            <FormSection>
-              <Field label={t('form.status')}>
-                <RadioGroup
-                  name="user-status"
-                  value={form.status}
-                  options={[
-                    { value: 'enabled', label: t('statuses.enabled') },
-                    { value: 'disabled', label: t('statuses.disabled') },
-                  ]}
-                  onValueChange={(value) => update('status', value)}
-                  ariaLabel={t('form.status')}
-                />
-              </Field>
+            <FormSection className="mt-10">
+              <FormSectionTitle>{t('form.sections.access')}</FormSectionTitle>
+              <FormSectionPanel className="grid gap-5 sm:grid-cols-2">
+                <Field label={t('form.status')}>
+                  <RadioGroup
+                    name="user-status"
+                    value={form.status}
+                    options={[
+                      { value: 'enabled', label: t('statuses.enabled') },
+                      { value: 'disabled', label: t('statuses.disabled') },
+                    ]}
+                    onValueChange={(value) => update('status', value)}
+                    ariaLabel={t('form.status')}
+                  />
+                </Field>
 
-              <Field label={t('form.role')}>
-                <RadioGroup
-                  name="user-role"
-                  value={form.isAdmin ? 'admin' : 'user'}
-                  options={[
-                    { value: 'user', label: t('roles.user') },
-                    { value: 'admin', label: t('roles.admin') },
-                  ]}
-                  onValueChange={(value) => update('isAdmin', value === 'admin')}
-                  ariaLabel={t('form.role')}
-                />
-              </Field>
+                <Field label={t('form.role')}>
+                  <RadioGroup
+                    name="user-role"
+                    value={form.isAdmin ? 'admin' : 'user'}
+                    options={[
+                      { value: 'user', label: t('roles.user') },
+                      { value: 'admin', label: t('roles.admin') },
+                    ]}
+                    onValueChange={(value) => update('isAdmin', value === 'admin')}
+                    ariaLabel={t('form.role')}
+                  />
+                </Field>
+              </FormSectionPanel>
             </FormSection>
 
-            <FormSection>
-              <Field label={editingUser ? t('form.newPassword') : t('form.password')}>
-                <Input
+            <FormSection className="mt-10">
+              <FormSectionTitle>{t('form.sections.security')}</FormSectionTitle>
+              <FormSectionPanel className="space-y-3">
+                <FloatingLabelInput
+                  label={editingUser ? t('form.newPassword') : t('form.password')}
                   type="password"
                   value={form.password}
                   required={!editingUser}
                   errorMessage={errors.password}
                   onChange={(e) => update('password', e.target.value)}
                 />
-              </Field>
-              <p className="text-app-text-muted text-xs">
-                {editingUser ? t('form.passwordEditHint') : t('form.passwordCreateHint')}
-              </p>
+                <p className="text-app-text-muted text-xs">
+                  {editingUser ? t('form.passwordEditHint') : t('form.passwordCreateHint')}
+                </p>
+              </FormSectionPanel>
             </FormSection>
           </div>
 
@@ -273,13 +292,5 @@ export function UserFormDrawer({ open, editingUser, groups, submitting, onOpenCh
         }}
       />
     </>
-  )
-}
-
-function FormSection({ children }: { children: ReactNode }) {
-  return (
-    <section className="border-app-border -mx-1 border-b px-1 py-5 last:border-b-0">
-      <div className="space-y-4">{children}</div>
-    </section>
   )
 }

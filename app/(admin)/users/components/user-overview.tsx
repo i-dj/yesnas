@@ -2,6 +2,7 @@ import { ShieldCheck, UserCheck, UsersRound, UserX, type LucideIcon } from 'luci
 import { useTranslations } from 'next-intl'
 
 import type { User } from '@/types'
+import { Card } from '@/components/ui'
 
 const toneClasses = {
   sky: 'bg-sky-500/10 text-sky-400',
@@ -37,7 +38,7 @@ export function UserOverview({ users }: { users: User[] }) {
   return (
     <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
       {items.map((item) => (
-        <div key={item.label} className="bg-app-surface flex min-w-0 items-center gap-3 rounded-lg px-3 py-2.5">
+        <Card key={item.label} className="  flex min-w-0 items-center gap-3    ">
           <span className={`grid size-9 shrink-0 place-items-center rounded-md ${toneClasses[item.tone]}`}>
             <item.icon className="size-4" />
           </span>
@@ -45,7 +46,7 @@ export function UserOverview({ users }: { users: User[] }) {
             <p className="text-app-text text-lg leading-none font-semibold">{item.value}</p>
             <p className="app-body-text text-app-text-muted mt-1 truncate">{item.label}</p>
           </div>
-        </div>
+        </Card>
       ))}
     </section>
   )

@@ -10,7 +10,7 @@ interface DiskCardGridProps {
 
 export function DiskCardGrid({ disks, onDiskClick }: DiskCardGridProps) {
   return (
-    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-2.5">
       {disks.map((disk) => {
         const usage = getDiskUsageBadge(disk)
 
@@ -19,7 +19,7 @@ export function DiskCardGrid({ disks, onDiskClick }: DiskCardGridProps) {
             key={disk.path}
             type="button"
             className={cn(
-              'border-app-border bg-app-hover/20 hover:border-app-border-strong hover:bg-app-hover/30',
+              'border-app-border   hover:border-app-border-strong  hover:bg-app-hover',
               'group min-h-28 min-w-0 overflow-hidden rounded-xl border px-4 py-4 text-left transition-colors',
             )}
             onClick={() => onDiskClick(disk)}

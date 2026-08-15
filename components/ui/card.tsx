@@ -11,7 +11,7 @@ export const Card = ({ children, className = '', title }: CardProps) => {
   return (
     <div
       className={cn(
-        'border-app-border bg-app-hover/20 rounded-lg p-3 transition-colors duration-200 ease-out',
+        'border-app-border bg-card-bg border rounded-lg p-3 transition-colors duration-200 ease-out',
         className,
       )}
     >

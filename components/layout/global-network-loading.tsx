@@ -6,6 +6,7 @@ import { useNetworkLoadingStore } from '@/store/use-network-loading-store'
 
 const FETCH_PATCH_KEY = '__yesnas_fetch_patched__'
 const DRAWER_OPEN_COUNT_KEY = '__yesnas_side_drawer_open_count__'
+const LOADING_DELAY_MS = 400
 
 export function GlobalNetworkLoading() {
   const pendingCount = useNetworkLoadingStore((state) => state.pendingCount)
@@ -31,11 +32,17 @@ export function GlobalNetworkLoading() {
         return originalFetch(...args)
       }
 
-      begin()
+      let started = false
+      const timer = window.setTimeout(() => {
+        started = true
+        begin()
+      }, LOADING_DELAY_MS)
+
       try {
         return await originalFetch(...args)
       } finally {
-        end()
+        window.clearTimeout(timer)
+        if (started) end()
       }
     }
   }, [begin, end])

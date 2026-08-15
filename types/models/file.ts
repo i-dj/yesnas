@@ -32,24 +32,6 @@ export interface GetFilesOptions {
   type?: FileQueryType
 }
 
-export interface TrashFileResponse {
-  id: string
-  storageId: string
-  name: string
-  type: FileNode['type']
-  parentId?: string
-  originalPath?: string
-  recyclePath?: string
-  deletedAt: string
-  expiresAt?: string
-  size?: number
-  extension?: string
-  isHidden?: boolean
-  mimeType?: string
-  mediaType?: string
-  tagColors?: FileNode['tagColors']
-}
-
 export interface StorageDrive {
   id: string
   name: string // 驱动器自定义名称 (例如: "我的谷歌云端硬盘")

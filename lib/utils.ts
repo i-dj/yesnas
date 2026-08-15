@@ -131,7 +131,7 @@ export const bytesFormat = (
   const { standard = 's', decimalPlaces = 2 } = options
   const base = standard === 's' ? 1024 : 1000
 
-  const symbols = standard === 's' ? ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'] : ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+  const symbols = ['B', 'K', 'M', 'G', 'T', 'P']
 
   if (bytes > 0 && bytes < 1) {
     return `${parseFloat(bytes.toFixed(decimalPlaces))} B`
@@ -146,7 +146,7 @@ export const bytesFormat = (
   const val = bytes / Math.pow(base, unitIndex)
 
   // Trim trailing zeroes automatically.
-  // Example: 10.00 MB -> 10 MB, 10.50 MB -> 10.5 MB
+  // Example: 10.00 M -> 10 M, 10.50 M -> 10.5 M
   const formattedValue = parseFloat(val.toFixed(decimalPlaces))
 
   return `${formattedValue} ${symbols[unitIndex]}`
@@ -155,7 +155,7 @@ export const bytesFormat = (
 export function formatBytes(bytes: number): string {
   if (!Number.isFinite(bytes)) return '-'
 
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const units = ['B', 'K', 'M', 'G', 'T']
   let value = bytes
   let unitIndex = 0
 
@@ -171,6 +171,21 @@ export function formatBytes(bytes: number): string {
 export function formatBytesPerSecond(bytesPerSecond?: number | null): string {
   const value = typeof bytesPerSecond === 'number' && Number.isFinite(bytesPerSecond) ? bytesPerSecond : 0
   return `${formatBytes(value)}/s`
+}
+
+export function formatBitsPerSecond(bytesPerSecond?: number | null): string {
+  const value = typeof bytesPerSecond === 'number' && Number.isFinite(bytesPerSecond) ? bytesPerSecond * 8 : 0
+  const units = ['bps', 'Kbps', 'Mbps', 'Gbps', 'Tbps']
+  let nextValue = value
+  let unitIndex = 0
+
+  while (nextValue >= 1000 && unitIndex < units.length - 1) {
+    nextValue /= 1000
+    unitIndex += 1
+  }
+
+  const digits = nextValue >= 100 || unitIndex === 0 ? 0 : nextValue >= 10 ? 1 : 2
+  return `${nextValue.toFixed(digits)} ${units[unitIndex]}`
 }
 
 export function formatStatValue(value: string | number, loading: boolean, placeholder = '-'): string {

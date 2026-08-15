@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { MiniDonut } from './mini-donut'
+import { Card, MiniDonut } from '@/components/ui'
 
 export function CompactResourceCard({
   icon: Icon,
@@ -17,7 +17,7 @@ export function CompactResourceCard({
   details: string[][]
 }) {
   return (
-    <div className="border-app-border bg-app-hover/30 rounded-lg p-3">
+    <Card>
       <div className="mb-2 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-app-text flex flex-row items-center justify-center gap-2 truncate text-sm font-semibold">
@@ -41,6 +41,6 @@ export function CompactResourceCard({
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   )
 }

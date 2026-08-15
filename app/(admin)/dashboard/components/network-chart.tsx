@@ -4,7 +4,7 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 
 import { formatBytes } from '@/lib/utils'
 import type { NetworkRange } from '../types'
-import { formatChartTime, formatInterfaceName, formatSpeed } from '../utils'
+import { formatChartTime, formatInterfaceName, formatNetworkSpeed } from '../utils'
 import { NetworkInterfaceSnapshot } from '@/types/models/dashboard'
 
 export function NetworkChart({ interfaces, range }: { interfaces: NetworkInterfaceSnapshot[]; range: NetworkRange }) {
@@ -32,7 +32,7 @@ export function NetworkChart({ interfaces, range }: { interfaces: NetworkInterfa
               />
               <YAxis
                 width={86}
-                tick={<NetworkYAxisTick formatter={isRealtime ? formatSpeed : formatBytes} />}
+                tick={<NetworkYAxisTick formatter={isRealtime ? formatNetworkSpeed : formatBytes} />}
                 tickLine={false}
                 axisLine={false}
                 domain={[0, 'auto']}
@@ -135,7 +135,7 @@ function NetworkChartTooltip({
           <div key={item.name} className="flex items-center justify-between gap-5">
             <span className="text-app-text-muted">{isRealtime ? `${item.name}速度` : `${item.name}流量`}</span>
             <span className="font-semibold" style={{ color: item.color }}>
-              {isRealtime ? formatSpeed(item.value ?? 0) : formatBytes(item.value ?? 0)}
+              {isRealtime ? formatNetworkSpeed(item.value ?? 0) : formatBytes(item.value ?? 0)}
             </span>
           </div>
         ))}

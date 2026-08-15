@@ -14,7 +14,7 @@ interface ToastState {
   clear: () => void
 }
 
-const defaultDurationMs = 3200
+const defaultDurationMs = 5000
 
 export const useToastStore = create<ToastState>((set, get) => ({
   toasts: [],

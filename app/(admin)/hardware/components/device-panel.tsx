@@ -12,7 +12,7 @@ export function DeviceGrid<T>({
   renderItem: (item: T) => ReactNode
 }) {
   return (
-    <div className="grid gap-2 lg:grid-cols-4">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-2">
       {items.map((item) => (
         <div key={getKey(item)} className="min-w-0">
           {renderItem(item)}

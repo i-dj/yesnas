@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 
 import { StatusPill, Tooltip } from '@/components/ui'
 import type { HardwareNetworkInterface } from '@/types'
-import { formatSpeed } from '../utils'
+import { formatNetworkSpeed } from '../utils'
 import { DetailContent, DetailValue, DevicePanel } from './device-panel'
 import { SummaryMetrics } from './hardware-section'
 
@@ -46,11 +46,11 @@ export function NetworkPanel({ networkInterface }: { networkInterface: HardwareN
         <DetailContent label={t('fields.receiveSendSpeed')}>
           <span className="inline-flex items-center gap-1 whitespace-nowrap">
             <ArrowDownToLine className="size-3 text-sky-400" />
-            {formatSpeed(networkInterface.speed?.rxBytesPerSec)}
+            {formatNetworkSpeed(networkInterface.speed?.rxBytesPerSec)}
           </span>
           <span className="inline-flex items-center gap-1 whitespace-nowrap">
             <ArrowUpFromLine className="size-3 text-violet-400" />
-            {formatSpeed(networkInterface.speed?.txBytesPerSec)}
+            {formatNetworkSpeed(networkInterface.speed?.txBytesPerSec)}
           </span>
         </DetailContent>
       </div>
@@ -68,8 +68,8 @@ export function NetworkSummary({ networkInterfaces }: { networkInterfaces: Hardw
     <SummaryMetrics
       items={[
         { label: t('overview.onlineInterfaces'), value: `${onlineCount}/${networkInterfaces.length}` },
-        { label: t('fields.receiveSpeed'), value: formatSpeed(totalRx) },
-        { label: t('fields.sendSpeed'), value: formatSpeed(totalTx) },
+        { label: t('fields.receiveSpeed'), value: formatNetworkSpeed(totalRx) },
+        { label: t('fields.sendSpeed'), value: formatNetworkSpeed(totalTx) },
       ]}
     />
   )

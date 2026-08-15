@@ -1,17 +1,18 @@
 'use client'
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
-import { Button, ConfirmModal, DataTable, EmptyState, Input, Pill, SearchInput } from '@/components/ui'
+import { Button, ConfirmModal, DataTable, EmptyState, Pagination, SearchInput } from '@/components/ui'
 import { groupApi } from '@/lib/api/user.api'
 import { toast } from '@/store/use-toast-store'
 import { type Group, type User } from '@/types'
-import { Check, Edit3, Plus, Trash2, UserRound, UsersRound, X } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 
 import { UserFormDrawer } from './components/user-form-drawer'
 import { getUserColumns } from './components/user-columns'
+import { UserGroupTabs } from './components/user-group-tabs'
 import { UserOverview } from './components/user-overview'
 
 import { useUserModal } from './hooks/useUserModal'
@@ -37,13 +38,15 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
   const [renameGroupName, setRenameGroupName] = useState('')
   const [deletingGroup, setDeletingGroup] = useState<Group | null>(null)
   const [groupLoading, setGroupLoading] = useState<'create' | 'update' | 'delete' | null>(null)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   const scopedUsers = useMemo(() => {
     if (!selectedGroupId) return users
     return users.filter((user) => user.groups?.some((group) => group.id === selectedGroupId))
   }, [selectedGroupId, users])
   const table = useUserTable(scopedUsers)
-  const selectedGroup = selectedGroupId ? groups.find((group) => group.id === selectedGroupId) || null : null
+  const groupTab = selectedGroupId ?? 'all'
 
   const actions = useUserActions({
     modal: modal.state,
@@ -67,6 +70,21 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
   )
 
   const handleDelete = async () => await actions.remove()
+  const cancelCreateGroup = () => {
+    setCreatingGroup(false)
+    setNewGroupName('')
+  }
+
+  const cancelRenameGroup = () => {
+    setRenamingGroupId(null)
+    setRenameGroupName('')
+  }
+
+  const startRenameGroup = (group: Group) => {
+    setRenamingGroupId(group.id)
+    setRenameGroupName(group.name)
+  }
+
   const handleCreateGroup = async () => {
     const name = newGroupName.trim()
     if (!name || groupLoading) return
@@ -75,8 +93,7 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
     try {
       await groupApi.create({ name, description: '' })
       toast.success(t('groups.created'))
-      setCreatingGroup(false)
-      setNewGroupName('')
+      cancelCreateGroup()
       router.refresh()
     } catch (error) {
       toast.error(`${t('groups.saveFailed')}: ${error instanceof Error ? error.message : String(error)}`, 20000)
@@ -91,10 +108,7 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
       await groupApi.remove(deletingGroup.id)
       toast.success(t('groups.deleted'))
       if (selectedGroupId === deletingGroup.id) setSelectedGroupId(null)
-      if (renamingGroupId === deletingGroup.id) {
-        setRenamingGroupId(null)
-        setRenameGroupName('')
-      }
+      if (renamingGroupId === deletingGroup.id) cancelRenameGroup()
       setDeletingGroup(null)
       router.refresh()
     } catch (error) {
@@ -105,7 +119,7 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
   }
 
   const handleGroupUpdate = async () => {
-    const group = selectedGroup
+    const group = selectedGroupId ? groups.find((item) => item.id === selectedGroupId) : null
     const name = renameGroupName.trim()
     if (!group || !name || groupLoading) return
 
@@ -113,8 +127,7 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
     try {
       await groupApi.update(group.id, { name, description: group.description || '' })
       toast.success(t('groups.updated'))
-      setRenamingGroupId(null)
-      setRenameGroupName('')
+      cancelRenameGroup()
       router.refresh()
     } catch (error) {
       toast.error(`${t('groups.saveFailed')}: ${error instanceof Error ? error.message : String(error)}`, 20000)
@@ -123,7 +136,30 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
     }
   }
 
-  const selectedGroupTitle = selectedGroup?.name || '全部用户'
+  const totalPages = Math.max(1, Math.ceil(table.list.length / pageSize))
+  const pagedUsers = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return table.list.slice(start, start + pageSize)
+  }, [page, pageSize, table.list])
+
+  useEffect(() => {
+    setPage((current) => Math.min(Math.max(1, current), totalPages))
+  }, [totalPages])
+
+  useEffect(() => {
+    setPage(1)
+  }, [selectedGroupId, table.keyword, pageSize])
+
+  const handleGroupTabChange = (value: string) => {
+    if (value === '__create__') {
+      setCreatingGroup(true)
+      return
+    }
+    setSelectedGroupId(value === 'all' ? null : value)
+    setRenamingGroupId(null)
+    setRenameGroupName('')
+  }
+
   return (
     <PageWrapper>
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -140,190 +176,68 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
       <UserOverview users={users} />
 
       <section className="mt-5 min-h-[calc(100vh-17rem)]">
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <Pill
-            onClick={() => {
-              setSelectedGroupId(null)
-              setRenamingGroupId(null)
-              setRenameGroupName('')
-            }}
-            icon={UserRound}
-            selected={!selectedGroupId}
-            count={users.length}
-          >
-            全部用户
-          </Pill>
+        <div className="mb-4 flex flex-col gap-4">
+          <UserGroupTabs
+            groups={groups}
+            totalUsers={users.length}
+            value={groupTab}
+            creating={creatingGroup}
+            newGroupName={newGroupName}
+            renamingGroupId={renamingGroupId}
+            renameGroupName={renameGroupName}
+            loading={groupLoading}
+            saveLabel={t('actions.save')}
+            cancelLabel={t('actions.cancel')}
+            onChange={handleGroupTabChange}
+            onCreateNameChange={setNewGroupName}
+            onCreate={handleCreateGroup}
+            onCancelCreate={cancelCreateGroup}
+            onRenameNameChange={setRenameGroupName}
+            onStartRename={startRenameGroup}
+            onSaveRename={handleGroupUpdate}
+            onCancelRename={cancelRenameGroup}
+            onDelete={setDeletingGroup}
+          />
 
-          {groups.map((group) => {
-            const selected = selectedGroupId === group.id
-            return (
-              <Pill
-                key={group.id}
-                onClick={() => {
-                  setSelectedGroupId(group.id)
-                  setRenamingGroupId(null)
-                  setRenameGroupName('')
-                }}
-                selected={selected}
-                count={group.userCount}
-                contentClassName="max-w-32"
-              >
-                {group.name}
-              </Pill>
-            )
-          })}
-
-          {creatingGroup ? (
-            <Pill rawContent variant="plain" className="gap-1 px-2">
-              <Input
-                value={newGroupName}
-                autoFocus
-                placeholder="新增用户组"
-                clearable={false}
-                wrapperClassName="w-32"
-                className="h-6 rounded-full border-transparent bg-transparent px-1 text-sm hover:bg-transparent focus:border-transparent focus:bg-transparent"
-                onChange={(event) => setNewGroupName(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    void handleCreateGroup()
-                  }
-                  if (event.key === 'Escape') {
-                    setCreatingGroup(false)
-                    setNewGroupName('')
-                  }
-                }}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                icon={Check}
-                loading={groupLoading === 'create'}
-                disabled={!newGroupName.trim() || groupLoading === 'create'}
-                onClick={handleCreateGroup}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                icon={X}
-                onClick={() => {
-                  setCreatingGroup(false)
-                  setNewGroupName('')
-                }}
-              />
-            </Pill>
-          ) : (
-            <Pill icon={Plus} onClick={() => setCreatingGroup(true)}>
-              新增
-            </Pill>
-          )}
-        </div>
-
-        <div className="min-w-0">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-5">
-            <div>
-              <div className="flex min-w-0 items-center gap-1.5">
-                {selectedGroup && renamingGroupId === selectedGroup.id ? (
-                  <Pill rawContent variant="plain" className="gap-1 px-2">
-                    <UsersRound className="text-app-text-muted size-3.5 shrink-0" />
-                    <Input
-                      value={renameGroupName}
-                      autoFocus
-                      clearable={false}
-                      wrapperClassName="w-56"
-                      className="h-6 rounded-full border-transparent bg-transparent px-1 text-sm font-normal hover:bg-transparent focus:border-transparent focus:bg-transparent"
-                      onChange={(event) => setRenameGroupName(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault()
-                          void handleGroupUpdate()
-                        }
-                        if (event.key === 'Escape') {
-                          setRenamingGroupId(null)
-                          setRenameGroupName('')
-                        }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="xs"
-                      icon={Check}
-                      loading={groupLoading === 'update'}
-                      disabled={!renameGroupName.trim() || groupLoading === 'update'}
-                      tip={t('actions.save')}
-                      onClick={handleGroupUpdate}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="xs"
-                      icon={X}
-                      tip={t('actions.cancel')}
-                      onClick={() => {
-                        setRenamingGroupId(null)
-                        setRenameGroupName('')
-                      }}
-                    />
-                  </Pill>
-                ) : (
-                  <div className="text-app-text flex min-w-0 items-center gap-2 truncate text-base font-semibold">
-                    {selectedGroup ? (
-                      <UsersRound className="text-app-text-muted size-4 shrink-0" />
-                    ) : (
-                      <UserRound className="text-app-text-muted size-4 shrink-0" />
-                    )}
-                    <span className="truncate">{selectedGroupTitle}</span>
-                  </div>
-                )}
-
-                {selectedGroup && renamingGroupId !== selectedGroup.id ? (
-                  <div className="flex">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      icon={Edit3}
-                      tip="修改组名称"
-                      onClick={() => {
-                        setRenamingGroupId(selectedGroup.id)
-                        setRenameGroupName(selectedGroup.name)
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      icon={Trash2}
-                      isDelete
-                      className="text-red-400 hover:text-red-400"
-                      tip="解散组"
-                      onClick={() => setDeletingGroup(selectedGroup)}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            </div>
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
             <SearchInput
-              wrapperClassName="w-64 max-w-full"
+              wrapperClassName="w-full sm:w-80 border border-app-border/60 hover:border-app-border focus:border-app-border"
+              className="h-9 rounded-lg border bg-transparent shadow-none hover:bg-transparent focus:bg-transparent"
               value={table.keyword}
               placeholder={t('searchPlaceholder')}
               onChange={(event) => table.setKeyword(event.target.value)}
             />
           </div>
+        </div>
 
+        <div className="min-w-0">
           {table.list.length ? (
-            <DataTable
-              headers={columns}
-              data={table.list}
-              sortConfig={table.sort}
-              onSortAction={table.handleSort}
-              variant="plain"
-              showHeader={false}
-              className="[&_.app-body-text]:text-xs"
-            />
+            <section className="min-h-0">
+              <DataTable
+                headers={columns}
+                data={pagedUsers}
+                sortConfig={table.sort}
+                onSortAction={table.handleSort}
+                variant="plain"
+                headerClassName="text-app-text text-sm"
+                tdClassName="rounded-none py-2.5"
+                getRowClassName={() => '[&>td]:rounded-none'}
+              />
+              <div className="border-app-border  flex items-center justify-end border-t pt-3">
+                <Pagination
+                  id="users-page-size"
+                  page={page}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  pageSizeOptions={[10, 20, 50]}
+                  onPageChange={setPage}
+                  onPageSizeChange={(nextPageSize) => {
+                    setPageSize(nextPageSize)
+                    setPage(1)
+                  }}
+                />
+              </div>
+            </section>
           ) : (
             <EmptyState message={table.keyword ? t('emptySearch') : t('empty')} />
           )}

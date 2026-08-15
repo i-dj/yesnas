@@ -1,6 +1,6 @@
 'use client'
 
-import { AvatarEditorModal, Button, Input, Pill, SideDrawer } from '@/components/ui'
+import { AvatarEditorModal, Button, FormSection, FormSectionPanel, FormSectionTitle, Input, Pill, SideDrawer } from '@/components/ui'
 import { Field } from '@/components/ui/form'
 import { authApi } from '@/lib/api/auth.api'
 import { cn } from '@/lib/utils'
@@ -83,7 +83,12 @@ export function ProfileDrawer({ open, user, onOpenChange, onSaved }: ProfileDraw
     <>
       <SideDrawer open={open} onOpenChange={onOpenChange} title={t('profile.editProfile')} className="p-0">
         <form className="flex min-h-full flex-col" onSubmit={handleSubmit}>
-          <div className="flex-1 space-y-5 px-5 py-5">
+
+
+                  <div className="flex-1 space-y-5 px-5 py-5">
+                    <FormSection className="mt-5">
+                          <FormSectionTitle>基本资料</FormSectionTitle>
+                          <FormSectionPanel className="grid gap-4">
             <div className="flex items-center gap-3">
               <div className="bg-app-hover/70 border-app-border grid size-16 place-items-center overflow-hidden rounded-full border">
                 {avatar ? (
@@ -149,7 +154,7 @@ export function ProfileDrawer({ open, user, onOpenChange, onSaved }: ProfileDraw
               ) : (
                 <p className="text-app-text-muted text-xs">{t('profile.noGroups')}</p>
               )}
-            </Field>
+                              </Field>   </FormSectionPanel></FormSection>
           </div>
 
           <div className="bg-app-bg/95 border-app-border sticky bottom-0 flex justify-end gap-2 border-t px-4 py-3">
