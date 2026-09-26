@@ -40,17 +40,18 @@ export function SnapshotPolicyControl({
 
   return (
     <section className="w-full">
-          <div className="flex items-center justify-between gap-4">
-            <div className='flex justify-between items-baseline  flex-row w-full'>
-                  <span>自动创建快照</span>
-                  	<span className='text-xs'>                {weekdays.length > 0 ? '将在所选日期每天晚上 12:00 自动创建快照' : '请选择自动创建快照的日期'}
-</span>
-            </div>
-
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex w-full flex-row items-baseline justify-between">
+          <span>自动创建快照</span>
+          <span className="text-xs">
+            {' '}
+            {weekdays.length > 0 ? '将在所选日期每天晚上 12:00 自动创建快照' : '请选择自动创建快照的日期'}
+          </span>
+        </div>
       </div>
 
-      <div className={cn(' border-app-border mt-2 p-2 w-full rounded-lg border ', !directSelection && 'ml-6')}>
-        <div className="  grid w-full grid-cols-7 gap-px overflow-hidden rounded-md">
+      <div className={cn('border-app-border mt-2 w-full rounded-lg border p-2', !directSelection && 'ml-6')}>
+        <div className="grid w-full grid-cols-7 gap-px overflow-hidden rounded-lg">
           {weekdayOptions.map((option) => {
             const selected = weekdays.includes(option.value)
             return (
@@ -61,19 +62,20 @@ export function SnapshotPolicyControl({
                 label={option.label}
                 checked={selected}
                 onChange={() => toggleWeekday(option.value)}
-                className="  hover:bg-app-hover h-9 min-w-0 rounded-none border-0 px-2 py-0"
+                className="hover:bg-app-hover h-9 min-w-0 rounded-none border-0 px-2 py-0"
                 contentClassName="text-sm font-medium"
                 markClassName="size-4"
               />
             )
           })}
-        </div>   {onSave && (
-        <div className="mt-3 flex items-center justify-between gap-3">
+        </div>{' '}
+        {onSave && (
+          <div className="mt-3 flex items-center justify-between gap-3">
             <Button type="button" size="sm" loading={saving} disabled={disabled || saving || !dirty} onClick={onSave}>
               保存
             </Button>
-
-        </div> )}
+          </div>
+        )}
       </div>
     </section>
   )

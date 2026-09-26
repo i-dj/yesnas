@@ -1,4 +1,4 @@
-import { Tooltip } from '@/components/ui'
+import { Card, Tooltip } from '@/components/ui'
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -12,7 +12,7 @@ export function DeviceGrid<T>({
   renderItem: (item: T) => ReactNode
 }) {
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-2">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(24rem,100%),1fr))] gap-6">
       {items.map((item) => (
         <div key={getKey(item)} className="min-w-0">
           {renderItem(item)}
@@ -25,18 +25,16 @@ export function DeviceGrid<T>({
 export function DevicePanel({
   icon: Icon,
   title,
-  subtitle,
   status,
   children,
 }: {
   icon: LucideIcon
   title: string
-  subtitle: string
   status?: ReactNode
   children: ReactNode
 }) {
   return (
-    <article className="border-app-border bg-app-bg min-w-0 rounded-md p-3">
+    <Card className="@container h-full min-w-0 p-4 sm:p-5">
       <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <span className="grid shrink-0 place-items-center">
@@ -49,7 +47,7 @@ export function DevicePanel({
         {status ? <div className="shrink-0">{status}</div> : null}
       </div>
       {children}
-    </article>
+    </Card>
   )
 }
 
@@ -71,8 +69,8 @@ export function DetailContent({
   children: ReactNode
 }) {
   return (
-    <div className="grid min-w-0 grid-cols-[4.5rem_minmax(0,1fr)] items-baseline gap-2">
-      <p className="app-body-text text-app-text-muted flex items-center gap-1">
+    <div className="grid min-w-0 gap-1.5 @min-[26rem]:grid-cols-[9rem_minmax(0,1fr)] @min-[26rem]:items-baseline @min-[26rem]:gap-4">
+      <p className="text-app-text-muted flex items-center gap-1 text-sm leading-6 break-normal">
         {labelIcon}
         {label}
       </p>

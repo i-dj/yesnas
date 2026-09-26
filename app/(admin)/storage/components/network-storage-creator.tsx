@@ -439,7 +439,7 @@ export function NetworkStorageCreator({ onCancel, onConnected }: NetworkStorageC
   return (
     <div className="flex min-h-full flex-col">
       <div className="flex-1 space-y-6 p-5">
-        <div className="border-app-border bg-app-hover/25 flex items-start gap-3 rounded-xl border p-4">
+        <div className="border-app-border bg-app-hover/25 flex items-start gap-3 rounded-lg border p-4">
           <div className="bg-app-hover text-app-text flex size-10 shrink-0 items-center justify-center rounded-lg">
             <Cloud className="size-5" />
           </div>

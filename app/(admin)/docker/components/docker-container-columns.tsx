@@ -35,7 +35,7 @@ export const getDockerContainerColumns = (
               {webEntry ? (
                 <button
                   type="button"
-                  className="bg-theme/10 text-theme hover:bg-theme/15 inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium transition-colors"
+                  className="bg-theme/10 text-theme hover:bg-theme/15 inline-flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-medium transition-colors"
                   onClick={(event) => {
                     event.stopPropagation()
                     window.open(`${webEntry.scheme}://${window.location.hostname}:${webEntry.hostPort}`, '_blank')

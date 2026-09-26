@@ -214,7 +214,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="border-app-border bg-app-bg inline-flex h-7 w-fit overflow-hidden rounded-md border text-xs">
+              <div className="border-app-border bg-app-bg inline-flex h-7 w-fit overflow-hidden rounded-lg border text-xs">
                 {networkRanges.map((range) => (
                   <button
                     key={range.value}
@@ -318,8 +318,8 @@ function NetworkTrafficStat({
   className: string
 }) {
   return (
-    <div className="flex min-w-36 items-center gap-2 rounded-md px-2 py-1">
-      <span className="border-app-border grid size-8.5 shrink-0 place-items-center rounded-md border">
+    <div className="flex min-w-36 items-center gap-2 rounded-lg px-2 py-1">
+      <span className="border-app-border grid size-8.5 shrink-0 place-items-center rounded-lg border">
         <Icon className={cn('size-4 opacity-50', className)} />
       </span>
       <span className="min-w-0">

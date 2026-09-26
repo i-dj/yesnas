@@ -38,8 +38,8 @@ export function UserOverview({ users }: { users: User[] }) {
   return (
     <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
       {items.map((item) => (
-        <Card key={item.label} className="  flex min-w-0 items-center gap-3    ">
-          <span className={`grid size-9 shrink-0 place-items-center rounded-md ${toneClasses[item.tone]}`}>
+        <Card key={item.label} className="flex min-w-0 items-center gap-3">
+          <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${toneClasses[item.tone]}`}>
             <item.icon className="size-4" />
           </span>
           <div className="min-w-0">

@@ -92,7 +92,7 @@ export function DockerImagePullDrawer({ open, onOpenChange, onCompleted }: Docke
         <div className="border-app-border space-y-4 border-b p-4">
           <div className="bg-app-surface/50 rounded-lg p-3">
             <div className="flex items-start gap-3">
-              <span className="bg-app-bg border-app-border grid size-10 shrink-0 place-items-center rounded-md border text-blue-400">
+              <span className="bg-app-bg border-app-border grid size-10 shrink-0 place-items-center rounded-lg border text-blue-400">
                 <Download size={18} />
               </span>
               <div className="min-w-0 flex-1">

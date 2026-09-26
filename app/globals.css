@@ -98,7 +98,7 @@
     --app-aside-bg: #0F1112;
     --app-surface: rgb(48 52 61 / 0.45);
     --app-item-bg: #30343d;
-    --card-bg: #161718;
+    --card-bg: #0F1112;
     --card-bg-strong: #1E1E22;
     --card-border: #2e2e2e;
 
@@ -109,7 +109,7 @@
     --app-text-muted: #9E9E9E;
     --app-text-sub: #525252;
 
-    --app-border: #272727;
+    --app-border: #242424;
     --app-border-strong: #4a4a4a;
 
     --app-hover: #1A1B1C;

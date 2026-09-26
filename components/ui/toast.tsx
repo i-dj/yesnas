@@ -62,7 +62,7 @@ export function ToastCard({ item, onClose }: ToastCardProps) {
   return (
     <div
       className={cn(
-        'bg-card-bg border-card-border text-app-text animate-in fade-in slide-in-from-top-2 relative overflow-hidden rounded-lg border-2 px-5 py-3 shadow-[0_18px_48px_rgba(0,0,0,0.32)] duration-150',
+        'bg-card-bg border-card-border text-app-text animate-in fade-in slide-in-from-top-2 relative overflow-hidden rounded-lg border-2 px-5 py-3 duration-150',
         meta.panelClassName,
       )}
     >
@@ -78,7 +78,7 @@ export function ToastCard({ item, onClose }: ToastCardProps) {
         <button
           type="button"
           onClick={() => onClose?.(item.id)}
-          className="text-app-text-muted hover:text-app-text inline-flex size-8 shrink-0 items-center justify-center rounded-md transition"
+          className="text-app-text-muted hover:text-app-text inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition"
           aria-label="Close toast"
         >
           <X className="size-5" />

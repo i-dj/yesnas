@@ -69,7 +69,7 @@ export function UserGroupTabs({
               autoFocus
               clearable={false}
               wrapperClassName="w-40"
-              className="h-7 rounded-md border-transparent bg-transparent px-1 text-sm font-normal hover:bg-transparent focus:border-transparent focus:bg-transparent"
+              className="h-7 rounded-lg border-transparent bg-transparent px-1 text-sm font-normal hover:bg-transparent focus:border-transparent focus:bg-transparent"
               onMouseDown={(event) => event.stopPropagation()}
               onClick={(event) => event.stopPropagation()}
               onChange={(event) => onRenameNameChange(event.target.value)}
@@ -118,7 +118,7 @@ export function UserGroupTabs({
               }}
               items={[
                 { label: '修改组名称', action: 'rename', icon: Edit3 },
-                { label: '删除组', action: 'delete', icon: Trash2, isDelete: true  },
+                { label: '删除组', action: 'delete', icon: Trash2, isDelete: true },
               ]}
               trigger={<Button variant="ghost" size="xs" icon={MoreHorizontal} tip="组操作" />}
             />
@@ -153,7 +153,7 @@ export function UserGroupTabs({
             placeholder="新增用户组"
             clearable={false}
             wrapperClassName="w-36"
-            className="h-7 rounded-md border-transparent bg-transparent px-1 text-sm hover:bg-transparent focus:border-transparent focus:bg-transparent"
+            className="h-7 rounded-lg border-transparent bg-transparent px-1 text-sm hover:bg-transparent focus:border-transparent focus:bg-transparent"
             onChange={(event) => onCreateNameChange(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === 'Enter') {

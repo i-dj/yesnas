@@ -15,7 +15,7 @@ export function DockerImageIcon({ icon, className }: DockerImageIconProps) {
   const isURL = Boolean(icon && /^https?:\/\//.test(icon))
 
   return (
-    <span className={cn('grid size-10 shrink-0 place-items-center rounded-md bg-blue-500/10 text-blue-400', className)}>
+    <span className={cn('grid size-10 shrink-0 place-items-center rounded-lg bg-blue-500/10 text-blue-400', className)}>
       {isURL && !failed ? (
         <img src={icon} alt="" className="size-5 object-contain opacity-95" onError={() => setFailed(true)} />
       ) : (

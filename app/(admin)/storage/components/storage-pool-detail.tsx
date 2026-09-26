@@ -3,14 +3,7 @@
 import { Button, EmptyState, Input, RelativeTime, SideDrawer, StatusPill } from '@/components/ui'
 import { bytesFormat } from '@/lib/utils'
 import type { StoragePoolModel } from '@/types/models/storage'
-import {
-  AlertTriangle,
-  ArrowDown,
-  ArrowUp,
-  Cloud,
-  HardDrive,
-  ShieldAlert,
-} from 'lucide-react'
+import { AlertTriangle, ArrowDown, ArrowUp, Cloud, HardDrive, ShieldAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { StorageDetailList, StorageDetailSection } from './storage-detail-section'
 import { StorageSummaryHeader } from './summary/storage-summary-header'
@@ -225,7 +218,7 @@ export function StoragePoolDetail({
                     const memberStatus = getPoolMemberStatus(device)
                     return (
                       <div key={device.id || device.devicePath} className="space-y-1">
-                        <div className="bg-app-hover/25 flex items-center justify-between gap-2 rounded-md px-2 py-1.5">
+                        <div className="bg-app-hover/25 flex items-center justify-between gap-2 rounded-lg px-2 py-1.5">
                           <div className="min-w-0">
                             <div className="text-app-text mb-1 truncate text-sm">{device.model}</div>
                             <div className="text-app-text-muted truncate text-[13px]">SN: {device.serial}</div>
@@ -250,7 +243,7 @@ export function StoragePoolDetail({
                           </div>
                         </div>
                         {replaceTargetPath === (device.devicePath || device.path) && (
-                          <div className="bg-app-bg mt-1 rounded-md p-2">
+                          <div className="bg-app-bg mt-1 rounded-lg p-2">
                             <div className="space-y-2">
                               <div className="text-app-text-muted text-xs">Select replacement disk</div>
                               {replaceCandidates.length === 0 ? (
@@ -264,8 +257,8 @@ export function StoragePoolDetail({
                                       onClick={() => setReplaceNewPath(candidate.path)}
                                       className={
                                         replaceNewPath === candidate.path
-                                          ? 'border-app-border-strong bg-app-hover rounded-md border px-2 py-1 text-left'
-                                          : 'border-app-border bg-app-surface rounded-md border px-2 py-1 text-left'
+                                          ? 'border-app-border-strong bg-app-hover rounded-lg border px-2 py-1 text-left'
+                                          : 'border-app-border bg-app-surface rounded-lg border px-2 py-1 text-left'
                                       }
                                     >
                                       <div className="text-app-text text-xs">{candidate.path}</div>

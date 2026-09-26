@@ -353,7 +353,7 @@ export function FileSharingClient({
               <span className="text-app-text-muted text-xs">{t('form.noUsers')}</span>
             )}
             {nfsSelected ? (
-              <span className="rounded-md bg-amber-500/10 px-2.5 py-2 text-xs text-amber-400">
+              <span className="rounded-lg bg-amber-500/10 px-2.5 py-2 text-xs text-amber-400">
                 {t('form.nfsUserWarning')}
               </span>
             ) : null}
@@ -470,7 +470,7 @@ function ProtocolCard({ protocol, onToggle }: { protocol: ProtocolItem; onToggle
       <p className="text-app-text-muted mt-2 line-clamp-2 text-sm">{t(`protocols.${protocol.key}.connectionHint`)}</p>
 
       <div className="mt-auto flex h-10 pt-2.5">
-        <div className="bg-app-hover/45 flex w-full min-w-0 items-center justify-between gap-2 rounded-md px-2.5 py-2">
+        <div className="bg-app-hover/45 flex w-full min-w-0 items-center justify-between gap-2 rounded-lg px-2.5 py-2">
           <a
             href={href}
             target="_blank"
@@ -487,7 +487,7 @@ function ProtocolCard({ protocol, onToggle }: { protocol: ProtocolItem; onToggle
               variant="ghost"
               size="xs"
               icon={Copy}
-              className="h-5 w-5 rounded p-0"
+              className="h-5 w-5 rounded-lg p-0"
               onClick={handleCopy}
             />
           </Tooltip>

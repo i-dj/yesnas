@@ -75,7 +75,7 @@ export function Select({
             className={cn(
               'h-8 bg-transparent text-sm',
               'bg-app-bg border-app-border text-app-text focus-visible:border-app-border-strong',
-              'app-body-text flex h-9 w-full min-w-0 items-center justify-between gap-3 rounded-md border px-2.5 outline-none',
+              'app-body-text flex h-9 w-full min-w-0 items-center justify-between gap-3 rounded-lg border px-2.5 outline-none',
               'hover:bg-app-hover/45 transition-colors disabled:cursor-not-allowed disabled:opacity-50',
               className,
             )}
@@ -95,7 +95,7 @@ export function Select({
             collisionPadding={12}
             className={cn(
               'bg-app-bg border-app-border z-50 max-h-72 min-w-(--radix-dropdown-menu-trigger-width)',
-              'overflow-y-auto rounded-md border p-1 shadow-xl outline-none',
+              'overflow-y-auto rounded-lg border p-1 shadow-xl outline-none',
             )}
           >
             <DropdownMenu.RadioGroup value={selectedValue} onValueChange={handleValueChange}>
@@ -105,7 +105,7 @@ export function Select({
                   value={option.value}
                   disabled={option.disabled}
                   className={cn(
-                    'text-app-text-muted relative flex min-h-8 cursor-pointer items-center rounded-sm py-1.5 pr-8 pl-2.5',
+                    'text-app-text-muted relative flex min-h-8 cursor-pointer items-center rounded-lg py-1.5 pr-8 pl-2.5',
                     'text-[13px] transition-colors outline-none select-none',
                     'data-highlighted:bg-app-hover data-highlighted:text-app-text',
                     'data-[state=checked]:text-app-text data-[state=checked]:font-normal',

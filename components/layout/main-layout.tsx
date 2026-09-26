@@ -38,7 +38,9 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     pathname === '/file' ||
     pathname.startsWith('/file/') ||
     pathname === '/docker' ||
-    pathname.startsWith('/docker/')
+    pathname.startsWith('/docker/') ||
+    pathname === '/users' ||
+    pathname.startsWith('/users/')
   const router = useRouter()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [uploadDrawer, setUploadDrawer] = useState<boolean>(false)
@@ -151,7 +153,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             type="button"
             aria-label={sidebarCollapsed ? tLayout('aria.expandSidebar') : tLayout('aria.collapseSidebar')}
             onClick={() => setSidebarCollapsed((current) => !current)}
-            className="text-app-text-muted hover:bg-app-hover hover:text-app-text flex h-7 w-7 items-center justify-center rounded-md transition-colors duration-200 ease-out"
+            className="text-app-text-muted hover:bg-app-hover hover:text-app-text flex h-7 w-7 items-center justify-center rounded-lg transition-colors duration-200 ease-out"
           >
             <ChevronLeft
               size={18}
@@ -236,7 +238,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                   >
                     <UserMenuAvatar user={auth.user} />
                     {auth.loading ? (
-                      <span className="bg-app-active hidden h-4 w-20 animate-pulse rounded sm:block" />
+                      <span className="bg-app-active hidden h-4 w-20 animate-pulse rounded-lg sm:block" />
                     ) : (
                       <span className="hidden max-w-36 truncate text-sm sm:block">
                         {auth.user?.displayName || auth.user?.username || '-'}

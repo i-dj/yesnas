@@ -7,12 +7,22 @@ interface FormSectionProps {
   className?: string
 }
 
+interface FormContentProps extends FormSectionProps {
+  size?: 'md' | 'lg'
+}
+
 interface FormSectionTitleProps extends FormSectionProps {
   icon?: LucideIcon
 }
 
 export function FormSection({ children, className }: FormSectionProps) {
   return <section className={cn('space-y-2.5', className)}>{children}</section>
+}
+
+export function FormContent({ children, className, size = 'md' }: FormContentProps) {
+  return (
+    <div className={cn('mx-auto w-full', size === 'md' ? 'max-w-[760px]' : 'max-w-[880px]', className)}>{children}</div>
+  )
 }
 
 export function FormSectionTitle({ children, className, icon: Icon }: FormSectionTitleProps) {

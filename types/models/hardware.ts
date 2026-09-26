@@ -65,6 +65,14 @@ export interface HardwareDisk {
   serial?: string
   vendor?: string
   transport?: string
+  fsType?: string
+  label?: string
+  uuid?: string
+  mountpoints?: string[]
+  removable?: boolean
+  hotplug?: boolean
+  readOnly?: boolean
+  hasChildren?: boolean
   usage?: string
   inUse?: boolean
   sizeBytes: number
@@ -72,10 +80,42 @@ export interface HardwareDisk {
   health?: string | null
   smartAvailable?: boolean
   smartPassed?: boolean
+  healthPercent?: number
   powerOnHours?: number
+  powerOnCount?: number
   powerCycleCount?: number
+  unsafeShutdownCount?: number
+  rotationRateRpm?: number
+  readBytesTotal?: number
+  writeBytesTotal?: number
+  readOpsTotal?: number
+  writeOpsTotal?: number
   readBytesPerSec: number
   writeBytesPerSec: number
+  readOpsPerSec?: number
+  writeOpsPerSec?: number
+  partitions?: HardwareDiskPartition[]
+  sampledAt?: string
+  warnings?: string[]
+}
+
+export interface HardwareDiskPartition {
+  path: string
+  name: string
+  kernelName?: string
+  parentPath?: string
+  size?: string
+  sizeBytes: number
+  fsType?: string
+  label?: string
+  uuid?: string
+  mountpoints?: string[]
+  readOnly?: boolean
+  hasChildren?: boolean
+  usage?: string
+  inUse?: boolean
+  isSystemPartition?: boolean
+  isRaidPartition?: boolean
 }
 
 export interface HardwareGpu {

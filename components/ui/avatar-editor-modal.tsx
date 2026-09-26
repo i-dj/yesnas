@@ -57,7 +57,7 @@ export function AvatarEditorModal({ image, labels, onCancel, onConfirm }: Avatar
 
   return createPortal(
     <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm">
-      <div className="bg-app-bg border-app-border w-full max-w-lg overflow-hidden rounded-2xl border shadow-2xl">
+      <div className="bg-app-bg border-app-border w-full max-w-lg overflow-hidden rounded-lg border shadow-2xl">
         <div className="flex min-h-80 items-center justify-center p-6" onWheel={handleWheel}>
           <AvatarEditor
             ref={editorRef}

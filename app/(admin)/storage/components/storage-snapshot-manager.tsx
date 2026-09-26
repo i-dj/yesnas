@@ -160,7 +160,8 @@ export function StorageSnapshotManager({
             <div className="min-w-0">
               <div className="text-app-text text-2xl font-semibold">{activePool.name}</div>
               <div className="text-app-text-muted mt-1 text-sm">
-                {activePool.snapshotCount ?? snapshots.length} snapshots · {activePool.raidLevel} · {activePool.filesystem}
+                {activePool.snapshotCount ?? snapshots.length} snapshots · {activePool.raidLevel} ·{' '}
+                {activePool.filesystem}
               </div>
             </div>
             <Button size="sm" icon={Camera} onClick={() => onCreateSnapshot?.(activePool)}>
@@ -204,7 +205,7 @@ export function StorageSnapshotManager({
                       <div className="text-app-text-muted text-xs font-semibold uppercase">{label}</div>
                       <div className="grid grid-cols-1 gap-1">
                         {items.map((snapshot) => (
-                          <div key={snapshot.id} className="bg-app-hover/25 rounded-md px-2 py-1.5">
+                          <div key={snapshot.id} className="bg-app-hover/25 rounded-lg px-2 py-1.5">
                             <div className="flex items-center justify-between gap-2">
                               <div className="min-w-0">
                                 <div className="text-app-text truncate text-[13px]">{snapshot.name}</div>
@@ -228,7 +229,7 @@ export function StorageSnapshotManager({
                             </div>
 
                             {restoreSnapshotId === snapshot.id && (
-                              <div className="bg-app-bg mt-2 rounded-md p-2">
+                              <div className="bg-app-bg mt-2 rounded-lg p-2">
                                 <div className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                                   <Input
                                     type="password"

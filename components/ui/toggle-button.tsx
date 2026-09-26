@@ -25,7 +25,7 @@ interface ToggleButtonProps<T extends string> {
   itemClassName?: string
   showSeparator?: boolean
   variant?: 'tabs' | 'segmented' | 'surface'
-  shape?: 'pill' | 'rounded'
+  shape?: 'pill' | 'rounded-lg'
   allowReselect?: boolean
   showSelectionIndicator?: boolean
   activeIndicatorClassName?: string
@@ -79,7 +79,7 @@ export const ToggleButton = <T extends string>({
       {item.icon && <item.icon size={16} strokeWidth={2} />}
       {item.label && <span className="whitespace-nowrap">{item.label}</span>}
       {item.badge !== undefined && item.badge !== null && (
-        <span className="bg-theme/10 text-theme rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase">
+        <span className="bg-theme/10 text-theme rounded-lg px-1.5 py-0.5 text-[10px] font-semibold uppercase">
           {item.badge}
         </span>
       )}
@@ -97,11 +97,11 @@ export const ToggleButton = <T extends string>({
         'relative flex h-full items-center justify-center px-3 text-sm transition-all outline-none',
         isTabs ? 'flex-1' : 'flex-none',
         isSurface
-          ? 'text-app-text-muted hover:bg-app-hover hover:text-app-text data-[state=on]:text-app-text h-full rounded-md px-4'
+          ? 'text-app-text-muted hover:bg-app-hover hover:text-app-text data-[state=on]:text-app-text h-full rounded-lg px-4'
           : isTabs
             ? cn(
                 'text-app-text-muted hover:bg-app-hover hover:text-app-text data-[state=on]:text-app-text',
-                shape === 'pill' ? 'rounded-full' : 'rounded-md',
+                shape === 'pill' ? 'rounded-full' : 'rounded-lg',
               )
             : 'text-app-text-muted hover:text-app-text data-[state=on]:text-app-text rounded-none',
         itemClassName,
@@ -111,8 +111,8 @@ export const ToggleButton = <T extends string>({
         <motion.div
           layoutId={activePillLayoutId}
           className={cn(
-            'bg-app-border  absolute inset-0 z-0',
-            isSurface ? 'rounded-md' : shape === 'pill' ? 'rounded-full' : 'rounded-md',
+            'bg-app-border absolute inset-0 z-0',
+            isSurface ? 'rounded-lg' : shape === 'pill' ? 'rounded-full' : 'rounded-lg',
           )}
           transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
         />
@@ -132,7 +132,7 @@ export const ToggleButton = <T extends string>({
       className={cn(
         'relative inline-flex items-stretch transition-all',
         isSurface
-          ? 'bg-app-bg border border-app-border h-11 max-w-full gap-1 rounded-xl p-1'
+          ? 'bg-app-bg border-app-border h-11 max-w-full gap-1 rounded-lg border p-1'
           : isTabs
             ? cn('h-8 gap-1 border-none bg-transparent', shape === 'pill' ? 'rounded-full' : 'rounded-lg')
             : 'border-app-border h-9 w-full border-b-2 bg-transparent',
@@ -187,7 +187,7 @@ export const ToggleButton = <T extends string>({
                 <span className="flex min-w-0 items-center gap-2 text-left">
                   {item.label ? <span className="truncate">{item.label}</span> : null}
                   {item.badge !== undefined && item.badge !== null ? (
-                    <span className="bg-theme/10 text-theme rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase">
+                    <span className="bg-theme/10 text-theme rounded-lg px-1.5 py-0.5 text-[10px] font-semibold uppercase">
                       {item.badge}
                     </span>
                   ) : null}

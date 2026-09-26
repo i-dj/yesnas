@@ -93,7 +93,7 @@ export function ResourceDataView<Row extends { id: string | number }>({
     <section className={cn('space-y-4', className)}>
       {toolbar}
 
-      <section className="border-app-border  min-h-0 overflow-hidden rounded-lg border">
+      <section className="border-app-border min-h-0 overflow-hidden rounded-lg border">
         <DataTable
           headers={columns}
           data={showLoading ? [] : data}
@@ -106,7 +106,7 @@ export function ResourceDataView<Row extends { id: string | number }>({
         {showLoading || showEmpty ? (
           <div className="border-app-border/60 grid min-h-56 place-items-center border-t px-4 py-10 text-center">
             <div className="flex flex-col items-center">
-              <span className="border-app-border text-app-text-muted mb-5 grid size-12 place-items-center rounded-xl border">
+              <span className="border-app-border text-app-text-muted mb-5 grid size-12 place-items-center rounded-lg border">
                 <BarChart3 className="size-5" />
               </span>
               <div className="text-app-text text-sm font-semibold">{showLoading ? loadingText : emptyText}</div>

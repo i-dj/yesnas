@@ -12,7 +12,7 @@ export const dockerComposeColumns: ResourceDataColumn<DockerComposeProject>[] = 
     width: '30%',
     render: (_, project) => (
       <div className="flex min-w-0 items-center gap-3">
-        <span className="bg-app-bg border-app-border grid size-9 shrink-0 place-items-center rounded-md border text-blue-400">
+        <span className="bg-app-bg border-app-border grid size-9 shrink-0 place-items-center rounded-lg border text-blue-400">
           <Layers3 size={17} />
         </span>
         <div className="min-w-0">

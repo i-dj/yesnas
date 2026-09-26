@@ -86,12 +86,12 @@ export function SideDrawer({ open, onOpenChange, title, children, onAfterOpen, c
         aria-modal="true"
         aria-label={title}
       >
-        <div className="bg-app-bg border-app-border sticky top-0 z-10 flex h-12.5 shrink-0 items-center justify-between   px-4 text-center">
+        <div className="bg-app-bg border-app-border sticky top-0 z-10 flex h-12.5 shrink-0 items-center justify-between px-4 text-center">
           <h2 className="app-page-title text-app-text">{title}</h2>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="text-app-text-muted hover:text-app-text hover:bg-app-hover/60 rounded-md p-1 transition-colors"
+            className="text-app-text-muted hover:text-app-text hover:bg-app-hover/60 rounded-lg p-1 transition-colors"
             aria-label="Close details panel"
           >
             <X className="h-4 w-4" />

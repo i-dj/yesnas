@@ -61,7 +61,7 @@ export function MediaPlayer({
 
   if (kind === 'audio') {
     return (
-      <div className={cn('bg-card-bg border-card-border flex w-full flex-col gap-5 rounded-xl border p-6', className)}>
+      <div className={cn('bg-card-bg border-card-border flex w-full flex-col gap-5 rounded-lg border p-6', className)}>
         {title ? <h1 className="text-app-text truncate text-xl font-semibold">{title}</h1> : null}
         <audio className="w-full" controls preload="metadata" autoPlay={autoPlay}>
           <source src={src} type={mimeType} />

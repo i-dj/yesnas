@@ -19,8 +19,8 @@ export function DiskCardGrid({ disks, onDiskClick }: DiskCardGridProps) {
             key={disk.path}
             type="button"
             className={cn(
-              'border-app-border   hover:border-app-border-strong  hover:bg-app-hover',
-              'group min-h-28 min-w-0 overflow-hidden rounded-xl border px-4 py-4 text-left transition-colors',
+              'border-app-border hover:border-app-border-strong hover:bg-app-hover',
+              'group min-h-28 min-w-0 overflow-hidden rounded-lg border px-4 py-4 text-left transition-colors',
             )}
             onClick={() => onDiskClick(disk)}
           >

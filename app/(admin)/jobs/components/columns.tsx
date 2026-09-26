@@ -57,7 +57,7 @@ export function getJobColumns({
         const Icon = getJobIcon(job.type)
         return (
           <div className="flex min-w-0 items-center gap-3">
-            <span className="bg-app-hover grid size-9 shrink-0 place-items-center rounded-md">
+            <span className="bg-app-hover grid size-9 shrink-0 place-items-center rounded-lg">
               <Icon className="text-app-text-muted size-4" />
             </span>
             <div className="min-w-0">

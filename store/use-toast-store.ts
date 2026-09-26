@@ -15,6 +15,7 @@ interface ToastState {
 }
 
 const defaultDurationMs = 5000
+const errorDefaultDurationMs = 8000
 
 export const useToastStore = create<ToastState>((set, get) => ({
   toasts: [],
@@ -47,7 +48,7 @@ const notify = (variant: ToastVariant, message: string, durationMs?: number) =>
 export const toast = {
   push: (input: ToastInput) => useToastStore.getState().push(input),
   success: (message: string, durationMs?: number) => notify('success', message, durationMs),
-  error: (message: string, durationMs?: number) =>
+  error: (message: string, durationMs = errorDefaultDurationMs) =>
     notify('error', normalizeError(message) ?? 'Unknown error', durationMs),
   info: (message: string, durationMs?: number) => notify('info', message, durationMs),
   warning: (message: string, durationMs?: number) => notify('warning', message, durationMs),

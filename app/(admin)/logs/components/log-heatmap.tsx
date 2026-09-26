@@ -85,7 +85,7 @@ export function LogHeatmap({
                 })}
                 onClick={() => onBucketClickAction(bucket.time, data.bucket)}
                 className={cn(
-                  'h-5 min-w-0 rounded-[3px] transition-all outline-none',
+                  'h-5 min-w-0 rounded-lg transition-all outline-none',
                   colors[intensity],
                   selectedBucket === bucket.time && selectedClass,
                 )}

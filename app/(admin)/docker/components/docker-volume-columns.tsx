@@ -16,7 +16,7 @@ export const dockerVolumeColumns: ResourceDataColumn<DockerVolumeRow>[] = [
     width: '34%',
     render: (_, volume) => (
       <div className="flex min-w-0 items-center gap-3">
-        <span className="bg-app-bg border-app-border grid size-9 shrink-0 place-items-center rounded-md border text-amber-400">
+        <span className="bg-app-bg border-app-border grid size-9 shrink-0 place-items-center rounded-lg border text-amber-400">
           <Database size={17} />
         </span>
         <div className="min-w-0">

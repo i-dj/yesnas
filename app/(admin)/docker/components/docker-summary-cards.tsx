@@ -117,7 +117,7 @@ function SummaryCard({
             {unit ? <span className="text-app-text-muted mb-1 text-sm">{unit}</span> : null}
           </div>
         </div>
-        <span className="bg-app-bg border-app-border grid size-9 shrink-0 place-items-center rounded-md border">
+        <span className="bg-app-bg border-app-border grid size-9 shrink-0 place-items-center rounded-lg border">
           <Icon className={cn('size-4', iconClassName)} />
         </span>
       </div>

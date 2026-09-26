@@ -1,6 +1,7 @@
 export * from './more-button'
 export * from './card'
 export * from './section-title'
+export * from './page-back-header'
 export * from './theme-toggle'
 export * from './form/button'
 export * from './form/section'

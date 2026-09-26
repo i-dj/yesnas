@@ -7,10 +7,9 @@ import { toast } from '@/store/use-toast-store'
 import { type Group, type User } from '@/types'
 import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 
-import { UserFormDrawer } from './components/user-form-drawer'
 import { getUserColumns } from './components/user-columns'
 import { UserGroupTabs } from './components/user-group-tabs'
 import { UserOverview } from './components/user-overview'
@@ -56,6 +55,13 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
     onClose: modal.close,
   })
 
+  const openUserForm = useCallback(
+    (user?: User) => {
+      router.push(user ? `/users/${encodeURIComponent(user.id)}/edit` : '/users/new')
+    },
+    [router],
+  )
+
   const columns = useMemo(
     () =>
       getUserColumns({
@@ -63,10 +69,10 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
         timeZone,
         now,
         locale,
-        onEdit: modal.openEdit,
+        onEdit: openUserForm,
         onDelete: modal.openDelete,
       }),
-    [locale, now, t, timeZone],
+    [locale, modal.openDelete, now, openUserForm, t, timeZone],
   )
 
   const handleDelete = async () => await actions.remove()
@@ -161,14 +167,14 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
   }
 
   return (
-    <PageWrapper>
+    <PageWrapper className="overflow-visible">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="app-page-title text-app-text flex items-center gap-2">{t('title')}</div>
           <p className="text-app-text-muted mt-1 text-sm">{t('subtitle')}</p>
         </div>
 
-        <Button icon={Plus} onClick={() => modal.openCreate()}>
+        <Button icon={Plus} onClick={() => openUserForm()}>
           {t('actions.create')}
         </Button>
       </div>
@@ -223,7 +229,7 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
                 tdClassName="rounded-none py-2.5"
                 getRowClassName={() => '[&>td]:rounded-none'}
               />
-              <div className="border-app-border  flex items-center justify-end border-t pt-3">
+              <div className="border-app-border flex items-center justify-end border-t pt-3">
                 <Pagination
                   id="users-page-size"
                   page={page}
@@ -243,17 +249,6 @@ export function UsersClient({ users, groups, timeZone, now }: UsersClientProps) 
           )}
         </div>
       </section>
-
-      <UserFormDrawer
-        open={modal.state.drawerOpen}
-        editingUser={modal.state.user}
-        groups={groups}
-        submitting={actions.loading === 'submit'}
-        onOpenChange={(open) => {
-          if (!open) modal.close()
-        }}
-        onSubmit={actions.submit}
-      />
 
       <ConfirmModal
         open={modal.state.mode === 'delete'}

@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { AiNetworkCanvas } from './ai-network-canvas'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
@@ -18,7 +19,7 @@ export function AuthShell({ children }: AuthShellProps) {
     <main className="min-h-screen bg-[#1C1D21] text-white">
       <div className="grid min-h-screen lg:grid-cols-2">
         <section className="relative hidden min-h-screen items-center justify-center overflow-hidden bg-[#1C212A] lg:flex">
-          <img src="/auth/nas-ai-login-dark.png" alt="" className="w-[82%] max-w-180 opacity-80" />
+          <AiNetworkCanvas />
         </section>
 
         <section className="flex min-h-screen flex-col px-8 py-10 sm:px-16 lg:px-24">

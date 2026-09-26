@@ -18,18 +18,27 @@ interface MiniDonutProps {
   color: string
   value: string
   size?: keyof typeof sizeClassMap
+  trackColor?: string
   ariaLabel?: string
   className?: string
 }
 
-export const MiniDonut = ({ percent, color, value, size = 'md', ariaLabel, className }: MiniDonutProps) => {
+export const MiniDonut = ({
+  percent,
+  color,
+  value,
+  size = 'md',
+  trackColor = 'var(--card-border)',
+  ariaLabel,
+  className,
+}: MiniDonutProps) => {
   const sizeClass = sizeClassMap[size]
   const normalized = Math.min(100, Math.max(0, percent))
 
   return (
     <div
       className={cn('grid shrink-0 place-items-center rounded-full', sizeClass.outer, className)}
-      style={{ background: `conic-gradient(${color} ${normalized}%, var(--app-hover) 0)` }}
+      style={{ background: `conic-gradient(${color} ${normalized}%, ${trackColor} 0)` }}
       aria-label={ariaLabel ?? `当前负载 ${normalized}%`}
     >
       <div className={cn('bg-app-bg grid place-items-center rounded-full', sizeClass.inner)}>

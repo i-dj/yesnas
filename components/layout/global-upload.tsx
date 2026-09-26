@@ -377,7 +377,7 @@ export const GlobalUpload = ({ isOpen }: { isOpen: boolean }) => {
           setDragActive(false)
         }}
         onDrop={handleDrop}
-        className={`border-app-border bg-app-bg/40 flex w-full flex-1 flex-col items-center justify-center rounded-xl border border-dashed px-6 py-10 text-center transition-colors ${
+        className={`border-app-border bg-app-bg/40 flex w-full flex-1 flex-col items-center justify-center rounded-lg border border-dashed px-6 py-10 text-center transition-colors ${
           dragActive ? 'border-app-border-strong bg-app-hover/35' : ''
         }`}
       >
@@ -434,7 +434,7 @@ export const GlobalUpload = ({ isOpen }: { isOpen: boolean }) => {
         </div>
 
         {recentFiles.length > 0 ? (
-          <div className="bg-app-hover/35 mb-3 rounded-xl px-3 py-2.5">
+          <div className="bg-app-hover/35 mb-3 rounded-lg px-3 py-2.5">
             <div className="text-app-text mb-1 flex items-center justify-between text-sm tabular-nums">
               <span className="inline-block min-w-52 whitespace-nowrap">
                 {formatStableBytes(uploadedBytes)} of {formatStableBytes(totalBytes)}
@@ -465,13 +465,13 @@ export const GlobalUpload = ({ isOpen }: { isOpen: boolean }) => {
             <EmptyState />
           ) : (
             recentFiles.map((file) => (
-              <div key={file.id} className="bg-app-hover/30 rounded-xl px-3 py-2.5">
+              <div key={file.id} className="bg-app-hover/30 rounded-lg px-3 py-2.5">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     {(() => {
                       const { Icon, color } = getUploadIconMeta(file.name)
                       return (
-                        <div className="bg-app-bg/75 flex h-12 w-12 shrink-0 items-center justify-center rounded-md">
+                        <div className="bg-app-bg/75 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg">
                           <Icon className={`h-6 w-6 ${color}`} />
                         </div>
                       )

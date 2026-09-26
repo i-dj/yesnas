@@ -34,7 +34,7 @@ export function LanguageMenu({
           type="button"
           aria-label={currentOption.name}
           className={cn(
-            'group flex h-9 w-9 items-center rounded-lg border px-2 text-sm outline-none transition-all sm:w-auto sm:min-w-44 sm:px-3',
+            'group flex h-9 w-9 items-center rounded-lg border px-2 text-sm transition-all outline-none sm:w-auto sm:min-w-44 sm:px-3',
             'data-[state=open]:border-[#4da3ff] data-[state=open]:shadow-[0_0_0_4px_rgba(77,163,255,0.22)]',
             variant === 'auth'
               ? 'border-white/12 bg-[#1b1e23] text-white hover:border-white/25'
@@ -43,7 +43,12 @@ export function LanguageMenu({
         >
           <Flag src={currentOption.flag} />
           <span className="ml-2 hidden whitespace-nowrap sm:inline">{currentOption.name}</span>
-          <span className={cn('ml-1.5 hidden font-normal sm:inline', variant === 'auth' ? 'text-white/40' : 'text-app-text-muted')}>
+          <span
+            className={cn(
+              'ml-1.5 hidden font-normal sm:inline',
+              variant === 'auth' ? 'text-white/40' : 'text-app-text-muted',
+            )}
+          >
             ({currentOption.code})
           </span>
           <ChevronDown
@@ -64,11 +69,11 @@ export function LanguageMenu({
             <DropdownMenu.Item
               key={option.value}
               onSelect={() => handleChange(option.value)}
-              className="flex h-10 cursor-pointer items-center rounded-md px-2.5 text-sm text-white/85 outline-none transition-colors data-highlighted:bg-white/7 data-highlighted:text-white"
+              className="flex h-10 cursor-pointer items-center rounded-lg px-2.5 text-sm text-white/85 transition-colors outline-none data-highlighted:bg-white/7 data-highlighted:text-white"
             >
               <Flag src={option.flag} />
               <span className="ml-2 whitespace-nowrap">{option.name}</span>
-              <span className="ml-1.5 whitespace-nowrap font-normal text-white/40">({option.code})</span>
+              <span className="ml-1.5 font-normal whitespace-nowrap text-white/40">({option.code})</span>
             </DropdownMenu.Item>
           ))}
         </DropdownMenu.Content>

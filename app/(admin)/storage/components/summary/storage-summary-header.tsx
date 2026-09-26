@@ -1,6 +1,6 @@
 'use client'
 
-import { MetricStat, Progress } from '@/components/ui'
+import { MetricStatGroup, Progress } from '@/components/ui'
 import { bytesFormat, calculateUsedPercent, cn, formatUsagePercent, getProgressColorClass } from '@/lib/utils'
 import type { ComponentType, ReactNode } from 'react'
 
@@ -63,13 +63,7 @@ export function StorageSummaryHeader({
           </div>
         </div>
 
-        {metrics?.length ? (
-          <div className="flex shrink-0 flex-wrap justify-end gap-2">
-            {metrics.map((metric) => (
-              <MetricStat key={metric.label} label={metric.label} className="bg-app-surface" value={metric.value} />
-            ))}
-          </div>
-        ) : null}
+        <MetricStatGroup items={metrics ?? []} className="shrink-0 justify-end" />
       </div>
 
       {hasUsage ? (

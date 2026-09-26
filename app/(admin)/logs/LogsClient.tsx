@@ -290,7 +290,7 @@ export function LogsClient({
             className="border-app-border bg-app-surface/70 text-app-text-muted flex h-8 min-w-0 items-center gap-2 rounded-lg border px-2.5 text-sm shadow-sm"
             title={activePeriod}
           >
-            <span className="bg-app-hover grid size-5 shrink-0 place-items-center rounded-md">
+            <span className="bg-app-hover grid size-5 shrink-0 place-items-center rounded-lg">
               <Clock3 className="size-3.5" />
             </span>
             <span className="truncate">{activePeriod}</span>

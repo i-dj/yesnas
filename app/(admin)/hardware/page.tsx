@@ -1,6 +1,5 @@
 'use client'
 
-import { CircuitBoard } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 import { PageWrapper } from '@/components/layout/page-wrapper'
@@ -15,8 +14,8 @@ export default function HardwarePage() {
   const { data: snapshot, status: streamState } = useSse<HardwareSnapshot>('system.hardware', { interval: 1 })
 
   return (
-    <PageWrapper className="flex-1 overflow-x-hidden overflow-y-auto">
-      <section className="flex shrink-0 flex-col gap-2 pb-3 sm:flex-row sm:items-start sm:justify-between">
+    <PageWrapper className="flex-1 gap-8 overflow-x-hidden overflow-y-auto pb-10">
+      <section className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="app-page-title text-app-text flex items-center gap-2">
             {t('title')}

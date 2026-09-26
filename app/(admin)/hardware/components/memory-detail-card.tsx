@@ -4,9 +4,10 @@ import { MemoryStick } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 
-import { formatBytes, formatPercent } from '@/lib/utils'
+import { Card, Progress } from '@/components/ui'
+import { formatBytes } from '@/lib/utils'
 import type { HardwareMemory, HardwareMemoryModule } from '@/types'
-import { DetailList, HardwareSection, UsageDonut, type DetailItem } from './hardware-section'
+import { DetailList, HardwareSection, HardwareSelector, type DetailItem } from './hardware-section'
 
 export function MemoryDetailCard({ memory }: { memory: HardwareMemory }) {
   const t = useTranslations('Hardware')
@@ -26,39 +27,44 @@ export function MemoryDetailCard({ memory }: { memory: HardwareMemory }) {
   const details: DetailItem[] = [
     [t('fields.manufacturer'), selectedModule.manufacturer || '-', true],
     [t('fields.partNumber'), selectedModule.partNumber || '-', true],
-    [t('fields.typeSpeed'), `${selectedModule.type || '-'} / ${selectedModule.speedMHz || '-'} MHz`, false],
-    [t('fields.capacity'), formatBytes(selectedModule.sizeBytes), false],
-    [t('fields.used'), formatBytes(memory.usedBytes), false],
-    [t('fields.available'), formatBytes(memory.availableBytes), false],
+    [t('fields.type'), selectedModule.type || '-', true],
+    [t('fields.speed'), selectedModule.speedMHz ? `${selectedModule.speedMHz} MHz` : '-', true],
   ]
   if (selectedModule.serial) details.push([t('fields.serial'), selectedModule.serial, true])
 
   return (
-    <HardwareSection
-      icon={MemoryStick}
-      accentClassName="text-emerald-400"
-      title={t('sections.memory')}
-      summary={
-        <div className="border-app-border/70 flex max-w-full gap-0.5 overflow-x-auto rounded-md border p-0.5">
-          {modules.map((module, index) => (
-            <button
-              key={`${module.slot || module.locator || module.bankLocator || index}`}
-              type="button"
-              onClick={() => setSelectedIndex(index)}
-              className={`app-body-text h-7 shrink-0 rounded px-2.5 font-medium transition-colors ${
-                selectedIndex === index ? 'bg-app-active text-app-text' : 'text-app-text-muted hover:text-app-text'
-              }`}
-            >
-              {module.slot || module.locator || module.bankLocator || t('overview.memoryModule', { index: index + 1 })}
-            </button>
-          ))}
+    <HardwareSection icon={MemoryStick} accentClassName="text-emerald-400" title={t('sections.memory')}>
+      <Card className="@container flex min-w-0 flex-1 flex-col p-5 sm:p-6">
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <div className="flex min-w-0 justify-start">
+            <HardwareSelector
+              items={modules.map(
+                (module, index) =>
+                  module.slot ||
+                  module.locator ||
+                  module.bankLocator ||
+                  t('overview.memoryModule', { index: index + 1 }),
+              )}
+              selectedIndex={selectedIndex}
+              onSelect={setSelectedIndex}
+              className="w-fit"
+            />
+          </div>
+          <DetailList details={details} />
+          <div className="border-app-border mt-auto min-w-0 border-t pt-3">
+            <div className="mb-3 flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+              <div className="text-app-text min-w-0 truncate text-sm font-semibold tabular-nums">
+                {formatBytes(memory.usedBytes)}
+                <span className="text-app-text-muted font-medium"> / {formatBytes(memory.totalBytes)}</span>
+              </div>
+              <div className="text-app-text-muted shrink-0 text-sm tabular-nums">
+                {t('fields.available')} {formatBytes(memory.availableBytes)}
+              </div>
+            </div>
+            <Progress value={memory.usagePercent} showLabel={false} className="bg-emerald-400" />
+          </div>
         </div>
-      }
-    >
-      <div className="grid min-w-0 gap-5 sm:grid-cols-[4rem_minmax(0,1fr)] sm:items-start lg:gap-8">
-        <UsageDonut value={formatPercent(memory.usagePercent)} percent={memory.usagePercent} color="#34d399" />
-        <DetailList details={details} />
-      </div>
+      </Card>
     </HardwareSection>
   )
 }

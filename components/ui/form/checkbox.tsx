@@ -30,8 +30,10 @@ export const Checkbox = ({
     return (
       <label
         className={cn(
-          'app-body-text border-app-border flex  cursor-pointer items-center gap-2.5 rounded-lg border px-2.5 py-2 transition',
-          checked ? 'text-app-text bg-card-bg-strong border-app-border-strong' : 'text-app-text-muted hover:border-app-border-strong hover:bg-app-hover',
+          'app-body-text border-app-border flex cursor-pointer items-center gap-2.5 rounded-lg border px-2.5 py-2 transition',
+          checked
+            ? 'text-app-text bg-card-bg-strong border-app-border-strong'
+            : 'text-app-text-muted hover:border-app-border-strong hover:bg-app-hover',
           disabled && 'cursor-not-allowed opacity-50',
           className,
         )}
@@ -60,7 +62,7 @@ export const Checkbox = ({
   return (
     <label
       className={cn(
-        'flex h-8 cursor-pointer items-center gap-2 rounded-md px-2 text-sm transition',
+        'flex h-8 cursor-pointer items-center gap-2 rounded-lg px-2 text-sm transition',
         checked ? 'text-app-text' : 'text-app-text-muted',
         disabled && 'cursor-not-allowed opacity-50',
         className,
@@ -84,7 +86,7 @@ function CheckboxMark({ checked, className }: { checked: boolean; className?: st
   return (
     <span
       className={cn(
-        'grid size-4 shrink-0 place-items-center rounded-sm border transition',
+        'grid size-4 shrink-0 place-items-center rounded-lg border transition',
         checked ? 'bg-app-text text-app-bg border-app-text' : 'border-app-border-strong bg-app-bg',
         className,
       )}

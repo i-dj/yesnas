@@ -274,7 +274,7 @@ export function StorageLocationPicker({
           setPreparing(false)
           setOpen(true)
         }}
-        className="bg-app-bg border-app-border text-app-text hover:border-app-border-strong flex h-9 w-full min-w-0 items-center justify-between rounded-md border px-2 text-sm"
+        className="bg-app-bg border-app-border text-app-text hover:border-app-border-strong flex h-9 w-full min-w-0 items-center justify-between rounded-lg border px-2 text-sm"
       >
         <span className="inline-flex min-w-0 items-center gap-1.5">
           <Database className="text-app-text-muted h-3.5 w-3.5 shrink-0" />
@@ -292,13 +292,13 @@ export function StorageLocationPicker({
             className="fixed inset-0 z-[60] cursor-default"
           />
           <div className="bg-app-bg border-app-border absolute top-[calc(100%+8px)] left-0 z-[61] w-full rounded-lg border shadow-xl">
-            <div className="max-h-72 overflow-y-auto rounded-md p-1">
+            <div className="max-h-72 overflow-y-auto rounded-lg p-1">
               {storagePools.map((pool) => {
                 const storageId = getPoolStorageId(pool)
                 const expanded = selectedPool?.id === pool.id
                 return (
                   <div key={pool.id} className="mb-1">
-                    <div className="group hover:bg-app-hover/35 flex cursor-pointer items-center gap-1 rounded px-1 py-0.5">
+                    <div className="group hover:bg-app-hover/35 flex cursor-pointer items-center gap-1 rounded-lg px-1 py-0.5">
                       <button
                         type="button"
                         onClick={(event) => {
@@ -310,7 +310,7 @@ export function StorageLocationPicker({
                           }
                           void openPool(pool)
                         }}
-                        className="text-app-text-muted hover:text-app-text hover:border-app-border hover:bg-app-bg inline-flex h-5 w-5 items-center justify-center rounded-sm border border-transparent transition-colors"
+                        className="text-app-text-muted hover:text-app-text hover:border-app-border hover:bg-app-bg inline-flex h-5 w-5 items-center justify-center rounded-lg border border-transparent transition-colors"
                       >
                         {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                       </button>
@@ -321,7 +321,7 @@ export function StorageLocationPicker({
                           onChange({ storagePoolId: pool.id, folderId: '', pathNames: [] })
                           setOpen(false)
                         }}
-                        className="text-app-text h-7 flex-1 cursor-pointer rounded px-1.5 text-left text-sm"
+                        className="text-app-text h-7 flex-1 cursor-pointer rounded-lg px-1.5 text-left text-sm"
                       >
                         <span className="flex items-center gap-2">
                           <span>{pool.name}</span>
@@ -338,7 +338,7 @@ export function StorageLocationPicker({
                             setCreateParentId('')
                             setCreateName('')
                           }}
-                          className="text-app-text-muted hover:text-app-text invisible ml-auto rounded p-1 group-hover:visible"
+                          className="text-app-text-muted hover:text-app-text invisible ml-auto rounded-lg p-1 group-hover:visible"
                           aria-label={`Create folder in ${pool.name}`}
                         >
                           <Plus className="h-3.5 w-3.5" />
@@ -365,7 +365,7 @@ export function StorageLocationPicker({
                               <div
                                 key={folder.id}
                                 data-folder-id={folder.id}
-                                className={selected ? 'bg-app-hover/35 rounded' : 'hover:bg-app-hover/35 rounded'}
+                                className={selected ? 'bg-app-hover/35 rounded-lg' : 'hover:bg-app-hover/35 rounded-lg'}
                               >
                                 <div
                                   className="group flex items-center gap-1 px-1 py-0.5"
@@ -377,7 +377,7 @@ export function StorageLocationPicker({
                                       event.stopPropagation()
                                       void toggleNode(folder.id)
                                     }}
-                                    className="text-app-text-muted hover:text-app-text hover:border-app-border hover:bg-app-bg inline-flex h-5 w-5 items-center justify-center rounded-sm border border-transparent transition-colors"
+                                    className="text-app-text-muted hover:text-app-text hover:border-app-border hover:bg-app-bg inline-flex h-5 w-5 items-center justify-center rounded-lg border border-transparent transition-colors"
                                   >
                                     {loadingNodeId === folder.id ? (
                                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -394,7 +394,7 @@ export function StorageLocationPicker({
                                   )}
                                   <button
                                     type="button"
-                                    className="text-app-text h-7 min-w-0 flex-1 truncate rounded px-1.5 text-left text-sm"
+                                    className="text-app-text h-7 min-w-0 flex-1 truncate rounded-lg px-1.5 text-left text-sm"
                                     onClick={() => {
                                       onChange({
                                         storagePoolId: pool.id,
@@ -414,7 +414,7 @@ export function StorageLocationPicker({
                                         setCreateParentId(folder.id)
                                         setCreateName('')
                                       }}
-                                      className="text-app-text-muted hover:text-app-text invisible ml-auto rounded p-1 group-hover:visible"
+                                      className="text-app-text-muted hover:text-app-text invisible ml-auto rounded-lg p-1 group-hover:visible"
                                       aria-label={`Create subfolder under ${folder.name}`}
                                     >
                                       <Plus className="h-3.5 w-3.5" />
@@ -506,7 +506,7 @@ function CreateFolderInput({
             event.stopPropagation()
             onSubmit()
           }}
-          className="text-app-text-muted hover:text-app-text absolute top-1/2 right-1 -translate-y-1/2 rounded p-1"
+          className="text-app-text-muted hover:text-app-text absolute top-1/2 right-1 -translate-y-1/2 rounded-lg p-1"
         >
           ✓
         </button>
